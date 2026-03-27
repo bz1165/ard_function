@@ -71,3 +71,49 @@ res$lsm       # Rubin combined LSM（所有 model visits）
 res$diff      # Rubin combined difference + p（所有 model visits）
 res$ard       # 最终 compact ARD
 res$fit_plan  # 每个 imputation 用了哪个 fallback
+
+
+
+# 直接覆盖 spec 里这两个字段
+spec_facit_14_2_4_1$treatment_levels <- c("LNP023 200mg b.i.d.", "Placebo")
+spec_facit_14_2_4_1$control_label    <- "Placebo"
+
+# 同样更新 spec_facit_14_2_4_2
+spec_facit_14_2_4_2$treatment_levels <- c("LNP023 200mg b.i.d.", "Placebo")
+spec_facit_14_2_4_2$control_label    <- "Placebo"
+
+# 重新 prepare，确认 TRT 列正确
+prep <- prepare_mmrm_datasets(adfacmi, spec_facit_14_2_4_1)
+prep$subj_n
+# 期望：
+# TRT                   TRTN  bigN
+# LNP023 200mg b.i.d.      1   228
+# Placebo                   2   232
+```
+
+---
+
+**问题 2（需要确认）：nrow = 2,300,000**
+```
+nrow(prep$ana) = 2,300,000
+
+
+res <- run_mmrm_ard(
+  data  = adfacmi,
+  spec  = spec_facit_14_2_4_1,
+  debug = TRUE
+)
+
+spec_egfr_14_2_1_9_1$treatment_levels  <- c("LNP023 200mg b.i.d.", "Placebo")
+spec_egfr_14_2_1_9_1$control_label     <- "Placebo"
+spec_egfr_14_2_1_10_1$treatment_levels <- c("LNP023 200mg b.i.d.", "Placebo")
+spec_egfr_14_2_1_10_1$control_label    <- "Placebo"
+
+
+# 改前（两个 spec 里都是这个）
+treatment_levels = c("Placebo", "LNP023 200 mg"),
+control_label    = "Placebo",
+
+# 改后
+treatment_levels = c("LNP023 200mg b.i.d.", "Placebo"),
+control_label    = "Placebo",
