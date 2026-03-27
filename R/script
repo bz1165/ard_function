@@ -1,0 +1,73 @@
+# =============================================================
+# 最简 test script
+# 前提：create_ard_mmrm.R 已经在 RStudio 里打开并 source 了
+#       (点右上角 Source 按钮，或 Ctrl+Shift+Enter 全选后运行)
+# =============================================================
+
+# 1) 加载需要的包
+library(haven)
+library(dplyr)
+library(purrr)
+library(mmrm)
+library(emmeans)
+library(tibble)
+
+# 2) 连接 GPS（你原来的方式）
+ra_root <- "/view/zhaibe1_view/vob/CLNP023A/CLNP023A2301/csr_7"
+
+st <- list(
+  ra       = ra_root,
+  analysis = file.path(ra_root, "analysis_data")
+)
+
+# 3) Source 你上传的 R 文件
+#    在 RStudio 里打开 create_ard_mmrm.R 之后
+#    点右上角 "Source" 按钮 —— 或者直接用下面这行
+source("create_ard_mmrm.R")   # 如果文件在 working directory
+# 或者给完整路径：
+# source("/path/to/create_ard_mmrm.R")
+
+# =============================================================
+# Step 1: 先看数据，确认变量名和 ACAT1/AVISIT 标签
+#         这一步不跑模型，很快
+# =============================================================
+
+adfacmi <- haven::read_sas(file.path(st$analysis, "adfacmi.sas7bdat"))
+
+# 确认 ACAT1 实际值（大小写/空格必须和 spec 完全一致）
+adfacmi |> distinct(ACAT1)
+
+# 确认 AVISIT 实际值和数字顺序
+adfacmi |> distinct(AVISIT, AVISITN) |> arrange(AVISITN)
+
+# 确认 treatment labels
+adfacmi |> distinct(TRT01P, TRT01PN) |> arrange(TRT01PN)
+
+# =============================================================
+# Step 2: 只跑 prepare，不跑模型（最快的 sanity check）
+# =============================================================
+
+prep <- prepare_mmrm_datasets(adfacmi, spec_facit_14_2_4_1)
+
+prep$subj_n       # bigN 应该是两行：Placebo / LNP023
+prep$obs_n        # nobs by visit × treatment
+nrow(prep$ana)    # 应该 > 0；如果是 0 说明 filter 没对上
+prep$strata_present  # 确认哪些 STRVAL 进了模型
+
+# =============================================================
+# Step 3: 跑完整函数
+# =============================================================
+
+res <- run_mmrm_ard(
+  data  = adfacmi,
+  spec  = spec_facit_14_2_4_1,
+  debug = TRUE
+)
+
+# 检查关键输出
+res$subj_n    # bigN
+res$obs_n     # nobs by visit
+res$lsm       # Rubin combined LSM（所有 model visits）
+res$diff      # Rubin combined difference + p（所有 model visits）
+res$ard       # 最终 compact ARD
+res$fit_plan  # 每个 imputation 用了哪个 fallback
