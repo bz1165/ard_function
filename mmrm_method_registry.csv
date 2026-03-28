@@ -1,0 +1,5 @@
+method_id,runner_fun,prep_fun,result_profile,mi_enabled,has_pvalue,pvalue_rule_default,transform_profile,description
+MMRM_CFB_MI_VISIT,run_family_a,prep_mi_visit,RESULT_CFB_IDENTITY,TRUE,TRUE,better_positive,identity,"CFB + MI + by-visit + identity scale. FACIT / eGFR supplementary."
+MMRM_CFB_OBS_VISIT,run_family_b,prep_obs_dummy_visit,RESULT_CFB_IDENTITY,FALSE,FALSE,none,identity,"CFB + observed data + dummy visit grid. EQ VAS / EORTC. No MI, no p-value."
+MMRM_LOGRATIO_MI_VISIT,run_family_c,prep_mi_visit,RESULT_LOGRATIO_GEOMEAN,TRUE,TRUE,better_negative,logratio,"Log-ratio to baseline + MI + back-transform. Urine biomarkers."
+MMRM_TP_MI_VISIT,run_family_d,prep_tp_penalty,RESULT_TP_MONTH,TRUE,TRUE,better_positive,identity,"Tipping-point wrapper on MI MMRM. Penalty applied multiplicatively to active arm imputed rows."
