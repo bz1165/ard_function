@@ -818,8 +818,9 @@ prep_tp_penalty <- function(data, spec) {
 .fit_one_imp <- function(dat_imp, spec, plan, strata_present) {
   form    <- .build_mmrm_formula(strata_present, plan)
   fit     <- mmrm::mmrm(formula = form, data = dat_imp, reml = TRUE,
-                        drop_visit_levels = FALSE,
-                        control = mmrm::mmrm_control(method = "Kenward-Roger"))
+                        control = mmrm::mmrm_control(
+                          method             = "Kenward-Roger",
+                          drop_visit_levels  = FALSE))
   emm     <- emmeans::emmeans(fit, specs = ~ TRT | VISIT)
   ref_idx <- which(levels(dat_imp$TRT) == spec$control_label)
 
