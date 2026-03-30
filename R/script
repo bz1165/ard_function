@@ -357,3 +357,58 @@ Backtrace:
  8.         └─.f(.x[[i]], ...)
  9.           └─base::stop(...) at create_ard_mmrm.R:1325:5
 Run rlang::last_trace(drop = FALSE) to see 4 hidden frames.
+
+# 直接手动跑一次 .fit_one_imp，看真正的错误信息
+# 先把 debug 环境里的函数拿出来
+
+spec_obj <- resolve_mmrm_spec("14.2-5.1", out_registry = out_reg,
+                               meth_registry = meth_reg)
+
+# 手动 prep
+prep <- prep_obs_dummy_visit(adqs, spec_obj)
+
+cat("=== ana dimensions ===\n")
+print(dim(prep$ana))
+
+cat("=== ana_model (non-NA RESP) ===\n")
+ana_p <- prep$ana |>
+  dplyr::mutate(
+    TRT   = factor(TRT,   levels = spec_obj$treatment_levels),
+    VISIT = factor(VISIT, levels = spec_obj$visits_model)
+  )
+ana_model <- dplyr::filter(ana_p, !is.na(RESP))
+print(dim(ana_model))
+
+cat("=== VISIT levels vs actual values ===\n")
+print(levels(ana_model$VISIT))
+print(table(as.character(ana_model$VISIT)))
+
+cat("=== TRT distribution ===\n")
+print(table(as.character(ana_model$TRT)))
+
+cat("=== STRATA present ===\n")
+print(prep$strata_present)
+
+cat("=== BASE non-NA ===\n")
+print(sum(!is.na(ana_model$BASE)))
+
+# 直接尝试第一个 fallback plan，看真正的 mmrm 错误
+plan1 <- list(covariance = "us", use_strata = TRUE, use_visit_base = TRUE)
+
+tryCatch({
+  form <- .build_mmrm_formula(prep$strata_present, plan1)
+  cat("=== Formula ===\n")
+  print(form)
+  
+  fit <- mmrm::mmrm(
+    formula           = form,
+    data              = ana_model,
+    reml              = TRUE,
+    drop_visit_levels = FALSE,
+    control           = mmrm::mmrm_control(method = "Kenward-Roger")
+  )
+  cat("=== FIT SUCCEEDED ===\n")
+}, error = function(e) {
+  cat("=== mmrm ERROR ===\n")
+  print(conditionMessage(e))
+})
