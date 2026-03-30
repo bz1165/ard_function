@@ -818,6 +818,7 @@ prep_tp_penalty <- function(data, spec) {
 .fit_one_imp <- function(dat_imp, spec, plan, strata_present) {
   form    <- .build_mmrm_formula(strata_present, plan)
   fit     <- mmrm::mmrm(formula = form, data = dat_imp, reml = TRUE,
+                        drop_visit_levels = FALSE,
                         control = mmrm::mmrm_control(method = "Kenward-Roger"))
   emm     <- emmeans::emmeans(fit, specs = ~ TRT | VISIT)
   ref_idx <- which(levels(dat_imp$TRT) == spec$control_label)
@@ -1306,7 +1307,21 @@ run_family_b <- function(data, spec, parallel = FALSE, n_workers = 4,
       dplyr::mutate(TRT   = factor(TRT,   levels = spec$treatment_levels),
                     VISIT = factor(VISIT, levels = spec$visits_model))
 
-    r <- .apply_fallback_loop(ana_p, spec, prep$strata_present)
+    # FIX (Family B): SAS PROC MIXED uses only observed (non-NA) response rows.
+    # The dummy grid (including NA rows) is kept for bigN/nobs calculation above,
+    # but the model receives only subjects with observed CHG at each visit.
+    # Factor levels are preserved on VISIT so mmrm knows the full visit structure.
+    ana_model <- ana_p |> dplyr::filter(!is.na(RESP))
+
+    if (nrow(ana_model) == 0)
+      stop("[", spec$output_id, "] No observed RESP data for model fitting. ",
+           "Check that response_var (CHG) is available in the dataset.")
+
+    observed_visits <- as.character(unique(ana_model$VISIT))
+    message("  [B] Observed visits with data: ",
+            paste(sort(observed_visits), collapse = ", "))
+
+    r <- .apply_fallback_loop(ana_model, spec, prep$strata_present)
     if (is.null(r$res))
       stop("[", spec$output_id, "] All fallbacks failed (param=", param, ")")
 
