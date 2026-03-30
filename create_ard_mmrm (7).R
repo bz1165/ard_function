@@ -671,7 +671,7 @@ prep_obs_dummy_visit <- function(data, spec) {
     dummy_visits <- spec$visits_model
 
   # Get actual VISITN from data to attach to dummy grid
-  actual_visitn <- ana_raw |>
+  actual_visitn <- base_raw |>
     dplyr::distinct(VISIT, VISITN) |>
     dplyr::filter(!is.na(VISITN)) |>
     dplyr::mutate(VISIT = as.character(VISIT))
@@ -680,12 +680,12 @@ prep_obs_dummy_visit <- function(data, spec) {
     dplyr::left_join(actual_visitn, by = "VISIT")
 
   # Multi-param (EORTC): cross-join with param values
-  has_param <- "PARAM" %in% names(ana_raw) && length(spec$param_values) > 0
+  has_param <- "PARAM" %in% names(base_raw) && length(spec$param_values) > 0
 
   if (has_param) {
     subj_param <- base_records |>
       dplyr::inner_join(
-        ana_raw |> dplyr::distinct(USUBJID, PARAM) |>
+        base_raw |> dplyr::distinct(USUBJID, PARAM) |>
           dplyr::filter(PARAM %in% spec$param_values),
         by = "USUBJID"
       )
@@ -1350,13 +1350,28 @@ run_family_c <- function(data, spec, parallel = FALSE, n_workers = 4,
   message("[", spec$output_id, "] [C] Step 3/4: Rubin's rules...")
   lsm_comb <- rubin_combine(dplyr::bind_rows(purrr::map(fits, "lsm")),
                               by_cols = c("VISIT", "TRT")) |>
-    dplyr::mutate(TRT = factor(TRT, levels = spec$treatment_levels)) |>
-    dplyr::arrange(match(VISIT, spec$visits_model), TRT)
+    dplyr::mutate(TRT = factor(TRT, levels = spec$treatment_levels))
 
   diff_comb <- rubin_combine(
     dplyr::bind_rows(purrr::map(fits, "diff")) |> dplyr::select(-p_two_sided),
     by_cols = c("VISIT", "comparison")
-  ) |> dplyr::arrange(match(VISIT, spec$visits_model))
+  )
+
+  # FIX (Family C): when visits_model/visits_display are empty (urine uses
+  # avisitn_gt range not named visit list), derive ordered visit levels from
+  # actual model results so arrange() and ARD filter work correctly.
+  if (length(spec$visits_model) == 0) {
+    visit_order <- prep$obs_n |>
+      dplyr::distinct(VISIT, VISITN) |>
+      dplyr::arrange(VISITN) |>
+      dplyr::pull(VISIT) |>
+      as.character()
+    spec$visits_model   <- visit_order
+    spec$visits_display <- visit_order
+  }
+
+  lsm_comb  <- lsm_comb  |> dplyr::arrange(match(VISIT, spec$visits_model), TRT)
+  diff_comb <- diff_comb |> dplyr::arrange(match(VISIT, spec$visits_model))
 
   message("[", spec$output_id, "] [C] Step 4/4: Building ARD (back-transform)...")
   ard <- .ard_logratio_geomean(prep, lsm_comb, diff_comb, spec)
