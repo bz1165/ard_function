@@ -117,3 +117,68 @@ control_label    = "Placebo",
 # 改后
 treatment_levels = c("LNP023 200mg b.i.d.", "Placebo"),
 control_label    = "Placebo",
+
+
+
+# =============================================================
+# 前提：create_ard_mmrm.R 已经 source，out_reg 已经加载
+# =============================================================
+
+# ── Family B: EQ VAS (observed + dummy grid, no MI) ──────────
+adqs <- haven::read_sas(file.path(st$analysis, "adqs.sas7bdat"))
+
+res_b <- create_ard_mmrm(
+  "14.2-5.1",
+  data         = adqs,
+  out_registry = out_reg,
+  meth_registry = meth_reg,
+  debug        = TRUE
+)
+
+cat("\n=== Family B: EQ VAS ===\n")
+print(res_b$subj_n)
+print(res_b$ard)
+print(nrow(res_b$ana))          # 应该是 subjects × 5 visits 的 dummy grid
+
+# ── Family C: UPCR log-ratio (MI + back-transform) ───────────
+adupcrmi <- haven::read_sas(file.path(st$analysis, "adupcrmi.sas7bdat"))
+
+res_c <- create_ard_mmrm(
+  "14.2-10.1",
+  data         = adupcrmi,
+  out_registry = out_reg,
+  meth_registry = meth_reg,
+  imp_max      = 10,            # 先用 10 个 imp 测试结构
+  debug        = TRUE
+)
+
+cat("\n=== Family C: UPCR log-ratio ===\n")
+print(res_c$subj_n)
+print(res_c$ard)
+# 确认 stat_name 包含 geo_mean_ci / geo_ratio_ci / pct_reduction_ci
+print(unique(res_c$ard$stat_name))
+
+# ── Family D: eGFR tipping point ─────────────────────────────
+adgfrmi4 <- haven::read_sas(file.path(st$analysis, "adgfrmi4.sas7bdat"))
+
+res_d <- create_ard_mmrm(
+  "14.2-1.10.3",
+  data         = adgfrmi4,
+  out_registry = out_reg,
+  meth_registry = meth_reg,
+  imp_max      = 10,            # 先用 10 个 imp 测试结构
+  debug        = TRUE
+)
+
+cat("\n=== Family D: eGFR tipping point ===\n")
+print(res_d$subj_n)
+print(res_d$ard)
+print(res_d$meta$tipping_point)  # tipping point delta 值
+# 确认 stat_name 包含 adj_diff_ci / pvalue_1sided / tipping_point
+print(unique(res_d$ard$stat_name))
+
+# ── 快速汇总：三个 family 的 ARD 行数 ──────────────────────────
+cat("\n=== Summary ===\n")
+cat("Family B rows:", nrow(res_b$ard), "\n")
+cat("Family C rows:", nrow(res_c$ard), "\n")
+cat("Family D rows:", nrow(res_d$ard), "\n")
