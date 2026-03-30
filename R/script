@@ -182,3 +182,58 @@ cat("\n=== Summary ===\n")
 cat("Family B rows:", nrow(res_b$ard), "\n")
 cat("Family C rows:", nrow(res_c$ard), "\n")
 cat("Family D rows:", nrow(res_d$ard), "\n")
+
+
+# ── 在 console 一步步 debug，不要先跑 create_ard_mmrm ──────────────────────
+
+# Step 1: 确认 adqs 里有 CHG 列，并看 EQ VAS 的实际 VISIT 标签
+adqs |>
+  dplyr::filter(PARAMCD == "EQ5D0306", FASFL == "Y", MAINPFL == "Y") |>
+  dplyr::distinct(AVISIT, AVISITN) |>
+  dplyr::arrange(AVISITN)
+
+# Step 2: 确认 CHG 存在且有非 NA 值
+adqs |>
+  dplyr::filter(PARAMCD == "EQ5D0306", FASFL == "Y", MAINPFL == "Y",
+                !is.na(AVISITN), !AVISIT %in% c("Baseline", "EOS")) |>
+  dplyr::summarise(
+    n_rows       = dplyr::n(),
+    n_chg_nonNA  = sum(!is.na(CHG)),
+    n_chg_NA     = sum(is.na(CHG))
+  )
+
+# Step 3: 手动跑一次 prep，看 obs_records 和 grid 的 VISIT 值
+spec_test    <- out_reg |> dplyr::filter(output_id == "14.2-5.1")
+spec_obj     <- resolve_mmrm_spec("14.2-5.1", out_registry = out_reg,
+                                   meth_registry = meth_reg)
+
+spec_no_vm   <- spec_obj
+spec_no_vm$visits_model   <- character(0)
+spec_no_vm$visits_display <- character(0)
+spec_no_vm$visit_exclude  <- character(0)
+
+# 看 .prep_base 之后有什么
+library(dplyr)
+source("create_ard_mmrm.R")
+
+# 直接用环境里的 .prep_base（它是 non-exported 但在 global env 后可用）
+base_raw <- environment(create_ard_mmrm)$.prep_base(adqs, spec_no_vm)
+
+# 看实际 VISIT 值
+cat("=== VISIT values in base_raw (post-baseline) ===\n")
+base_raw |>
+  dplyr::filter(!is.na(VISITN), !VISIT %in% c("Baseline","BASELINE","baseline"),
+                VISIT != "EOS") |>
+  dplyr::distinct(VISIT, VISITN) |>
+  dplyr::arrange(VISITN) |>
+  print()
+
+cat("=== RESP (CHG) non-NA count ===\n")
+base_raw |>
+  dplyr::filter(!is.na(VISITN), !VISIT %in% c("Baseline","BASELINE","baseline")) |>
+  dplyr::summarise(n_resp_nonNA = sum(!is.na(RESP))) |>
+  print()
+
+cat("=== Dummy visits in spec ===\n")
+print(spec_obj$dummy_visits)
+print(spec_obj$visits_model)
