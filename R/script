@@ -318,3 +318,14 @@ R 4.3.1> print(spec_obj$dummy_visits)
 [1] "AVISITN"
 R 4.3.1> print(spec_obj$visits_model)
 [1] "Month 3"  "Month 6"  "Month 9"  "Month 18" "Month 24"
+
+# 在 console 直接覆盖这一行，不需要重新跑 load_mmrm_registry
+out_reg$dummy_visits[out_reg$output_id == "14.2-5.1"] <- 
+  "Month 3|Month 6|Month 9|Month 18|Month 24"
+
+out_reg$dummy_visits[out_reg$output_id == "14.2-6.1.1"] <- 
+  "Month 3|Month 6|Month 9|Month 18|Month 24"
+
+# 确认改好了
+out_reg |> dplyr::filter(output_id %in% c("14.2-5.1","14.2-6.1.1")) |>
+  dplyr::select(output_id, dummy_visits)
