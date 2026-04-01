@@ -1,4 +1,40 @@
-
+现在主要用什么AI 工具， 频率是什么，用它做什么
+ 
+Which AI tools have you used (multiple options):
+Internal ChatGPT (including the embedded Claude)
+M365 Copilot (including Copilot embedded in the Teams, Word, PowerPoint, etc.)
+Microsoft Agent (including researcher, analyst, etc.)
+Coach Mira
+Others, please specify: 
+Which AI tools do you use the most frequent (one option):
+Internal ChatGPT (including the embedded Claude)
+M365 Copilot (including Copilot embedded in the Teams, Word, PowerPoint, etc.)
+Microsoft Agent (including researcher, analyst, etc.)
+Coach Mira
+Others, please specify: 
+For your most frequently used AI tool, please list 1-3 tasks that you used the most: 
+In total, what is your frequency of using AI tool:
+Much more than once per day (i.e., I cannot live without AI tools)
+Daily
+Weekly
+Not sure, depending on the actual situations
+ 
+ 
+工作中希望能（或者已经被，可以给出例子）被AI 解决的任务（耗时，繁琐，重复性）是什么
+在工作中，你最希望能通过使用AI 工具快速解决的日常工作任务是（耗时，繁琐，重复性）：
+Email/meeting minutes summary 
+Literature review 
+…..
+针对你的工作特点，你最做期待的新AI 工具是（主要针对复杂工作流程的自动化）：
+…. Option is pending 
+ 
+ 
+ 
+ 
+使用AI的挑战（有一些希望能被AI解决的工作实际效果不好）和顾虑 （想用外部AI， 敏感文件限制，信息准确度）
+ 
+ 
+ 
 # -------------------------------------------------------------------------
 # test_create_ard_mmrm_flexible.R
 # Purpose: practical smoke / regression / flexibility tests for the revised
