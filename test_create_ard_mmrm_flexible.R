@@ -1,37 +1,38 @@
 ClearCollect(
-   colSelections,
-   ForAll(
-       Filter(Employees, ManagerEmail = User().Email),
-       {
-           EmployeeName:   EmployeeName,
-           EmployeeID:     EmployeeID,
-           Email:          Email,
-           ManagerEmail:   ManagerEmail,
-           TAGroup:        TAGroup,
-           CurrentGPS:     CurrentGPS,
-           Studies:        Studies,
-           SelectedAction: "No Change"
-       }
-   )
+    colSelections,
+    AddColumns(
+        Filter(
+            Employees,
+            Lower(Trim(ManagerEmail)) = Lower(Trim(User().Email))
+        ),
+        "SelectedAction",
+        "No Change"
+    )
 );
 Set(
-   varCurrentTA,
-   First(Filter(Employees, ManagerEmail = User().Email)).TAGroup
+    varCurrentTA,
+    First(colSelections).TAGroup
 )
 
-Set(varBatchID,
-    "BATCH-" & Text(Now(),"YYYYMMDD-hhmmss"));
+
+
+Set(
+    varBatchID,
+    "BATCH-" & Text(Now(), "yyyymmdd-hhmmss")
+);
 
 Patch(
     Batches,
     Defaults(Batches),
-    {   ManagerEmail: User().Email,
+    {
+        BatchID:      varBatchID,
+        ManagerEmail: User().Email,
         ManagerName:  User().FullName,
         TAGroup:      varCurrentTA,
         SubmittedAt:  Now(),
         Status:       "Pending",
-        AddCount:     CountIf(colSelections, SelectedAction="Add"),
-        DropCount:    CountIf(colSelections, SelectedAction="Drop")
+        AddCount:     CountIf(colSelections, SelectedAction = "Add"),
+        DropCount:    CountIf(colSelections, SelectedAction = "Drop")
     }
 );
 
@@ -40,12 +41,13 @@ ForAll(
     Patch(
         GPS_Changes,
         Defaults(GPS_Changes),
-        {  
+        {
             BatchID:      varBatchID,
-            EmployeeID:   EmployeeID,
-            EmailID:      Email,
-            Action:       SelectedAction,
-            TAGroup:      TAGroup,
+            EmployeeName: ThisRecord.EmployeeName,
+            EmployeeID:   ThisRecord.EmployeeID,
+            EmailID:      ThisRecord.Email,
+            Action:       ThisRecord.SelectedAction,
+            TAGroup:      ThisRecord.TAGroup,
             Environment:  "Production",
             ManagerEmail: User().Email,
             Status:       "Pending"
@@ -55,7 +57,7 @@ ForAll(
 
 Notify(
     "Submitted! " &
-    Text(CountIf(colSelections,SelectedAction<>"No Change")) &
+    Text(CountIf(colSelections, SelectedAction <> "No Change")) &
     " changes sent to Xiaoran.",
     NotificationType.Success
 );
@@ -63,18 +65,14 @@ Notify(
 ClearCollect(
     colSelections,
     AddColumns(
-        Filter(Employees, ManagerEmail=User().Email),
-           EmployeeName:   EmployeeName,
-           EmployeeID:     EmployeeID,
-           Email:          Email,
-           ManagerEmail:   ManagerEmail,
-           TAGroup:        TAGroup,
-           CurrentGPS:     CurrentGPS,
-           Studies:        Studies,
-           SelectedAction: "No Change"
+        Filter(
+            Employees,
+            Lower(Trim(ManagerEmail)) = Lower(Trim(User().Email))
+        ),
+        "SelectedAction",
+        "No Change"
     )
 )
- 
  
 # -------------------------------------------------------------------------
 # test_create_ard_mmrm_flexible.R
