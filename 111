@@ -1,0 +1,945 @@
+
+跳到主内容
+Minimize
+Maximize
+Close
+
+工作
+Web
+
+自动
+
+
+
+
+
+pdf
+Enterprise GenAI Platform Docs
+
+pdf
+Enterprise GenAI Platform Docs
+You said:
+我的想法在genai这个平台可以实现吗
+
+pdf
+Enterprise GenAI Platform Docs
+
+pdf
+Enterprise GenAI Platform Docs
+You said:
+我的想法在genai这个平台可以实现吗
+
+pdf
+Enterprise GenAI Platform Docs
+
+pdf
+Enterprise GenAI Platform Docs
+You said:
+我的想法在genai这个平台可以实现吗
+Copilot said:
+Copilot
+结论先行：你的想法在 GenAI Enterprise Platform 上——可以实现一部分，但不能“完全按你现在设想的方式”实现。
+下面我用平台能力 vs. 你的目标一一对齐，明确告诉你能做什么 / 不能做什么 / 推荐怎么落地，全部基于内部资料与平台说明，不拍脑袋。
+
+一、先把你的“目标版本”再精确定义一次（很关键）
+你现在的设想是：
+
+在 GenAI Enterprise Platform（China）
+做一个 AI agent / automation
+AP Manager 在界面里选择：
+GPS 识别出“需要调整”的人员
+指定 team 里的某一个人
+这个人收到名单
+自动化流程填写（甚至提交）ServiceNow ticket
+目前 local 跑、单人用
+二、GenAI Enterprise Platform 明确能支持的部分
+✅ 1. 业务逻辑与 AI 决策层 —— 可以
+平台支持你做这些事情：
+
+✅ 把 GPS / SAP / Protocol / list 作为输入
+✅ 用 LLM 做：
+判断谁需要调整
+生成结构化结果（名单、原因、建议 action）
+✅ 把这些结果：
+展示给 AP Manager
+或生成“待处理清单 / 草稿说明”
+这一点与平台定位完全一致（自建 agent、业务自动化）
+Favicon type
+Hello everyone, I’m experimenting with a Python script that uses GPT to categorize ServiceNow incidents from Excel based
++1 个
+
+✅ 2. ServiceNow Ticket 内容生成 / 预填 —— 可以
+根据内部讨论与案例：
+
+GenAI 平台允许：
+生成 ServiceNow ticket 的 description / category / justification
+输出为：
+表单草稿
+JSON
+文本块
+但前提是：
+✅ 不直接写 SNOW
+✅ 不绕过 SNOW governance
+这和内部对“user‑assisted automation”的定义是一致的。
+Favicon type
+RE: Meeting invitation with AI Fluency Champion
+
+三、⚠️ GenAI Enterprise Platform 明确不能直接做的部分
+❌ 1. 直接调用 ServiceNow API 提交 ticket
+这是平台级红线，原因不是技术，而是治理：
+
+GenAI Enterprise Platform 不是一个 SNOW integration runtime
+SNOW API 调用属于：
+system‑to‑system integration
+需要 IAM / SNOW 平台批准
+平台文档与内部讨论都指向：
+外部系统调用必须走受控 connector / 集成流程
+Favicon type
+RE: Meeting invitation with AI Fluency Champion
++1 个
+
+👉 所以：
+“在 GenAI 平台里直接 POST 一个 ticket”——不被允许。
+
+❌ 2. 以“系统身份”代替用户提交 ticket
+无论是否 local：
+
+❌ GenAI agent impersonate 用户
+❌ 使用 service account 自动提 ticket
+这都不在 GenAI 平台允许范围内。
+
+四、✅ 推荐的“可落地版本”（与你想法最接近）
+下面这个版本是完全可行 + 合规 + 可扩展的：
+
+✅ 推荐架构（现实版）
+
+
+
+Plain Text
+GenAI Enterprise Platform (China)
+   ↓
+AI agent 判断 & 生成：
+- 调整名单
+- 原因
+- 建议 ticket 内容
+   ↓
+输出给指定的 team member
+   ↓
+【这个人】用：
+- ServiceNow UI
+- 或 user-level API（Option 1）
+完成 ticket 提交
+这正是内部所说的 user‑assisted automation，而不是 system integration。
+
+五、把你问题用一句话准确回答
+“我的想法在 GenAI 这个平台可以实现吗？”
+
+✅ 可以实现：
+
+AI 决策
+自动化判断
+ServiceNow ticket 内容生成与辅助
+❌ 不能直接实现：
+
+在平台内直接调用 SNOW API 提交 ticket
+👉 提交动作必须由用户完成，或走独立、获批的 API 路径。
+
+六、如果你想把这件事说给 IT / 平台团队听（标准话术）
+你可以这样描述（非常重要）：
+
+“The GenAI Enterprise Platform will be used for decision logic and content generation only.
+ServiceNow ticket submission remains user‑initiated, using existing ServiceNow access.”
+
+这句话 = ✅ 立刻过审。
+
+七、你现在其实已经走在“最佳路径”上
+你当前路线是：
+
+✅ GenAI Enterprise Platform（China）做 agent
+✅ 先 PoC 业务价值
+✅ SNOW 先走 user‑level（Option 1）
+✅ 将来如果要自动提交 → 再升级到 IAM onboarding
+这在平台和 Security 看来是：
+“成熟、稳健、会演进的设计”。
+
+如果你愿意，我可以下一步直接帮你做三选一（不需要再解释背景）：
+
+✅ 把你这个方案整理成 GenAI PoC 一页架构说明（可直接给平台）
+✅ 帮你写 GenAI request / PoC description 的“最终版”
+✅ 设计一个 从 user‑assisted → application‑level 集成的演进路线图
+你选一个，我直接给你成稿。
+
+来源
+PDF typehtml
+
+
+
+
+
+
+
+
+
+pdf
+Enterprise GenAI Platform Docs
+
+pdf
+Enterprise GenAI Platform Docs
+You said:
+我的想法在genai这个平台可以实现吗
+Copilot said:
+简短、明确的答案：
+
+✅ 你的想法在 GenAI Enterprise Platform（China）上可以“部分实现”，但不能做到“全自动直接提 ServiceNow ticket”。
+
+下面我用平台能力 vs. 你的具体设计，把话说到位，不绕。
+
+一、你现在这个想法，平台能实现的部分 ✅
+结合内部资料与平台定位，GenAI Enterprise Platform 明确支持以下能力：
+
+✅ 1️⃣ 业务判断 + 自动化决策（可以）
+根据 GPS / SAP / 规则 判断“哪些人需要调整”
+由 AI 生成：
+调整名单
+原因说明
+建议 action（例如需要提 SNOW ticket）
+把结果呈现给 AP Manager / 指定 team member
+👉 这是 GenAI 平台的核心使用场景（自建 agent、业务自动化），完全匹配其“Self‑service / Builder”定位
+PDF type
+SNOW Incident Request
++1 个
+
+✅ 2️⃣ ServiceNow ticket 内容生成 / 预填（可以）
+AI 生成：
+ticket 描述
+分类建议
+justification / background
+作为：
+文本草稿
+结构化字段（JSON / 表单草案）
+✅ 这一点是被允许的，属于 user‑assisted automation，不涉及系统集成
+Steps to create a SNOW Ticket
+
+二、你这个想法中，平台不能直接做的部分 ❌
+❌ 3️⃣ 在 GenAI 平台里直接调用 ServiceNow API 提交 ticket
+这一点是明确不行的，原因是治理而不是技术：
+
+GenAI Enterprise Platform 不是 ServiceNow 的集成运行环境
+直接调用 SNOW API 属于：
+system‑to‑system integration
+需要 IAM / SNOW 平台级审批
+内部平台材料与讨论都强调：
+外部系统调用必须通过受控 connector 或独立集成流程
+Steps to create a SNOW Ticket
++1 个
+
+👉 所以：在 GenAI 平台里“一键自动提交 SNOW ticket”是不被允许的。
+
+三、✅ 与你想法“最接近、且合规”的实现方式（推荐）
+你现在可以落地的版本是这个：
+
+
+
+
+Plain Text
+GenAI Enterprise Platform（China）
+   ↓
+AI agent 判断 & 生成：
+- 需要调整的名单
+- 原因
+- ServiceNow ticket 草稿内容
+   ↓
+发送给指定的 team member
+   ↓
+该用户使用：
+- ServiceNow UI
+- 或 用户级 API（Option 1）
+完成 ticket 提交
+✅ 这在治理语言里叫：
+User‑assisted automation（用户辅助自动化）
+而不是 system integration。
+
+四、用一句话准确回答你的问题
+“我的想法在 GenAI 这个平台可以实现吗？”
+
+答案是：
+
+✅ 可以实现：判断逻辑、自动化决策、SNOW ticket 内容生成
+❌ 不能直接实现：在平台内自动调用 SNOW API 提交 ticket
+👉 提交动作必须由用户完成，或通过单独获批的 API 路径完成。
+
+五、如果你要对 IT / 平台这样“定性”（非常关键）
+这句话你可以直接用：
+
+“GenAI Enterprise Platform will be used for decision logic and content generation only.
+ServiceNow ticket submission remains user‑initiated, using existing ServiceNow access.”
+
+这句话 = ✅ 合规 ✅ 易过审。
+
+六、总结一句“定心丸”
+你现在的设想：
+
+✅ 在 GenAI 平台的能力边界之内
+✅ 非常适合作为 PoC / AQS 用例
+✅ 后续如果真要全自动，再升级 IAM / SNOW 集成即可
+如果你愿意，下一步我可以直接帮你：
+
+✅ 把这个方案整理成 GenAI PoC 架构一页纸
+✅ 或帮你写 GenAI 平台 request 里的最终版描述
+✅ 或设计一条 从“用户辅助 → 全自动集成”的演进路线
+你选一个，我直接给你成稿。
+
+
+
+
+
+You said:
+Skip to page contentSkip to chat
+OneNovartis Services
+Ask Now Assist for help or search
+
+My To-Dos
+My Tickets
+ EN 
+Welcome to Novartis
+IT
+P&O
+Talent Acquisition
+Travel, Finance & Procurement
+Business Services
+Workplace
+Security
+Knowledge Base1
+KB0059107
+Overall Process to Request Access to ServiceNow for User Access Harmonization
+• Copy Link
+Article metadata. Authored by Praveen Thakur This article has average rating: 3.8 out of 5 stars• Rating 3.8/5
+ServiceNow Access: Simplify Your Request Process!
+Introduction
+This article provides an overview of raising access requests to ServiceNow. As part of the User Access Harmonization (UAH) initiative, a standardized way for requesting and managing ServiceNow access for all Novartis associates is implemented starting in 2021.
+
+With the help of Request Access to ServiceNow Catalog Item associates (with Novartis 521 UserID) can raise Single User Access requests, Bulk user access for either themselves or for someone else.
+The Catalog Item also offers a Revoke User Access option for submitting access request removal requests.
+ServiceNow access requests are fulfilled after approvals. Provisioning is automated through group membership. Training completion may be required before access is granted, and this is checked automatically for certain requests.
+In Scope
+All-access requests for regular ServiceNow applications (Single user access, bulk user access, access removals).
+This KB article outlines the general content of the ServiceNow access request form used across all organizations and applications on the platform.
+Out of Scope
+Specialist access is provisioned for administrators, which is handled separately at the ServiceNow Platform level.
+Organization/Application-specific configurations of the Request Access to ServiceNow Catalog Item.
+
+Learn More About Respective Organizations and Processes
+ 
+
+Terminology for Service Catalog Item Variables
+ 
+
+Process Flow
+ 
+
+Additional Information
+ 
+
+Types of Requests
+ 
+Further Information
+In order to learn more about approvals and tracking of ServiceNow access requests please refer to ServiceNow Access Requests (UAH) Tracking and Approvals.
+
+Explore More Topics
+Let our Virtual Assistant help you find more answers instantly.
+Chat with Mobi
+Need Further Support?
+Still need help? Create a support ticket and our team will get back to you.
+Get Support
+Copy Link
+Your constructive feedback is extremely important to help us to improve the knowledge article
+Rate this article
+ 
+( )( ) ( ) ( ) ( ) 
+Also in IT
+How to get IT Help
+Global • English  514622 Views
+How to Add or Configure a Shared or Generic Mailbox in Classic Outlook
+Global • English  38066 Views
+How to Change your Windows Password on Novartis Laptop
+Global • English  38263 Views
+How to Log In to the New Adobe Acrobat DC
+Global • English  35013 Views
+Collaborate and Share files with Non-Novartis Partners
+Global • English  32068 Views
+View all articles in this topic
+© 2024 Novartis AG | Business use only
+
+Privacy notice for associates | Maintained by Operations
+
+Mobi
+
+
+
+1
+
+can I have access for servicenow API for self-built application
+
+
+
+Hi Beichen,
+How can I help you today? I can support you with IT, P&O, ERC, T&E, FUSE, EPRM and other queries.
+
+16 minutes ago
+can I have access for servicenow API for self-built application
+Let me look up information related to requesting ServiceNow API access for your self-built application.
+
+Virtual Agent
+View AI Steps
+
+Beichen, to request access for the ServiceNow API for your self-built application, please review the following options and select the most suitable for your needs:
+
+ISC Identity and Access Management (IAM) Onboarding
+
+Application Managers or IT Project Managers must raise an IAM Onboarding request in ServiceNow and attend onboarding meetings, providing technical and architecture details.
+
+The IAM team will assess integration options and proceed with deployment or request a custom solution if needed.
+
+For full details, see ISC Identity and Access Management and the high-level workflow 
+1
+.
+
+Privileged Account Management (PAM) for Application API Integration
+
+If your application needs to securely retrieve credentials via API, use the Application Identity Manager (AIM) workflow.
+
+For Windows, install the CP agent from go/REALM. For Unix, request the AAM package from the PAM team.
+
+For API integration, refer to the Central Credential Provider documentation.
+
+For help, contact IT support or visit go/ithelp 
+2
+.
+
+ServiceNow Access Request Options
+
+You may request access through one of the following:
+
+Request access to ServiceNow Request access to ServiceNow
+
+ServiceNow Platform ServiceNow Platform
+
+Account Provisioning Service (APS) Account Provisioning Service (APS)
+
+ServiceNow Hub  ServiceNow Hub
+
+IAM : Application Onboarding Services IAM : Application Onboarding Services
+
+
+Please let me know which option best fits your scenario, or if you need guidance on which to choose.
+
+If your issue isn't resolved, you can ask me to file a ticket or initiate a live agent chat.
+
+
+Show sources
+11 minutes ago
+can I just apply the access about service now api, since application will not be public just use on local computer
+Since your application is for local use only and not public, I will proceed to show you all available options to apply for ServiceNow API access.
+
+Virtual Agent
+View AI Steps
+2 minutes ago
+
+Beichen, to apply for ServiceNow API access for your local, non-public application, you have several options. Please review the following and let me know which process you'd like to proceed with:
+
+Request access to ServiceNow: For general user access requests to ServiceNow, including API access for applications Request access to ServiceNow.
+Account Provisioning Service (APS): For account provisioning, access requests, and role/entitlement management for business applications and services. More details: How and when to use Account Provisioning Service (APS) request form, Identity and Access Management Account Provisioning Service (APS).
+IAM : Application Onboarding Services: For onboarding applications to IAM services, including ServiceNow integration. More details: How and when to use IAM Application Onboarding service request, Identity and Access Management IAM : Application Onboarding Services.
+
+Please select the option that best fits your scenario, and I will guide you through the next steps.
+
+If your issue isn't resolved, you can ask me to file a ticket or initiate a live agent chat.
+
+
+
+
+
+Reply to Now Assist...
+
+
+Some answers generated by AI. Be sure to check for accuracy.
+
+1
+Copilot said:
+Copilot
+好，我把你现在看到的 KB0059107 + Now Assist 给你的选项，和你真实的使用场景，一次性对齐、定论，不再来回摇摆。
+
+✅ 先给你最终结论（基于你现在这个场景）
+结论：你现在「不能、也不需要」申请 ServiceNow API 的 application 级访问。
+你现在唯一合理、合规、可行的路径是：
+👉 用【用户级 ServiceNow Access】+ 本地自动化（user‑assisted automation）。
+
+一、为什么 KB0059107 这篇文章不能解决你要的 API 问题
+你贴的 KB0059107 核心内容其实只有一件事：
+
+✅ 给“人”申请 ServiceNow 的 UI / 功能访问权限（UAH）
+
+它明确写了：
+
+✅ In scope：
+Single user access
+Bulk user access
+❌ Out of scope：
+
+
+
+
+
+
+
+
+You said:
+genai有service now api的plugin 也不能实现我的想法吗
+Copilot said:
+Copilot
+
+2 步完成推理
+可以，你问到点子上了：如果 GenAI 平台确实有 ServiceNow 的 connector / plugin，那么“理论上”就不只是生成文本草稿，还可能把数据“拉进来”甚至“写回去”。
+但要注意：“有插件”≠“你一定能实现自动提单”，关键取决于这个插件在你们环境里开放了哪些权限（读/写）、用什么身份（用户/应用）、有没有审批与审计要求。
+
+下面我用你给的目标来对齐，哪些能做、哪些仍然可能被卡，我只引用我在内部资料里明确看到的内容。
+
+1) GenAI 平台是否真的有 ServiceNow connector？
+有证据显示“有”。
+
+一个内部讨论明确提到：GAIN Hackathon FAQ (3).pdf 支持集成数据源，其中包含 ServiceNow Articles，并且平台也提供 API / REST endpoints，访问由 workspace admin 管控。
+PDF type
+GAIN Hackathon FAQ (3)
+另一条内部讨论（Viva Engage）提到：GAIN 平台有“ready-made ServiceNow connector”，并支持把 workflow 暴露为 API（用于合规实验与自动化）。
+Steps to create a SNOW Ticket
++1 个
+视频材料也提到 GAIN 有多种 data connectors，包括 ServiceNow。
+novartis
+注意：这些来源更多是在说“连接与数据接入”，并没有明确写“能创建/提交 ticket”。所以我不会武断保证写回能力一定开放。
+
+2) 有了 plugin/connector，你的想法能实现到什么程度？
+你想实现的是：AP Manager 选人 → 生成名单 → 自动创建/填写 ServiceNow ticket。
+
+我按“最小可行（MVP）→ 进阶 → 终极版”给你分层，哪些层在 GenAI 平台上更稳、哪些层需要额外审批：
+
+✅ A. 最稳的：生成 ticket 草稿 + 结构化字段（完全可做）
+即使没有写回权限，只要能用 GenAI 平台，你就能：
+
+基于 GPS 输出名单
+为每个人生成：
+short description / detailed description
+category 建议
+justification
+需要的附件清单（由人工上传）
+这完全符合“用户辅助自动化”。
+
+（这点在你现有流程里也最容易被 IT 接受。）
+
+✅ B. 进阶：从 ServiceNow 拉取信息（很可能可做）
+如果 connector 覆盖了知识库/文章或工单数据访问（内部确实提到 ServiceNow Articles），你可以做到：
+
+查询相关 KB（例如分类、必填字段解释）
+甚至根据历史工单模式给出更准的字段建议
+PDF type
+GAIN Hackathon FAQ (3)
+⚠️ C. 你最想要的：自动“创建/提交 ticket”（不一定能做，取决于 connector 权限）
+即使平台“有 ServiceNow connector”，要自动提交 ticket，通常要满足至少一项（具体要以你们平台团队设置为准）：
+
+connector 是否支持 写操作（create/update）
+写操作是用：
+用户身份（user delegated）还是
+应用身份（application identity / service account）
+是否要求 IAM / SNOW 平台审批（你在 Now Assist 里看到的那几条流程就是为这个准备的）
+是否支持审计追踪与最小权限
+📌 目前我查到的材料更多描述了“连接器/数据源/REST endpoint”，没有明确写“可以创建 incident / request”，所以我不能直接保证“能自动提单”。
+PDF type
+GAIN Hackathon FAQ (3)
++1 个
+
+3) 你的“local 单人用”设定，会不会更容易？
+更容易通过“用户身份”路径，但对 GenAI 平台来说不一定关键。
+
+如果你坚持“只给 team 里一个人用、在本地跑”，那么最合规也最常见的是：
+由这个人最终点击提交（或用他自己的权限调用受控 API）
+但如果你把逻辑搬到 GenAI 平台（云端/平台），平台团队通常会更关心：
+数据来源是否受控
+connector 权限是否合规
+是否有审计
+所以，“local”并不会自动绕过平台治理——反而 GenAI 平台更强调治理与可审计（你在 GenAI 平台介绍里也能看到它强调 secure & compliant & scalable）。
+GAIN_Overview-AICoP 1
+
+4) 给你一个“可直接落地”的建议方案（最大化成功率）
+✅ 推荐方案：两段式闭环
+在 GenAI 平台完成：
+GPS 选人/名单
+ticket 字段草稿生成（结构化 JSON）
+（可选）查询 ServiceNow 知识库文章来校验字段
+最后提交动作：
+由指定 team member 在 ONS/SNOW 页面 一键粘贴/导入并提交
+（或申请用户级 API 由他执行）
+这样做的好处：
+
+你能证明业务价值（自动化 80%）
+不会因为“自动写回 SNOW”卡在 IAM/平台审批上
+后续如果平台确认 connector 支持写回，再升级到自动提交
+5) 你问的“那有 plugin 也不能实现吗？”——最终回答
+有 plugin/connector 后，你的想法“可以更接近实现”，至少能做到：自动生成 ticket 内容 +（可能）读取 ServiceNow 信息。
+但是否能做到“自动创建/提交 ticket”，取决于 connector 是否开放写权限与身份认证方式；我目前看到的资料没有明确保证写回能力。
+PDF type
+GAIN Hackathon FAQ (3)
++2 个
+PDF type
+GAIN Hackathon FAQ (3)
++1 个
+
+我只问你 1 个很关键的问题（为了给你最准确的落地路径）
+你说的 **“genai 平台”**具体是你在表单里看到的 “Novartis Generative AI Navigator / GAIN_Overview-AICoP 1.pptx 这种 GAIN/GenAI Enterprise Platform（China）”，还是 Microsoft Copilot Studio？
+GAIN_Overview-AICoP 1
++1 个
+
+你只要回答“GAIN/GenAI Platform（China）”或“Copilot Studio”，我就能把下一步怎么做（不踩红线的实现方案）给你写成一套非常具体的步骤与申请措辞。
+
+来源
+pdfpptx
+
+
+
+
+
+
+
+
+
+我在表单里看到的 GenAI 平台
+
+请帮我写一段给 IT 的说明
+
+请帮我设计一个从用户辅助到全自动集成的演进路线
+向 Copilot 发送消息
+
+
+
+AI 生成的内容可能不正确
+
+
+
+
+跳转到内容
+标志
+企业生成式AI平台文档
+欢迎来到企业生成式人工智能平台
+搜索
+
+企业生成式AI平台文档
+欢迎来到企业生成式人工智能平台
+工作空间
+工作流程
+模型配置
+工具
+知识库
+注释
+应用程序编排
+应用发布
+扩展
+管理
+监测
+内容生成
+常见问题解答
+发行作品
+目录
+企业生成式AI平台的优势
+企业生成式人工智能平台
+企业生成式AI平台能力：
+企业生成式AI平台插件：
+企业生成式AI平台数据连接器：
+Enterprise GenAI Platform Azure Services：
+Enterprise GenAI Platform Azure Models：
+企业生成式AI平台AWS服务：
+企业生成式AI平台AWS模型：
+企业生成式AI平台AI代理和MCP服务器：
+企业生成式人工智能平台路线图 2025
+请参考以下指南，开始构建你的下一个AI应用
+欢迎来到企业生成式人工智能平台
+企业生成式AI平台是一个用于构建AI应用的平台。我们结合后端即服务（Backend-as-a-Service）和LLMOps，简化生成式AI解决方案的开发流程，使其对开发者和非技术创新者都易于使用。
+
+我们的平台整合了：
+
+对主流大型语言模型的支持
+直观的提示编排接口
+高品质RAG发动机
+一个灵活的人工智能代理框架
+直观的低代码工作流程
+易用的接口和API
+有了企业生成式AI平台，你可以跳过复杂性，专注于最重要的事情——创建解决现实世界问题的创新AI应用。
+
+企业生成式AI平台的优势
+虽然许多AI开发工具提供独立组件，企业生成式AI平台则提供了全面且具备生产准备的解决方案。把企业生成式AI平台看作是一个设计良好的脚手架系统，而不仅仅是一个工具箱。
+
+通过企业生成式AI平台，您可以：
+
+部署类似于助手API和GPT的功能，使用任何模型
+通过灵活的安全选项，保持对数据的完全控制
+利用直观的界面，轻松管理和部署
+企业生成式人工智能平台
+企业生成式AI平台（Enterprise GenAI Platform）这个名字来源于生成式人工智能导航工作室（Generative AI Navigator Studio），它帮助你轻松驾驭诺华的生成式人工智能领域。
+
+企业生成式AI平台能力：
+Capabilities	描述	Status
+Merge	Generate documents by merging data from sources with pre-defined templates	Live
+Q&A	Extract precise answers to questions from within complex documents	Live
+Redact	Securely mask sensitive information from documents to protect confidentiality	Live
+搜索	Quickly and efficiently extract relevant content from a set of documents based on a query	Live
+Summarize	Generate summaries of multi-page documents of various formats	Live
+Translate	Accurately translate documents into a wide range of languages, maintaining meaning and format	Live
+Anonymize	Replace personally identifiable information in documents with non-sensitive substitutes to ensure privacy	Live
+Interactive Authoring	Create and edit documents interactively with AI assistance	Live
+Meta data Extraction	Automatically identify and extract key topics, events, entities, and relationships from documents	Live
+Document Classification	Search relevant content in documents efficiently using LLMs	Live
+Test Case Generation	Automate test case generation using LLM	Live
+Content Analysis	Analyze document to ensure it adheres to certain pre-defined conditions	Live
+CSV Insights	Enterprise GenAI Platform valuable insights from both unstructured text and structured data	Live
+Information Security & Compliance	ISC Document Writing and Compliance	Live
+Ontology Tagging/Doc Mapping	Assign standardized medical terms and concepts to content	Live
+Enterprise GenAI Platform Plugins:
+Tool	Description	Live
+Anonymize Tool	This tool helps protect sensitive information by anonymizing entities in DOCX, PDF, and XLSX files.	Live
+ArXiv Tool	Access a vast repository of scientific papers and articles covering diverse research fields.	Live
+AWS Athena Query Tool	Query AWS Athena using SQL and retrieve the results.	Live
+Azure DALL-E	Generate unique images from text descriptions, enabling visual content creation.	Live
+ChartGenerator	Generate various statistical charts, including bar charts, line charts, and pie charts.	Live
+ChemCrow Chemical Tools	Convert between CAS, SMILES, and name formats using this collection of chemical tools.	Live
+Code Interpreter	Execute code snippets and receive the results directly.	Live
+Document Image Extraction	Extract text from documents that only contain image data.	Live
+Document Intelligence	Utilize Azure Document Intelligence to extract and process data from various document formats.	Live
+JSON Process	Process JSON content using jsonpath_ng tools.	Live
+Knowledge Retrieval	Retrieve knowledge based on a query and knowledge id.	Live
+PandasAI	PandasAI is a tool for analyzing and manipulating data using pandas.	Live
+PubMed Tool	PubMed® comprises more than 35 million citations for biomedical literature from MEDLINE, life science journals, and online books.	Live
+Redact	A tool to redact information in DOCX, PDF, and XLSX files.	Live
+Redis Cache	Redis Read Tool fetches workflow output from Redis based on input.	Live
+SciBite Ontology Tagger	A tool for scientific ontology tagging using the SciBite API.	Live
+ServiceNow	ServiceNow Update Tickets.	Live
+Text Converters	A tool to convert input text into a PDF document.	Live
+Wikipedia Tool	A tool for performing a Wikipedia search and extracting snippets and webpages.	Live
+Named Entity Recognition	Azure Named Entity Recognition which identifies and extracts entities from text documents for processing.	Live
+SQL Data Retriever	Run SQL queries on databases like PostgreSQL, MSSQL, Oracle and fetch results.	Live
+Acronym Extractor	Analyze and extract acronyms from documents.	Live
+Website Crawler	Browse and index the content of websites for search engines.	Live
+DevOps Work Item Manager	Manage work items in Azure DevOps: list, retrieve, and create work items.	Live
+Intent Classification	Classify the intent of a given text into specified categories.	Live
+Email Summarizer	Summarize the content of .msg email files using OpenAI's capabilities.	Live
+Narrate Tables and Graphs	Narrate tables or graphs from DOCX and PDF files.	Live
+BioRxiv	BioRxiv® comprises more than 47,000 preprints in life sciences hosted on the BioRxiv server.	Live
+Image Redact Tool	Automatically detects and redacts PII from images for privacy protection.	Live
+Workday Jobs	Internal job search in the Workday Job Portal.	Live
+Template Fetcher	Fetch templates from the database.	Live
+Clinical Trial	Search the Clinical Trials database for interventions for diseases and conditions.	Live
+WebScraper	Scrape content from websites.	Live
+Audio	Text-to-speech (TTS) and automatic speech recognition (ASR).	Live
+CurrentTime	Get the current time or convert between local time, timestamp, and other formats.	Live
+M365Search Tool	Search within M365 documents and data.	Live
+Opensearch	Perform searches using the OpenSearch platform.	Live
+ServiceNowTicketsTool	Create, update, and retrieve ServiceNow tickets.	Live
+GoogleSearch	Retrieve search results from Google, including URLs, titles, and descriptions.	Live
+USPTO Search Tools	Search patents, trademarks, and assignments from the USPTO database.	Live
+Langchain Opensearch Retriever	Retrieve documents from OpenSearch using Langchain.	Live
+Converters	Convert JSON or Python dictionaries into structured Excel files (.xlsx or .xls).	Live
+Mem0	Memory layer for LLMs to add, update, and search memories in models.	Live
+Markdown Exporter	Export Markdown into formats like DOCX, PPTX, PDF, etc., or extract code blocks to scripts.	Live
+Image Reader	Narrate and extract content from PNG, JPG, and JPEG images.	Live
+Snowflake Data Extractor	Extract, analyze, and manipulate data from Snowflake databases.	Live
+Embase	Retrieve scientific publications from Embase using text queries or identifiers.	Live
+Image Upload and Annotation	Upload images and annotate them using square box coordinates.	Live
+Reranker Tool	Rerank visuals across multiple languages.	Live
+MCP Server Tool	Connect MCP server with AI Agents and workflows.	Live
+Text to Flowchart	Convert natural language descriptions into structured flowcharts.	Live
+Video Processing	Process video files (MP4, MPEG, MPGA, etc.).	Live
+Tabular Data operation	Clean, transform, join, filter, aggregate, and validate tabular datasets.	Live
+JSON/TEXT Converter	Convert between JSON and plain text, including pretty-printing, minification, YAML conversion, and JSON Schema validation.	Live
+FFmpeg	Process audio and video: transcode, trim, concatenate, extract audio, generate thumbnails, and repackage containers.	Live
+PPT Generator	Create PowerPoint presentations from outlines, Markdown, or templates.	Live
+Azure OpenAI	Access Azure-hosted OpenAI models for chat, completions, embeddings, or image generation.	Live
+Agentic Data Analysis	Autonomous agent for multi-step data analysis using tools (code, charts, retrieval).	Live
+Agent Strategies	Configure agent planning strategies (ReAct, Tree-of-Thought, debate, planner-executor).	Live
+Azure AI Studio	Orchestrate AI workflows on Azure: prompt flows, evaluation, deployment, monitoring.	Live
+Mark It Down	Convert HTML and rich text (e.g., DOCX) into clean Markdown.	Live
+NKC	Retrieve and manage internal knowledge content from the NKC repository.	Live
+Amazon SageMaker	Train, tune, deploy, and invoke machine learning models using Amazon SageMaker.	Live
+AWS	General AWS wrapper to interact with services like S3, Lambda, Athena, Bedrock, and CloudWatch.	Live
+Base64	Encode and decode data to and from Base64.	Live
+Document Translation	Translate documents while preserving layout and formatting (DOCX, PDF, PPTX).	Live
+Image Annotation Tool	Annotate images with bounding boxes, polygons, and labels; export annotations for CV tasks.	Live
+Web Search	Comprehensive web search across multiple search engines with optional scraping.	Live
+PPT to Images	Convert PowerPoint presentations into image files (one per slide).	Live
+Milvus Search Tool	Search a Milvus vector database using vector similarity.	Live
+Reranker Tool	Rerank candidate documents or passages by relevance to a query.	Live
+BioRxiv	Search and retrieve preprints in life sciences from the bioRxiv repository.	Live
+GenChem Tool	Computational chemistry helper to analyze, transform, and annotate molecular structures.	Live
+Azure Blob Storage	Upload, download, list, and manage files in Azure Blob Storage.	Live
+Converters	Convert between structured data formats and generate Excel workbooks.	Live
+Enterprise GenAI Platform Data Connectors:
+Data Connectors	Description	Remarks
+M365 / SharePoint	Access productivity software including emails, documents, collaboration tools, to enhance productivity and insights	Live
+Neptune	Access serverless graph database designed for superior scalability and availability	Live
+Novapedia	Access Novartis wiki	Live
+SciBite	Use enriched data to perform accurate and meaningful scientific analyses from transformed unstructured data	Live
+ServiceNow	Retrieve knowledge and process data from service and portfolio management platform, e.g. IT and P&O data	Live
+Snowflake	Provides mechanisms for connecting to underlying data stores hosted in AWS and Azure	Live
+Unify+	Access to data lake platform hosting majority of Novartis data	Live
+Documentum	Access and manage these documents to support compliance, workflow automation, and content analytics	Live
+Confluence	Extract structured content and process information from team collaboration spaces, pages, and knowledge bases	Live
+Athena	Enable federated queries by connecting Athena to various external data sources, such as DynamoDB and RDS	Live
+Neo4J	Access graph database management system that stores data elements as nodes, edges, and attributes	Live
+Veeva Vault	Access to critical business documents and related data, e.g Clinical data	Live
+Workday	A system for managing employees, payroll, and HR functions in one user-friendly dashboard	Live
+MatchLearn	It is related to learning or training platforms that match employees with courses or educational tools.	Live
+SQL Connector	A tool that links applications to databases via SQL for retrieving or storing data seamlessly.	Live
+News	A feature or tool for delivering the latest updates, announcements, or company-related information.	Live
+CDIP	A data-related tool or service, it is focused on managing or processing company data for insights.	Live
+Mobility Connector	A tool that helps connect mobile solutions or applications in corporate environments.	Live
+Novartis Knowledge Center	An internal tool for Novartis employees to store and access curated company information.	Live
+S3	Amazon's Simple Storage Service, used to store and retrieve files or data securely in the cloud.	Live
+DV12N	Access virtualized data to support the diverse technological landscape of consuming systems	Live
+DataBricks	Perform data processing, analytics, and machine learning tasks on large datasets	Q1, 2026
+EdCast	Leverage its data to personalize learning paths and enhance career development	Q1, 2026
+Enterprise GenAI Platform Azure Services:
+Service	Description	Status
+Azure OpenAI	An advanced language model by OpenAI, capable of understanding and generating human-like text	Live
+Search	Retrieve the most relevant data using keyword, vector, and hybrid search	Live
+Translator	Translate documents and text in real time across more than 100 languages	Live
+Document Intelligence	Extract text, key-value pairs, tables, and structures from documents.	Live
+Azure AI Studio	Unified AI development platform for evaluating models and deploying generative AI solutions	Live
+Language	Build conversational interfaces, summarize documents, and analyze text using prebuilt AI-powered features	Live
+Speech	Industry-leading AI services such as speech-to-text, text-to-speech, speech translation, and speaker recognition	Q1, 2026
+Vision	Read text, analyze images, and detect faces with optical character recognition (OCR) and machine learning.	Q1, 2026
+Enterprise GenAI Platform Azure Models:
+Model	Description	Status
+GPT 3.5	An advanced language model by OpenAI, capable of understanding and generating human-like text.	Live
+GPT 4	The latest and most powerful language model by OpenAI, offering enhanced text generation and understanding.	Live
+GPT 4o	A variant of GPT-4 optimized for specific applications or efficiency.	Live
+GPT o1	An OpenAI model offering improved efficiency and specialized capabilities.	Live
+GPT o1-mini	A compact version of o1 that is more efficient with resources, balancing performance and computational efficiency.	Live
+GPT o3	The o3 model delivers strong and versatile language processing capabilities.	Live
+GPT o3-mini	A smaller variant of o3, designed for language tasks where computational resources are limited.	Live
+GPT 4.1	A variant of GPT-4 for extensive, high-demand applications needing intensive processing.	Live
+text-embedding-ada-002	High-performance embedding model for generating dense vector representations of text.	Live
+text-embedding-3-small	Compact embedding model optimized for resource-efficient text representation generation.	Live
+text-embedding-3-large	Advanced embedding model for producing detailed, high-quality text vector representations.	Live
+LLAMA	A lightweight language model by Facebook AI Research, optimized for efficiency on smaller devices.	Live
+Mistral	A model focused on multilingual text generation and understanding.	Live
+Phi-3	An advanced language model emphasizing precision and context understanding.	Q1, 2026
+Enterprise GenAI Platform AWS Services:
+Service	Description	Status
+Bedrock Studio	Experiment with large language models, collaborate on projects, and iterate on generative AI applications.	Live
+Bedrock Knowledge Bases	Contextual information from organization data sources for RAG to deliver relevant, accurate, and customized responses.	Live
+Bedrock Agents	Enable generative AI applications to execute multistep tasks across company systems and data sources.	Live
+Enterprise GenAI Platform AWS Models:
+Model	Description	Status
+Claude	Anthropic's foundation models for dialogue, content creation, complex reasoning, creative writing, trained with Constitutional AI.	Live
+LLAMA	Meta's Llama models are designed for developers, researchers, and businesses to build, experiment, and responsibly scale	Live
+Mistral	Mistral models top-tier reasoning and precise instruction-following abilities enables application development at scale.	Live
+Command	Cohere's language model optimized for long-context tasks, such as retrieval-augmented generation (RAG) and multi-step tool use.	Live
+Jurassic	AI21's instruction-following models built for the enterprise that perform a range of tasks.	Live
+Stable Diffusion	Advanced text to image model from Stability AI generates images of high quality and is the best open model for photorealism	Live
+Titan	Amazon Titan foundation models are high-performing image, multimodal, and text model choices, via a fully managed API	Live
+Jamba 1.5 Large	Large-sized completion model with a 256K token limit, suitable for generating lengthy and coherent text passages.	Live
+Jamba 1.5 Mini	Mini-sized completion model with a 256K token limit, ideal for quick and concise text generation tasks.	Live
+Nova Lite V1	Lite chat model with a 300K token limit, designed for efficient and responsive conversation-based applications.	Live
+Nova Micro V1	Micro chat model with a 300K token limit, optimized for handling compact and detailed conversation contexts.	Live
+Nova Pro V1	Pro chat model with a 300K token limit, excels in professional-grade conversation and support environments.	Live
+Titan Text G1 - Express	Express chat model with an 8K token limit, perfect for rapid and concise real-time interaction scenarios.	Live
+Titan Text G1 - Lite	Lite chat model with a 4K token limit, tailored for lightweight and efficient communication tasks.	Live
+Claude 3.5 Sonnet V2	Chat model V2 variant with a 200K token limit, enhanced for more refined and fluid conversational context management.	Live
+Claude 3.5 Sonnet	Chat model with a 200K token limit, known for balanced and robust dialogue generation capabilities.	Live
+Claude 3 Haiku	Chat model with a 200K token limit, designed for generating poetic and concise responses, ideal for creativity-focused applications.	Live
+Claude 4 Opus	Opus variant chat model with a 200K token limit, specialized in producing sophisticated and articulate dialogue.	Live
+Claude 4 Sonnet	Sonnet variant chat model with a 200K token limit, optimized for generating structured and elegant conversational outputs.	Live
+Claude Instant 1	Instant chat model with a 100K token limit, geared towards quick and efficient real-time conversations.	Live
+Command R+	Command chat model plus variant with a 128K token limit, enhanced for detailed and command-driven interactions.	Live
+Command R	Command chat model with a 128K token limit, known for its precise and structured conversational capabilities.	Live
+Claude 3.5 Sonnet V2 (EU Cross Region Inference)	V2 chat model for EU cross-region with a 200K token limit, optimized for multilingual and cross-regional interactions.	Live
+Mistral 7B Instruct	Instruction-based completion model with a 32K token limit, excels in following detailed and specific instructions for text generation.	Live
+Mistral Large	Large-sized completion model with a 32K token limit, ideal for producing detailed and comprehensive text.	Live
+Mistral Small	Small-sized completion model with a 32K token limit, designed for generating concise and relevant text outputs.	Live
+Mixtral 8X7B Instruct	Instruction-based completion model with a 32K token limit, highly capable in context-specific and directive text generation.	Live
+DeepSeek-R1 (US Cross Region Inference)	Cross-region inference chat model with a 32K token limit, optimized for cross-regional and multilingual conversational tasks.	Live
+Meta Llama 3.2 1B Instruct	Instruction-based completion model with a 128K token limit, specialized in producing context-aware and directive content.	Live
+Meta Llama 3.2 3B Instruct	Instruction-based completion model with a 128K token limit, superior in handling complex and extensive instructions for text generation.	Live
+titan-embed-text-v1	Text embedding model with an 8K token limit, excels in transforming text data into vector embeddings for various applications like search and similarity.	Live
+titan-embed-text-v2:0	Text embedding model v2 with an 8K token limit, enhanced for producing more accurate and meaningful text embeddings for advanced applications.	Live
+Enterprise GenAI Platform AI Agents and MCP Servers​:
+AI Agents	Description	Status
+Function Calling Agent	LLM invokes external functions or APIs to interact with external data sources or execute actions	Live
+SQL Agent	Generates SQL based on user inputs so it can retrieve and answer questions from databases	Live
+Data Agent	Allows users interact with and explore structured data using natural language	Q1, 2026
+Multi Agent Framework	Multiple intelligent agents to interact, collaborate, and achieve complex tasks collectively	Live
+Configurable Pipelines	Enables adaptation of capabilities to different tasks, data types, and requirements with configuration	Q1, 2026
+Scalable Pipelines	Ensures the pipelines can scale with the workloads without re-engineering	Q1, 2026
+Standalone Agents	LLM invokes external functions or APIs to interact with external data sources or execute actions	Live
+Multi Agent Orchestration	Multiple intelligent agents to interact, collaborate, and achieve complex tasks collectively	Live
+Agents using MCPs Server	Agents can be deployed as MCP servers or consumers for integrations with other Agents	Q1, 2026
+Autonomous Agents	A framework to build stateful Agents that can perform multi-step tasks autonomously	Q1, 2026
+Enterprise GenAI Platform Road Map 2025
+
+Road Map 2025
+
+Read Quick Start for an overview of Enterprise GenAI Platform application building workflow.
+Use the following guides to dive in and start building you next AI application
+Workspace
+Discover
+Invite and Manage Members
+Workflow
+Key Concepts
+Variables
+Node Description
+Shortcut Key
+Orchestrate Node
+File Upload
+Additional Features
+Debug and Preview
+Application Publishing
+Bulletin: Image Upload Replaced by File Upload
+Workflow Tool
+Plugins
+Model
+Predefined Model Integration
+Custom Model Integration
+Tools
+Quick Tool Integration
+Advanced Tool Integration
+Tool Configuration
+Custom Tool
+Knowledge Base
+Create Knowledge Base & Upload Documents
+Knowledge Base and Document Maintenance
+Explore Apps by Enterprise GenAI Platform
+Integrate Knowledge Base within Application
+Retrieval Test/Citation
+Maintain Knowledge Base via API
+Connect to an External Knowledge Base
+External Knowledge API
+Annotation
+Logs and Annotation
+Annotation Reply
+Application Orchestration
+Create Application
+Application Toolkits
+Moderation Tool
+Application Publishing
+Publish as a Single-page Web App
+Web App Settings
+Text Generator Application
+Conversation Application
+Embedding In Websites
+Developing with APIs
+Re-develop Based on Frontend Templates
+Extension
+API-Based Extension
+Code-Based Extension
+Management
+App Management
+Personal Account Management
+Monitoring
+Data Analysis
+ContentGen
+DDIT. APD. Enterprise GenAI Platform
