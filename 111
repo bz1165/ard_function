@@ -1,107 +1,180 @@
-**Title 和 PK 列完全可以同时保留**，这是 SharePoint 的标准做法：`Title` 是 SharePoint list 的强制 primary display column，你自己的 `EmployeeID` / `BatchID` 等是你 app 的 relational key，两者职责不同，不冲突，也不需要删掉任何一个。
+可以。下面这版是 **按你现在这份 dummy workbook 的 6 张表** 来写的 `scrXiaoran`，并且把你新增的：
 
-以下是完整的 `scrManager` 设计，所有 bug 已修入。
+* 每张表都有 `Title`
+* `Title = Primary Key`
+
+一起考虑进去了。
+
+我会默认你现在 SharePoint 里已经有这 6 张表：
+
+* `Employees`
+* `EmployeeScopes`
+* `PolicyEvents`
+* `Batches`
+* `BatchLines`
+* `TicketRuns`
+
+并且主键和 `Title` 的对应关系是：
+
+* `Employees.Title = EmployeeID`
+* `EmployeeScopes.Title = ScopeID`
+* `PolicyEvents.Title = PolicyEventID`
+* `Batches.Title = BatchID`
+* `BatchLines.Title = BatchLineID`
+* `TicketRuns.Title = TicketRunID`
+
+这版 `scrXiaoran` 会遵循你现在整套设计：
+
+* **Xiaoran 页面是 batch-first**
+* 先看 batch，再看 batch 里的 lines，再看最终 ticket runs
+* Xiaoran 不需要 AI comment
+* 最终只是点一下“prepare / send”，不在这里做复杂编辑
+* UI 尽量清楚、少逻辑、好维护
+
+另外，Microsoft 官方对 Canvas app 的几个关键点和这版设计是吻合的：
+
+* `Screen.OnVisible` 适合做这个屏幕自己的数据预加载，不应该依赖 `App.OnStart` 一定先完成。([Microsoft Learn][1])
+* `Gallery` 由 `Items` 决定显示的数据，每个模板控件都应该用 `ThisItem` 读取当前记录。([Microsoft Learn][2])
+* `Filter` 返回满足条件的所有记录，多个条件默认相当于 `And`。`SortByColumns` 适合多列排序。([Microsoft Learn][3])
+* `Patch(..., Defaults(...), {...})` 用来创建记录；`UpdateIf` 适合改已有记录；`IfError` 的分支返回类型要兼容。([Microsoft Learn][4])
+* `With` 适合把一组中间值收起来，让行为公式更清楚。([Microsoft Learn][5])
 
 ---
 
-# `scrManager` — 完整设计
+# 一、先说 3 个前提
 
-## Screen 本体
+## 1. `scrXiaoran` 主要读 3 张表
 
-**Name**
+这页主要用：
+
+* `Batches`
+* `BatchLines`
+* `TicketRuns`
+
+`Employees` 和 `EmployeeScopes` 只在需要补充展示时才查。
+
+## 2. `Title` 列现在不用拿来做主逻辑
+
+虽然你已经新增了 `Title = PK`，这是对的，但在公式里我仍然建议优先用真正的业务主键字段：
+
+* `BatchID`
+* `BatchLineID`
+* `TicketRunID`
+
+`Title` 的价值主要是：
+
+* SharePoint 默认要求
+* 表单/默认卡片/系统行为更稳定
+* 以后万一某些默认控件引用 `Title` 不会空掉
+
+所以在 `scrXiaoran` 里，**可以保留 Title，但主逻辑不要改成只靠 Title**。
+
+## 3. 你现在最好顺手把 `scrManager` 的 Submit 也补一下 Title
+
+这不是 `scrXiaoran` 本身的设置，但非常重要。
+以后你 patch 新记录时，建议把 `Title` 一起写上。
+
+例如：
+
+### `Batches`
+
+```powerapps
+Title: _batchID
 ```
-scrManager
+
+### `BatchLines`
+
+```powerapps
+Title: _batchID & "-" & ScopeID
 ```
 
-**Fill**
+以后如果你会生成 `TicketRuns`：
+
+```powerapps
+Title: TicketRunID
+```
+
+---
+
+# 二、`scrXiaoran` 整体布局
+
+建议你把页面分成 3 段：
+
+### 上方
+
+* Header
+* 筛选区
+* KPI cards
+
+### 左侧
+
+* `galBatches`：批次列表
+
+### 右侧
+
+* 上：当前选中 batch 的 summary
+* 中：`galBatchLines`
+* 下：`galTicketRuns`
+
+这样 Xiaoran 的工作流就很清楚：
+
+1. 看哪一批待处理
+2. 点中一批
+3. 看里面有哪些 line
+4. 看将拆成哪些 ticket runs
+5. 点按钮触发 flow / PAD
+
+---
+
+# 三、`scrXiaoran` 屏幕本体设置
+
+## Name
+
+```powerapps
+scrXiaoran
+```
+
+## Fill
+
 ```powerapps
 RGBA(245,246,248,1)
 ```
 
-**LoadingSpinner**
+## LoadingSpinner
+
 ```powerapps
 LoadingSpinner.Data
 ```
 
-**OnVisible**
+## OnVisible
+
+这版用 `OnVisible` 来预加载本屏幕所需数据，不依赖 `App.OnStart`。这正符合 Microsoft 对 `Screen.OnVisible` 的建议。([Microsoft Learn][1])
+
 ```powerapps
-Refresh(PolicyEvents);
-Refresh(EmployeeScopes);
 Refresh(Batches);
 Refresh(BatchLines);
+Refresh(TicketRuns);
+Refresh(PolicyEvents);
+Refresh(EmployeeScopes);
+Refresh(Employees);
 
 Set(
-    varUserEmail,
-    Lower(Trim(User().Email))
-);
-
-ClearCollect(
-    colPolicyEvents,
-    Sort(
-        Filter(
-            PolicyEvents,
-            Status = "Ready" || Status = "Draft"
-        ),
-        ScheduledTime,
-        SortOrder.Ascending
-    )
+    varXiaoranStatusDefault,
+    "Pending"
 );
 
 Set(
-    varSelectedPolicyEventID,
-    If(
-        CountRows(Filter(colPolicyEvents, Status = "Ready")) > 0,
-        First(Filter(colPolicyEvents, Status = "Ready")).PolicyEventID,
-        If(
-            CountRows(colPolicyEvents) > 0,
-            First(colPolicyEvents).PolicyEventID,
-            Blank()
-        )
-    )
-);
-
-Set(
-    varSelectedSystemCode,
-    LookUp(
-        colPolicyEvents,
-        PolicyEventID = varSelectedPolicyEventID,
-        SystemCode
-    )
-);
-
-ClearCollect(
-    colManagerScopes,
-    AddColumns(
-        SortByColumns(
-            Filter(
-                EmployeeScopes,
-                Lower(Trim(ManagerEmail)) = varUserEmail &&
-                ActiveFlag = true &&
-                SystemCode = varSelectedSystemCode
-            ),
-            "EmployeeName", SortOrder.Ascending,
-            "TargetTA",     SortOrder.Ascending,
-            "Environment",  SortOrder.Ascending
-        ),
-        SelectedAction, "No Change"
-    )
-);
-
-Set(
-    varManagerName,
-    If(
-        CountRows(colManagerScopes) > 0,
-        First(colManagerScopes).ManagerName,
-        User().FullName
-    )
+    varSelectedBatchID,
+    Blank()
 )
 ```
 
 ---
 
-## Section 1 — Header
+# 四、顶部 Header
 
-### `rectManagerHeader`
+## 1) `rectXiaoranHeader`
+
 ```powerapps
 X = 0
 Y = 0
@@ -111,12 +184,13 @@ Fill = RGBA(0,120,212,1)
 BorderThickness = 0
 ```
 
-### `lblManagerTitle`
+## 2) `lblXiaoranTitle`
+
 ```powerapps
-Text = "Access Management"
+Text = "Xiaoran Dashboard"
 X = 20
 Y = 0
-Width = 280
+Width = 300
 Height = 56
 Color = RGBA(255,255,255,1)
 Size = 16
@@ -124,24 +198,26 @@ FontWeight = FontWeight.Bold
 Fill = RGBA(0,0,0,0)
 ```
 
-### `lblManagerSubtitle`
+## 3) `lblXiaoranSub`
+
 ```powerapps
-Text = "Manager scope review"
+Text = "Batch review and ticket preparation"
 X = 220
 Y = 0
-Width = 220
+Width = 320
 Height = 56
 Color = RGBA(204,228,247,1)
 Size = 11
 Fill = RGBA(0,0,0,0)
 ```
 
-### `lblManagerUser`
+## 4) `lblXiaoranUser`
+
 ```powerapps
-Text = varManagerName & "  ·  " & varSelectedSystemCode
-X = Parent.Width - 320
+Text = "Xiaoran  ·  Admin View"
+X = Parent.Width - 260
 Y = 0
-Width = 300
+Width = 240
 Height = 56
 Align = Align.Right
 Color = RGBA(204,228,247,1)
@@ -151,268 +227,380 @@ Fill = RGBA(0,0,0,0)
 
 ---
 
-## Section 2 — Event / Filter Bar
+# 五、筛选区
 
-### `cmbPolicyEvent`
+## 1) `ddBatchStatus`
+
+状态筛选。
+
 ```powerapps
+Items = ["Pending","Processing","Done","Draft","All"]
+Default = "Pending"
 X = 20
 Y = 68
-Width = 320
+Width = 150
 Height = 36
-Items =
-    Sort(
-        Filter(
-            colPolicyEvents,
-            Status = "Ready" || Status = "Draft"
-        ),
-        ScheduledTime,
-        SortOrder.Ascending
-    )
-DisplayFields = ["EventName"]
-SearchFields = ["EventName"]
-SelectMultiple = false
-DefaultSelectedItems =
-    If(
-        IsBlank(varSelectedPolicyEventID),
-        Blank(),
-        [LookUp(colPolicyEvents, PolicyEventID = varSelectedPolicyEventID)]
-    )
-InputTextPlaceholder = "Select a policy event"
 ```
 
-**`cmbPolicyEvent.OnChange`**
+## 2) `txtBatchSearch`
+
+搜 batch 头。
+
 ```powerapps
-Set(
-    varSelectedPolicyEventID,
-    cmbPolicyEvent.Selected.PolicyEventID
-);
+Default = ""
+HintText = "Search BatchID / Manager / System"
+X = 184
+Y = 68
+Width = 280
+Height = 36
+```
 
-Set(
-    varSelectedSystemCode,
-    cmbPolicyEvent.Selected.SystemCode
-);
+## 3) `txtLineSearch`
 
-ClearCollect(
-    colManagerScopes,
-    AddColumns(
-        SortByColumns(
-            Filter(
-                EmployeeScopes,
-                Lower(Trim(ManagerEmail)) = varUserEmail &&
-                ActiveFlag = true &&
-                SystemCode = varSelectedSystemCode
-            ),
-            "EmployeeName", SortOrder.Ascending,
-            "TargetTA",     SortOrder.Ascending,
-            "Environment",  SortOrder.Ascending
-        ),
-        SelectedAction, "No Change"
-    )
-)
+搜当前 batch 下的 line。
+
+```powerapps
+Default = ""
+HintText = "Search EmployeeID / Name / TA"
+X = 478
+Y = 68
+Width = 280
+Height = 36
+```
+
+## 4) `btnRefreshXiaoran`
+
+```powerapps
+Text = "Refresh"
+X = Parent.Width - 120
+Y = 68
+Width = 100
+Height = 36
+
+OnSelect =
+Refresh(Batches);
+Refresh(BatchLines);
+Refresh(TicketRuns);
+Refresh(PolicyEvents);
+Refresh(EmployeeScopes);
+Refresh(Employees);
+Notify("Data refreshed.", NotificationType.Success)
 ```
 
 ---
 
-### `lblSelectedSystem`
+# 六、KPI cards
+
+这里全部基于 `Batches`，因为你已经明确说了 Xiaoran 页面是 **batch-first**。
+
+## 1) Pending batches
+
 ```powerapps
-Text = "System: " & varSelectedSystemCode
-X = 356
-Y = 68
-Width = 180
-Height = 36
-Size = 12
-FontWeight = FontWeight.Semibold
-Fill = RGBA(255,255,255,1)
-Color = RGBA(0,0,0,1)
+Text = CountIf(Batches, Status = "Pending")
+```
+
+## 2) Pending Add lines
+
+```powerapps
+Text = Sum(Filter(Batches, Status = "Pending"), AddCount)
+```
+
+## 3) Pending Drop lines
+
+```powerapps
+Text = Sum(Filter(Batches, Status = "Pending"), DropCount)
+```
+
+## 4) Expected tickets
+
+```powerapps
+Text = Sum(Filter(Batches, Status = "Pending"), ExpectedTicketCount)
+```
+
+### 推荐位置
+
+| 卡片     |   X |   Y | Width | Height |
+| ------ | --: | --: | ----: | -----: |
+| Card 1 |  20 | 118 |   206 |     68 |
+| Card 2 | 246 | 118 |   206 |     68 |
+| Card 3 | 472 | 118 |   206 |     68 |
+| Card 4 | 698 | 118 |   206 |     68 |
+
+---
+
+# 七、批次 Gallery：`galBatches`
+
+这是 Xiaoran 页的第一核心。
+
+Gallery 的模板应该完全由 `Items` 提供记录，模板内一律用 `ThisItem`。这正是 Microsoft 对 gallery 的标准用法。([Microsoft Learn][2])
+
+## Gallery 本体
+
+### Name
+
+```powerapps
+galBatches
+```
+
+### Items
+
+```powerapps
+SortByColumns(
+    Filter(
+        Batches,
+        (
+            ddBatchStatus.Selected.Value = "All" ||
+            Status = ddBatchStatus.Selected.Value
+        ) &&
+        (
+            IsBlank(txtBatchSearch.Text) ||
+            txtBatchSearch.Text in BatchID ||
+            txtBatchSearch.Text in Title ||
+            txtBatchSearch.Text in ManagerName ||
+            txtBatchSearch.Text in ManagerEmail ||
+            txtBatchSearch.Text in SystemCode
+        )
+    ),
+    "SubmittedAt",
+    SortOrder.Descending
+)
+```
+
+### 属性
+
+```powerapps
+X = 20
+Y = 196
+Width = 430
+Height = Parent.Height - 216
+TemplateSize = 120
+TemplatePadding = 4
+ShowScrollbar = true
+DelayItemLoading = false
+```
+
+### OnSelect
+
+```powerapps
+Set(varSelectedBatchID, ThisItem.BatchID)
+```
+
+---
+
+## `galBatches` 模板内控件
+
+### 1) `rectBatchRow`
+
+```powerapps
+X = 0
+Y = 0
+Width = Parent.TemplateWidth
+Height = 116
+Fill = If(ThisItem.BatchID = varSelectedBatchID, RGBA(242,248,255,1), RGBA(255,255,255,1))
 BorderColor = RGBA(220,220,220,1)
 BorderThickness = 1
-PaddingLeft = 12
+RadiusTopLeft = 6
+RadiusTopRight = 6
+RadiusBottomLeft = 6
+RadiusBottomRight = 6
+```
+
+### 2) `lblBatchHeader`
+
+```powerapps
+Text = ThisItem.BatchID & "  |  " & ThisItem.ManagerName
+X = 12
+Y = 10
+Width = 260
+Height = 22
+FontWeight = FontWeight.Bold
+Size = 13
+```
+
+### 3) `lblBatchMeta1`
+
+```powerapps
+Text =
+ThisItem.SystemCode & "  •  " &
+Text(ThisItem.SubmittedAt, "[$-en-US]yyyy-mm-dd hh:mm")
+X = 12
+Y = 34
+Width = 260
+Height = 18
+Size = 10
+Color = RGBA(90,90,90,1)
+```
+
+### 4) `lblBatchMeta2`
+
+```powerapps
+Text =
+"Add " & ThisItem.AddCount &
+"  •  Drop " & ThisItem.DropCount &
+"  •  Lines " & ThisItem.TotalLines
+X = 12
+Y = 54
+Width = 260
+Height = 18
+Size = 10
+Color = RGBA(90,90,90,1)
+```
+
+### 5) `lblBatchMeta3`
+
+```powerapps
+Text = "Expected tickets: " & ThisItem.ExpectedTicketCount
+X = 12
+Y = 74
+Width = 180
+Height = 18
+Size = 10
+Color = RGBA(90,90,90,1)
+```
+
+### 6) `lblBatchStatus`
+
+```powerapps
+Text = ThisItem.Status
+X = 300
+Y = 12
+Width = 100
+Height = 24
+Align = Align.Center
+FontWeight = FontWeight.Bold
+Fill =
+If(
+    ThisItem.Status = "Pending",
+    RGBA(255,244,206,1),
+    If(
+        ThisItem.Status = "Processing",
+        RGBA(227,242,253,1),
+        If(
+            ThisItem.Status = "Done",
+            RGBA(230,244,234,1),
+            RGBA(240,240,240,1)
+        )
+    )
+)
+Color =
+If(
+    ThisItem.Status = "Pending",
+    RGBA(140,90,0,1),
+    If(
+        ThisItem.Status = "Processing",
+        RGBA(0,90,160,1),
+        If(
+            ThisItem.Status = "Done",
+            RGBA(16,124,16,1),
+            RGBA(90,90,90,1)
+        )
+    )
+)
 RadiusTopLeft = 4
 RadiusTopRight = 4
 RadiusBottomLeft = 4
 RadiusBottomRight = 4
 ```
 
----
+### 7) `btnApprovalFile`
 
-### `ddAccessFilter`
 ```powerapps
-X = 548
-Y = 68
-Width = 180
-Height = 36
-Items =
-    Table(
-        {Value: "All"},
-        {Value: "Current access = Yes"},
-        {Value: "Current access = No"}
-    )
-Default = "All"
+Text = "Approval file"
+X = 272
+Y = 74
+Width = 128
+Height = 28
+Visible = !IsBlank(ThisItem.ApprovalFileURL)
+OnSelect = Launch(ThisItem.ApprovalFileURL)
 ```
 
 ---
 
-### `txtScopeSearch`
-```powerapps
-X = 742
-Y = 68
-Width = 320
-Height = 36
-Default = ""
-HintText = "Search name / EmployeeID / study / TA"
-```
+# 八、选中批次 summary
 
----
+## `lblSelectedBatchTitle`
 
-### `btnRefreshScopes`
-```powerapps
-Text = "Refresh"
-X = 1078
-Y = 68
-Width = 100
-Height = 36
-```
-
-**`btnRefreshScopes.OnSelect`**
-```powerapps
-Refresh(PolicyEvents);
-Refresh(EmployeeScopes);
-Refresh(Batches);
-Refresh(BatchLines);
-
-ClearCollect(
-    colPolicyEvents,
-    Sort(
-        Filter(
-            PolicyEvents,
-            Status = "Ready" || Status = "Draft"
-        ),
-        ScheduledTime,
-        SortOrder.Ascending
-    )
-);
-
-Set(
-    varSelectedSystemCode,
-    LookUp(
-        colPolicyEvents,
-        PolicyEventID = varSelectedPolicyEventID,
-        SystemCode
-    )
-);
-
-ClearCollect(
-    colManagerScopes,
-    AddColumns(
-        SortByColumns(
-            Filter(
-                EmployeeScopes,
-                Lower(Trim(ManagerEmail)) = varUserEmail &&
-                ActiveFlag = true &&
-                SystemCode = varSelectedSystemCode
-            ),
-            "EmployeeName", SortOrder.Ascending,
-            "TargetTA",     SortOrder.Ascending,
-            "Environment",  SortOrder.Ascending
-        ),
-        SelectedAction, "No Change"
-    )
-);
-
-Notify("Manager scope list refreshed.", NotificationType.Success)
-```
-
----
-
-## Section 3 — KPI Cards
-
-四张卡片推荐位置：
-
-| Control | X | Y | Width | Height |
-|---|---|---|---|---|
-| Card 1 | 20 | 118 | 206 | 68 |
-| Card 2 | 246 | 118 | 206 | 68 |
-| Card 3 | 472 | 118 | 206 | 68 |
-| Card 4 | 698 | 118 | 206 | 68 |
-
-每张卡片结构：一个 `rectKpiCard`（白底圆角）+ 一个数字 label + 一个说明 label。
-
-### KPI 数字 Labels
-
-**`lblKpiScopeLines`**
-```powerapps
-Text = CountRows(colManagerScopes)
-```
-
-**`lblKpiEmployees`**
-```powerapps
-Text = CountRows(Distinct(colManagerScopes, EmployeeID))
-```
-
-**`lblKpiAdd`**
-```powerapps
-Text = CountIf(colManagerScopes, SelectedAction = "Add")
-```
-
-**`lblKpiDrop`**
-```powerapps
-Text = CountIf(colManagerScopes, SelectedAction = "Drop")
-```
-
----
-
-## Section 4 — Hint Text
-
-### `lblScopeHint`
 ```powerapps
 Text =
-    "Each row below is one access scope. The same employee may appear more than once when they have different Target TA or Environment."
-X = 20
+If(
+    IsBlank(varSelectedBatchID),
+    "No batch selected",
+    "Selected Batch: " & varSelectedBatchID
+)
+X = 470
 Y = 196
-Width = Parent.Width - 40
+Width = 380
+Height = 28
+Size = 15
+FontWeight = FontWeight.Bold
+```
+
+## `lblSelectedBatchSummary`
+
+```powerapps
+Text =
+If(
+    IsBlank(varSelectedBatchID),
+    "",
+    LookUp(Batches, BatchID = varSelectedBatchID, ManagerName) &
+    "  •  " &
+    LookUp(Batches, BatchID = varSelectedBatchID, SystemCode) &
+    "  •  " &
+    LookUp(Batches, BatchID = varSelectedBatchID, Status)
+)
+X = 470
+Y = 226
+Width = 420
 Height = 20
 Size = 11
-Color = RGBA(100,100,100,1)
-Fill = RGBA(0,0,0,0)
+Color = RGBA(90,90,90,1)
 ```
 
 ---
 
-## Section 5 — Main Gallery
+# 九、批次明细 Gallery：`galBatchLines`
 
-### `galManagerScopes`
+这是第二核心。
+这一层应该只看当前选中 batch 的 line。
 
-**Items**
+## Gallery 本体
+
+### Name
+
+```powerapps
+galBatchLines
+```
+
+### Items
+
 ```powerapps
 SortByColumns(
     Filter(
-        colManagerScopes,
+        BatchLines,
+        BatchID = varSelectedBatchID &&
         (
-            ddAccessFilter.Selected.Value = "All" ||
-            (ddAccessFilter.Selected.Value = "Current access = Yes" && CurrentAccess = true) ||
-            (ddAccessFilter.Selected.Value = "Current access = No"  && CurrentAccess = false)
-        ) &&
-        (
-            IsBlank(txtScopeSearch.Text) ||
-            txtScopeSearch.Text in EmployeeName ||
-            txtScopeSearch.Text in EmployeeID ||
-            txtScopeSearch.Text in StudyList ||
-            txtScopeSearch.Text in TargetTA
+            IsBlank(txtLineSearch.Text) ||
+            txtLineSearch.Text in EmployeeID ||
+            txtLineSearch.Text in EmployeeName ||
+            txtLineSearch.Text in StudyList ||
+            txtLineSearch.Text in TargetTA
         )
     ),
-    "EmployeeName", SortOrder.Ascending,
-    "TargetTA",     SortOrder.Ascending,
-    "Environment",  SortOrder.Ascending
+    "EmployeeName",
+    SortOrder.Ascending,
+    "TargetTA",
+    SortOrder.Ascending
 )
 ```
 
-**Layout & sizing**
+### 属性
+
 ```powerapps
-X = 20
-Y = 224
-Width = Parent.Width - 40
-Height = Parent.Height - 296
-TemplateSize = 86
+X = 470
+Y = 258
+Width = 390
+Height = 260
+TemplateSize = 102
 TemplatePadding = 4
 ShowScrollbar = true
 DelayItemLoading = false
@@ -420,14 +608,15 @@ DelayItemLoading = false
 
 ---
 
-## Section 6 — Gallery Template 内部控件
+## `galBatchLines` 模板内控件
 
-### `rectScopeRow`
+### 1) `rectLineRow`
+
 ```powerapps
 X = 0
 Y = 0
 Width = Parent.TemplateWidth
-Height = 82
+Height = 98
 Fill = RGBA(255,255,255,1)
 BorderColor = RGBA(230,230,230,1)
 BorderThickness = 1
@@ -437,225 +626,314 @@ RadiusBottomLeft = 6
 RadiusBottomRight = 6
 ```
 
-### `lblScopeTitle`
+### 2) `lblLineTitle`
+
 ```powerapps
 Text = ThisItem.EmployeeName & " (" & ThisItem.EmployeeID & ")"
-X = 12
+X = 10
 Y = 8
-Width = 260
-Height = 24
-Size = 13
+Width = 220
+Height = 20
 FontWeight = FontWeight.Bold
-Color = RGBA(0,0,0,1)
-Fill = RGBA(0,0,0,0)
+Size = 12
 ```
 
-### `lblScopeLine1`
+### 3) `lblLineTA`
+
 ```powerapps
 Text =
-    "Home TA: " & ThisItem.HomeTA &
-    "   •   Target TA: " & ThisItem.TargetTA &
-    "   •   Env: " & ThisItem.Environment
-X = 12
-Y = 34
-Width = 340
-Height = 18
+"TA: " & ThisItem.TargetTA &
+"  •  Env: " & ThisItem.Environment
+X = 10
+Y = 30
+Width = 180
+Height = 16
 Size = 10
 Color = RGBA(90,90,90,1)
-Fill = RGBA(0,0,0,0)
 ```
 
-### `lblScopeLine2`
+### 4) `lblLineStudy`
+
 ```powerapps
 Text = "Studies: " & ThisItem.StudyList
-X = 12
-Y = 54
-Width = 420
-Height = 18
+X = 10
+Y = 48
+Width = 260
+Height = 16
 Size = 10
 Color = RGBA(90,90,90,1)
-Fill = RGBA(0,0,0,0)
 ```
 
-### `lblScopeSystem`
+### 5) `lblLineAction`
+
 ```powerapps
-Text = "System: " & ThisItem.SystemCode
-X = 450
+Text = ThisItem.Action
+X = 280
 Y = 10
-Width = 120
-Height = 18
-Size = 10
-Color = RGBA(120,120,120,1)
-Fill = RGBA(0,0,0,0)
-```
-
-### `lblCurrentAccessBadge`
-```powerapps
-Text =
-    If(
-        ThisItem.CurrentAccess = true,
-        "Has access",
-        "No access"
-    )
-X = 450
-Y = 34
-Width = 96
-Height = 24
+Width = 80
+Height = 22
 Align = Align.Center
 FontWeight = FontWeight.Bold
+Fill =
+If(
+    ThisItem.Action = "Add",
+    RGBA(230,244,234,1),
+    RGBA(253,231,233,1)
+)
+Color =
+If(
+    ThisItem.Action = "Add",
+    RGBA(16,124,16,1),
+    RGBA(168,0,0,1)
+)
 RadiusTopLeft = 4
 RadiusTopRight = 4
 RadiusBottomLeft = 4
 RadiusBottomRight = 4
+```
+
+### 6) `lblLineStatus`
+
+```powerapps
+Text = ThisItem.LineStatus
+X = 280
+Y = 40
+Width = 80
+Height = 20
+Align = Align.Center
+Size = 10
+Fill = RGBA(240,240,240,1)
+Color = RGBA(90,90,90,1)
+RadiusTopLeft = 4
+RadiusTopRight = 4
+RadiusBottomLeft = 4
+RadiusBottomRight = 4
+```
+
+### 7) `lblLineTicket`
+
+```powerapps
+Text =
+If(
+    IsBlank(ThisItem.TicketNumber),
+    "Ticket: not assigned",
+    "Ticket: " & ThisItem.TicketNumber
+)
+X = 10
+Y = 68
+Width = 200
+Height = 16
+Size = 10
+Color = RGBA(120,120,120,1)
+```
+
+### 8) `lblLinePK`
+
+```powerapps
+Text = "PK/Title: " & ThisItem.Title
+X = 210
+Y = 68
+Width = 150
+Height = 16
+Size = 9
+Color = RGBA(140,140,140,1)
+```
+
+这个 `lblLinePK` 不是必须，但你现在既然专门加了 `Title = PK`，我建议测试阶段先显示出来，后面稳定了再隐藏。
+
+---
+
+# 十、TicketRuns Gallery：`galTicketRuns`
+
+这层是 Xiaoran 页最关键的“准备提哪些 ticket”。
+
+## Gallery 本体
+
+### Name
+
+```powerapps
+galTicketRuns
+```
+
+### Items
+
+```powerapps
+SortByColumns(
+    Filter(
+        TicketRuns,
+        BatchID = varSelectedBatchID
+    ),
+    "TicketRunID",
+    SortOrder.Ascending
+)
+```
+
+### 属性
+
+```powerapps
+X = 876
+Y = 258
+Width = Parent.Width - 896
+Height = 260
+TemplateSize = 118
+TemplatePadding = 4
+ShowScrollbar = true
+DelayItemLoading = false
+```
+
+---
+
+## `galTicketRuns` 模板内控件
+
+### 1) `rectRunRow`
+
+```powerapps
+X = 0
+Y = 0
+Width = Parent.TemplateWidth
+Height = 114
+Fill = RGBA(255,255,255,1)
+BorderColor = RGBA(230,230,230,1)
+BorderThickness = 1
+RadiusTopLeft = 6
+RadiusTopRight = 6
+RadiusBottomLeft = 6
+RadiusBottomRight = 6
+```
+
+### 2) `lblRunTitle`
+
+```powerapps
+Text = ThisItem.TicketRunID
+X = 10
+Y = 8
+Width = 180
+Height = 20
+FontWeight = FontWeight.Bold
+Size = 12
+```
+
+### 3) `lblRunMeta1`
+
+```powerapps
+Text =
+ThisItem.SystemCode &
+"  •  " &
+ThisItem.Action &
+"  •  " &
+ThisItem.TargetTA
+X = 10
+Y = 30
+Width = 220
+Height = 16
+Size = 10
+Color = RGBA(90,90,90,1)
+```
+
+### 4) `lblRunMeta2`
+
+```powerapps
+Text =
+"Env: " & ThisItem.Environment &
+"  •  Users: " & ThisItem.UserCount
+X = 10
+Y = 48
+Width = 200
+Height = 16
+Size = 10
+Color = RGBA(90,90,90,1)
+```
+
+### 5) `lblRunStatus`
+
+```powerapps
+Text = ThisItem.Status
+X = 10
+Y = 68
+Width = 100
+Height = 20
+Align = Align.Center
 Fill =
+If(
+    ThisItem.Status = "Pending",
+    RGBA(255,244,206,1),
     If(
-        ThisItem.CurrentAccess = true,
-        RGBA(230,244,234,1),
-        RGBA(254,240,230,1)
+        ThisItem.Status = "Processing",
+        RGBA(227,242,253,1),
+        If(
+            ThisItem.Status = "Done",
+            RGBA(230,244,234,1),
+            RGBA(240,240,240,1)
+        )
     )
+)
 Color =
+If(
+    ThisItem.Status = "Pending",
+    RGBA(140,90,0,1),
     If(
-        ThisItem.CurrentAccess = true,
-        RGBA(16,124,16,1),
-        RGBA(169,68,0,1)
-    )
-```
-
----
-
-## Section 7 — Gallery Template Action Buttons
-
-### `btnScopeAdd`
-```powerapps
-Text = "Add"
-X = Parent.TemplateWidth - 330
-Y = 24
-Width = 96
-Height = 34
-BorderThickness = 1
-RadiusTopLeft = 4
-RadiusTopRight = 4
-RadiusBottomLeft = 4
-RadiusBottomRight = 4
-Fill =
-    If(ThisItem.SelectedAction = "Add", RGBA(230,244,234,1), RGBA(255,255,255,1))
-Color =
-    If(ThisItem.SelectedAction = "Add", RGBA(16,124,16,1), RGBA(102,102,102,1))
-BorderColor =
-    If(ThisItem.SelectedAction = "Add", RGBA(16,124,16,1), RGBA(200,200,200,1))
-```
-
-**`btnScopeAdd.OnSelect`**
-```powerapps
-UpdateIf(
-    colManagerScopes,
-    ScopeID = ThisItem.ScopeID,
-    { SelectedAction: "Add" }
-)
-```
-
----
-
-### `btnScopeNoChange`
-```powerapps
-Text = "No Change"
-X = Parent.TemplateWidth - 224
-Y = 24
-Width = 96
-Height = 34
-BorderThickness = 1
-RadiusTopLeft = 4
-RadiusTopRight = 4
-RadiusBottomLeft = 4
-RadiusBottomRight = 4
-Fill =
-    If(ThisItem.SelectedAction = "No Change", RGBA(230,230,230,1), RGBA(255,255,255,1))
-Color = RGBA(80,80,80,1)
-BorderColor = RGBA(200,200,200,1)
-```
-
-**`btnScopeNoChange.OnSelect`**
-```powerapps
-UpdateIf(
-    colManagerScopes,
-    ScopeID = ThisItem.ScopeID,
-    { SelectedAction: "No Change" }
-)
-```
-
----
-
-### `btnScopeDrop`
-```powerapps
-Text = "Drop"
-X = Parent.TemplateWidth - 118
-Y = 24
-Width = 96
-Height = 34
-BorderThickness = 1
-RadiusTopLeft = 4
-RadiusTopRight = 4
-RadiusBottomLeft = 4
-RadiusBottomRight = 4
-Fill =
-    If(ThisItem.SelectedAction = "Drop", RGBA(253,231,233,1), RGBA(255,255,255,1))
-Color =
-    If(ThisItem.SelectedAction = "Drop", RGBA(168,0,0,1), RGBA(102,102,102,1))
-BorderColor =
-    If(ThisItem.SelectedAction = "Drop", RGBA(168,0,0,1), RGBA(200,200,200,1))
-```
-
-**`btnScopeDrop.OnSelect`**
-```powerapps
-UpdateIf(
-    colManagerScopes,
-    ScopeID = ThisItem.ScopeID,
-    { SelectedAction: "Drop" }
-)
-```
-
----
-
-## Section 8 — Bottom Bar
-
-### `btnManagerReset`
-```powerapps
-Text = "Reset"
-X = Parent.Width - 370
-Y = Parent.Height - 56
-Width = 110
-Height = 40
-```
-
-**`btnManagerReset.OnSelect`**
-```powerapps
-ClearCollect(
-    colManagerScopes,
-    AddColumns(
-        SortByColumns(
-            Filter(
-                EmployeeScopes,
-                Lower(Trim(ManagerEmail)) = varUserEmail &&
-                ActiveFlag = true &&
-                SystemCode = varSelectedSystemCode
-            ),
-            "EmployeeName", SortOrder.Ascending,
-            "TargetTA",     SortOrder.Ascending,
-            "Environment",  SortOrder.Ascending
-        ),
-        SelectedAction, "No Change"
+        ThisItem.Status = "Processing",
+        RGBA(0,90,160,1),
+        If(
+            ThisItem.Status = "Done",
+            RGBA(16,124,16,1),
+            RGBA(90,90,90,1)
+        )
     )
 )
+RadiusTopLeft = 4
+RadiusTopRight = 4
+RadiusBottomLeft = 4
+RadiusBottomRight = 4
+```
+
+### 6) `lblRunTicket`
+
+```powerapps
+Text =
+If(
+    IsBlank(ThisItem.TicketNumber),
+    "Ticket: not created",
+    "Ticket: " & ThisItem.TicketNumber
+)
+X = 120
+Y = 68
+Width = 120
+Height = 20
+Size = 10
+Color = RGBA(120,120,120,1)
+```
+
+### 7) `lblRunPK`
+
+```powerapps
+Text = "PK/Title: " & ThisItem.Title
+X = 10
+Y = 92
+Width = 180
+Height = 14
+Size = 9
+Color = RGBA(140,140,140,1)
 ```
 
 ---
 
-### `btnSubmitToXiaoran`
+# 十一、底部按钮区
 
-**Appearance**
+这里不做 AI，只做流程动作。
+
+---
+
+## 1) `btnPrepareSelectedBatch`
+
+这是 Xiaoran 点的主按钮。
+如果你后面要让它触发 Cloud Flow，这是最自然的位置。Power Apps 里按钮的 `OnSelect` 触发行为公式和 flow，本来就是官方推荐用法。([Microsoft Learn][1])
+
+### 外观
+
 ```powerapps
-Text = "Submit to Xiaoran"
-X = Parent.Width - 240
+Text = "Prepare Ticket"
+X = Parent.Width - 250
 Y = Parent.Height - 56
 Width = 220
 Height = 40
@@ -667,185 +945,288 @@ RadiusTopLeft = 6
 RadiusTopRight = 6
 RadiusBottomLeft = 6
 RadiusBottomRight = 6
+
 DisplayMode =
-    If(
-        CountIf(colManagerScopes, SelectedAction <> "No Change") > 0,
-        DisplayMode.Edit,
-        DisplayMode.Disabled
-    )
+If(
+    IsBlank(varSelectedBatchID),
+    DisplayMode.Disabled,
+    DisplayMode.Edit
+)
 ```
 
-**`btnSubmitToXiaoran.OnSelect`**
+### OnSelect
+
+先给你一个不依赖 flow 的安全版本：
+只把 batch 状态改为 `Processing`。
+
 ```powerapps
 With(
     {
-        _batchID: "BAT-" & Text(Now(), "[$-en-US]yyyymmddhhmmss"),
-        _changes: Filter(colManagerScopes, SelectedAction <> "No Change")
+        _selectedBatch: LookUp(Batches, BatchID = varSelectedBatchID)
     },
-    If(
-        CountRows(_changes) = 0,
+    IfError(
+        Patch(
+            Batches,
+            _selectedBatch,
+            {
+                Status: "Processing"
+            }
+        );
         Notify(
-            "Please select at least one Add or Drop action.",
-            NotificationType.Warning
-        ),
-        IfError(
-            Patch(
-                Batches,
-                Defaults(Batches),
-                {
-                    Title:                 _batchID,
-                    BatchID:               _batchID,
-                    PolicyEventID:         varSelectedPolicyEventID,
-                    SystemCode:            varSelectedSystemCode,
-                    ManagerEmail:          User().Email,
-                    ManagerName:           varManagerName,
-                    SubmittedAt:           Now(),
-                    Status:                "Pending",
-                    AddCount:              CountIf(_changes, SelectedAction = "Add"),
-                    DropCount:             CountIf(_changes, SelectedAction = "Drop"),
-                    TotalLines:            CountRows(_changes),
-                    ExpectedTicketCount:
-                        CountRows(
-                            Distinct(
-                                AddColumns(
-                                    _changes,
-                                    TicketGroupKey,
-                                    SystemCode & "|" & SelectedAction & "|" &
-                                    TargetTA & "|" & Environment
-                                ),
-                                TicketGroupKey
-                            )
-                        ),
-                    ApprovalFileURL:       Blank(),
-                    LastError:             Blank()
-                }
-            );
+            "Batch marked as Processing.",
+            NotificationType.Success
+        );
+        Refresh(Batches);
+        true,
+        Notify(
+            "Failed to update batch status.",
+            NotificationType.Error
+        );
+        false
+    )
+)
+```
 
-            ForAll(
-                _changes As scopeLine,
-                Patch(
-                    BatchLines,
-                    Defaults(BatchLines),
-                    {
-                        Title:         _batchID & "-" & scopeLine.ScopeID,
-                        BatchLineID:   _batchID & "-" & scopeLine.ScopeID,
-                        BatchID:       _batchID,
-                        ScopeID:       scopeLine.ScopeID,
-                        SystemCode:    scopeLine.SystemCode,
-                        EmployeeID:    scopeLine.EmployeeID,
-                        EmployeeName:  scopeLine.EmployeeName,
-                        StudyList:     scopeLine.StudyList,
-                        TargetTA:      scopeLine.TargetTA,
-                        Environment:   scopeLine.Environment,
-                        CurrentAccess: If(scopeLine.CurrentAccess = true, "Yes", "No"),
-                        Action:        scopeLine.SelectedAction,
-                        ManagerEmail:  User().Email,
-                        LineStatus:    "Pending",
-                        TicketRunID:   Blank(),
-                        TicketNumber:  Blank()
-                    }
-                )
-            );
+这里我故意用 `With + IfError`，因为：
 
-            Notify(
-                "Submitted! " & CountRows(_changes) & " scope line(s) sent to Xiaoran.",
-                NotificationType.Success
-            );
+* `With` 可以把当前 batch 先收起来，公式更清楚。([Microsoft Learn][5])
+* `IfError` 两个分支最终都返回 Boolean，避免你之前碰到的类型不兼容问题。([Microsoft Learn][6])
 
-            Refresh(Batches);
-            Refresh(BatchLines);
+### 如果你后面接 cloud flow
 
-            ClearCollect(
-                colManagerScopes,
-                AddColumns(
-                    SortByColumns(
-                        Filter(
-                            EmployeeScopes,
-                            Lower(Trim(ManagerEmail)) = varUserEmail &&
-                            ActiveFlag = true &&
-                            SystemCode = varSelectedSystemCode
-                        ),
-                        "EmployeeName", SortOrder.Ascending,
-                        "TargetTA",     SortOrder.Ascending,
-                        "Environment",  SortOrder.Ascending
-                    ),
-                    SelectedAction, "No Change"
-                )
-            ),
+可以在 `Patch(...)` 后面加：
 
-            Notify(
-                "Submit failed. Please check your SharePoint column types and required fields.",
-                NotificationType.Error
-            )
-        )
+```powerapps
+flow_PrepareTicketBatch.Run(varSelectedBatchID);
+```
+
+---
+
+## 2) `btnMarkBatchDone`
+
+```powerapps
+Text = "Mark Done"
+X = Parent.Width - 490
+Y = Parent.Height - 56
+Width = 120
+Height = 40
+
+DisplayMode =
+If(
+    IsBlank(varSelectedBatchID),
+    DisplayMode.Disabled,
+    DisplayMode.Edit
+)
+
+OnSelect =
+With(
+    {
+        _selectedBatch: LookUp(Batches, BatchID = varSelectedBatchID)
+    },
+    IfError(
+        Patch(
+            Batches,
+            _selectedBatch,
+            { Status: "Done" }
+        );
+        Refresh(Batches);
+        Notify("Batch marked as Done.", NotificationType.Success);
+        true,
+        Notify("Failed to update batch.", NotificationType.Error);
+        false
     )
 )
 ```
 
 ---
 
-### `btnGoAdmin` (可选，测试用)
+## 3) `btnBackManager`
+
 ```powerapps
-Text = "Admin View →"
-X = Parent.Width - 500
+Text = "← Manager View"
+X = 20
 Y = Parent.Height - 56
-Width = 120
+Width = 130
 Height = 40
-OnSelect = Navigate(scrXiaoran, ScreenTransition.Fade)
+OnSelect = Navigate(scrManager, ScreenTransition.Fade)
+```
+
+---
+
+# 十二、推荐的 3 个调试标签
+
+因为你现在是 dummy 阶段，而且还特别加了 `Title = PK`，我建议先保留这 3 个 label。
+
+## `lblDebugBatchCount`
+
+```powerapps
+Text = "Batches loaded: " & galBatches.AllItemsCount
+X = 20
+Y = Parent.Height - 88
+Width = 180
+Height = 14
+Size = 9
+Color = RGBA(120,120,120,1)
+```
+
+## `lblDebugLinesCount`
+
+```powerapps
+Text = "Lines loaded: " & galBatchLines.AllItemsCount
+X = 220
+Y = Parent.Height - 88
+Width = 180
+Height = 14
+Size = 9
+Color = RGBA(120,120,120,1)
+```
+
+## `lblDebugRunsCount`
+
+```powerapps
+Text = "Runs loaded: " & galTicketRuns.AllItemsCount
+X = 420
+Y = Parent.Height - 88
+Width = 180
+Height = 14
+Size = 9
+Color = RGBA(120,120,120,1)
+```
+
+调通以后统一：
+
+```powerapps
 Visible = false
 ```
 
 ---
 
-## Section 9 — Debug Labels（测试完成后设 `Visible = false`）
+# 十三、你现在需要同步改的地方
 
-### `lblDebug1`
+因为你加了 `Title = PK`，我建议你把 `scrManager` 的 Submit 也同步改成下面这样。
+
+## `Batches` patch 时加：
+
 ```powerapps
-Text = "Scopes in collection: " & CountRows(colManagerScopes)
-X = 20
-Y = Parent.Height - 92
-Width = 220
-Height = 16
-Size = 9
-Color = RGBA(120,120,120,1)
-Fill = RGBA(0,0,0,0)
+Title: _batchID
 ```
 
-### `lblDebug2`
+## `BatchLines` patch 时加：
+
 ```powerapps
-Text = "Gallery loaded: " & galManagerScopes.AllItemsCount
-X = 250
-Y = Parent.Height - 92
-Width = 180
-Height = 16
-Size = 9
-Color = RGBA(120,120,120,1)
-Fill = RGBA(0,0,0,0)
+Title: _batchID & "-" & ScopeID
 ```
 
-### `lblDebug3`
-```powerapps
-Text = "Event: " & varSelectedPolicyEventID & "  |  System: " & varSelectedSystemCode
-X = 440
-Y = Parent.Height - 92
-Width = 420
-Height = 16
-Size = 9
-Color = RGBA(120,120,120,1)
-Fill = RGBA(0,0,0,0)
+以后如果你用 flow 生成 `TicketRuns`，也让 flow 写：
+
+```text
+Title = TicketRunID
 ```
+
+这样 SharePoint 默认列、默认表单、以及以后某些 Power Apps 默认卡片都不会出问题。
 
 ---
 
-## Title 列使用规则总结
+# 十四、这版 `scrXiaoran` 和 dummy workbook 的字段是对齐的
 
-| SharePoint List | `Title` 的值 | 你自己的 PK 列 |
-|---|---|---|
-| Employees | = EmployeeID | EmployeeID |
-| EmployeeScopes | = ScopeID | ScopeID |
-| PolicyEvents | = PolicyEventID | PolicyEventID |
-| Batches | = BatchID（即 `_batchID`）| BatchID |
-| BatchLines | = BatchLineID（即 `_batchID & "-" & ScopeID`）| BatchLineID |
-| TicketRuns | = TicketRunID | TicketRunID |
+我这版公式只用了这些字段：
 
-两列同时存在是正确的。Power Apps 的 `LookUp` / `Filter` 全部用你自己的 PK 列，`Title` 只让 SharePoint 正常显示记录，两者互不干扰。
+## Batches
+
+* `Title`
+* `BatchID`
+* `PolicyEventID`
+* `SystemCode`
+* `ManagerEmail`
+* `ManagerName`
+* `SubmittedAt`
+* `Status`
+* `AddCount`
+* `DropCount`
+* `TotalLines`
+* `ExpectedTicketCount`
+* `ApprovalFileURL`
+
+## BatchLines
+
+* `Title`
+* `BatchLineID`
+* `BatchID`
+* `ScopeID`
+* `SystemCode`
+* `EmployeeID`
+* `EmployeeName`
+* `StudyList`
+* `TargetTA`
+* `Environment`
+* `CurrentAccess`
+* `Action`
+* `ManagerEmail`
+* `LineStatus`
+* `TicketRunID`
+* `TicketNumber`
+
+## TicketRuns
+
+* `Title`
+* `TicketRunID`
+* `BatchID`
+* `SystemCode`
+* `Action`
+* `TargetTA`
+* `Environment`
+* `UserCount`
+* `Status`
+* `TicketNumber`
+
+也就是说，它就是按你现在这份 dummy workbook 来写的，不是沿用你最早那套旧的 `GPS_Changes` 版本。
+
+---
+
+# 十五、你现在最建议的实现顺序
+
+先不要一口气把所有按钮和 flow 都接上。
+按这个顺序最稳：
+
+### 第一步
+
+先把 `scrXiaoran` 建出来：
+
+* Header
+* filter bar
+* KPI
+* `galBatches`
+
+### 第二步
+
+确认点某个 batch 后，右侧 summary 会变。
+
+### 第三步
+
+加 `galBatchLines`
+
+### 第四步
+
+加 `galTicketRuns`
+
+### 第五步
+
+最后再加：
+
+* `Prepare Ticket`
+* `Mark Done`
+
+这样最好 debug。
+
+---
+
+如果你愿意，我下一条可以继续直接给你：
+
+**“把你现在新增 `Title = PK` 后，`scrManager` 的 Submit 最终版完整重写一遍”**
+
+[1]: https://learn.microsoft.com/en-us/power-apps/maker/canvas-apps/controls/control-screen "Screen control in Power Apps - Power Apps | Microsoft Learn"
+[2]: https://learn.microsoft.com/en-us/power-apps/maker/canvas-apps/controls/control-gallery "Gallery control in Power Apps - Power Apps | Microsoft Learn"
+[3]: https://learn.microsoft.com/en-us/power-platform/power-fx/reference/function-filter-lookup "Filter, Search, and LookUp functions - Power Platform | Microsoft Learn"
+[4]: https://learn.microsoft.com/en-us/power-platform/power-fx/reference/function-patch "Patch function - Power Platform | Microsoft Learn"
+[5]: https://learn.microsoft.com/en-us/power-platform/power-fx/reference/function-with "With function - Power Platform | Microsoft Learn"
+[6]: https://learn.microsoft.com/en-us/power-platform/power-fx/reference/function-iferror "Error, IfError, IsError, and IsBlankOrError functions - Power Platform | Microsoft Learn"
