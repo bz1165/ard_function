@@ -1,591 +1,75 @@
-可以。下面这版是 **按你现在这份 dummy workbook 的 6 张表** 来写的 `scrXiaoran`，并且把你新增的：
+这说明问题已经缩小了：
 
-* 每张表都有 `Title`
-* `Title = Primary Key`
+**`EmployeeName` 这个字段本身大概率没问题。**
+`First(EmployeeScopes).EmployeeName` 能拿到值，说明 Power Apps 已经认到这列了。
 
-一起考虑进去了。
+所以 `SortByColumns(...)` 报 **无效参数**，更常见的是下面这几种情况：
 
-我会默认你现在 SharePoint 里已经有这 6 张表：
+## 最可能的 3 个原因
 
-* `Employees`
-* `EmployeeScopes`
-* `PolicyEvents`
-* `Batches`
-* `BatchLines`
-* `TicketRuns`
+### 1. 出问题的不是 `EmployeeName`，而是后面的 `TargetTA` 或 `Environment`
 
-并且主键和 `Title` 的对应关系是：
+`SortByColumns` 是按参数顺序解析的。只要后面某一列有问题，整个函数都会报“无效参数”。
+Microsoft 官方文档说明，`SortByColumns` 的列名要作为**字符串**传入，而且如果有多列，除最后一列外都要配对应的 `SortOrder`。([Microsoft Learn][1])
 
-* `Employees.Title = EmployeeID`
-* `EmployeeScopes.Title = ScopeID`
-* `PolicyEvents.Title = PolicyEventID`
-* `Batches.Title = BatchID`
-* `BatchLines.Title = BatchLineID`
-* `TicketRuns.Title = TicketRunID`
+### 2. `TargetTA` / `Environment` 在 SharePoint 里可能不是“纯文本”，而是复杂类型
 
-这版 `scrXiaoran` 会遵循你现在整套设计：
+这很常见。比如如果它们被建成了：
 
-* **Xiaoran 页面是 batch-first**
-* 先看 batch，再看 batch 里的 lines，再看最终 ticket runs
-* Xiaoran 不需要 AI comment
-* 最终只是点一下“prepare / send”，不在这里做复杂编辑
-* UI 尽量清楚、少逻辑、好维护
+* Choice
+* Lookup
+* Person
 
-另外，Microsoft 官方对 Canvas app 的几个关键点和这版设计是吻合的：
+那 `First(EmployeeScopes).TargetTA` 看起来“有东西”，但它拿到的可能是一个 **record**，不是纯文本。
+而 `SortByColumns` 更适合按直接列名排序；如果字段是复杂类型，往往更稳的是改用 `Sort(...)`，按一个公式去排序。微软文档也明确说了：`Sort` 是按公式排序，而这个公式必须返回 **number / string / Boolean**，不能返回 table 或 record。([Microsoft Learn][1])
 
-* `Screen.OnVisible` 适合做这个屏幕自己的数据预加载，不应该依赖 `App.OnStart` 一定先完成。([Microsoft Learn][1])
-* `Gallery` 由 `Items` 决定显示的数据，每个模板控件都应该用 `ThisItem` 读取当前记录。([Microsoft Learn][2])
-* `Filter` 返回满足条件的所有记录，多个条件默认相当于 `And`。`SortByColumns` 适合多列排序。([Microsoft Learn][3])
-* `Patch(..., Defaults(...), {...})` 用来创建记录；`UpdateIf` 适合改已有记录；`IfError` 的分支返回类型要兼容。([Microsoft Learn][4])
-* `With` 适合把一组中间值收起来，让行为公式更清楚。([Microsoft Learn][5])
+### 3. 你当前排序的并不是 `EmployeeScopes`，而是一个经过处理的表
+
+如果你现在真正写的是：
+
+```powerapps
+SortByColumns(colManagerScopes, ...)
+```
+
+那就要确认 `colManagerScopes` 里是不是还保留了：
+
+* `EmployeeName`
+* `TargetTA`
+* `Environment`
+
+因为 Power Fx 里的表经过 `ShowColumns / AddColumns / DropColumns` 后，会变成一张新的表。
+你在 `EmployeeScopes` 上能 `First(...).EmployeeName`，不代表 `colManagerScopes` 里也一定有这个列。
 
 ---
 
-# 一、先说 3 个前提
+# 现在最稳的排查顺序
 
-## 1. `scrXiaoran` 主要读 3 张表
+## 先只测一列
 
-这页主要用：
+先试最小版本：
 
-* `Batches`
-* `BatchLines`
-* `TicketRuns`
-
-`Employees` 和 `EmployeeScopes` 只在需要补充展示时才查。
-
-## 2. `Title` 列现在不用拿来做主逻辑
-
-虽然你已经新增了 `Title = PK`，这是对的，但在公式里我仍然建议优先用真正的业务主键字段：
-
-* `BatchID`
-* `BatchLineID`
-* `TicketRunID`
-
-`Title` 的价值主要是：
-
-* SharePoint 默认要求
-* 表单/默认卡片/系统行为更稳定
-* 以后万一某些默认控件引用 `Title` 不会空掉
-
-所以在 `scrXiaoran` 里，**可以保留 Title，但主逻辑不要改成只靠 Title**。
-
-## 3. 你现在最好顺手把 `scrManager` 的 Submit 也补一下 Title
-
-这不是 `scrXiaoran` 本身的设置，但非常重要。
-以后你 patch 新记录时，建议把 `Title` 一起写上。
-
-例如：
-
-### `Batches`
-
-```powerapps
-Title: _batchID
-```
-
-### `BatchLines`
-
-```powerapps
-Title: _batchID & "-" & ScopeID
-```
-
-以后如果你会生成 `TicketRuns`：
-
-```powerapps
-Title: TicketRunID
-```
-
----
-
-# 二、`scrXiaoran` 整体布局
-
-建议你把页面分成 3 段：
-
-### 上方
-
-* Header
-* 筛选区
-* KPI cards
-
-### 左侧
-
-* `galBatches`：批次列表
-
-### 右侧
-
-* 上：当前选中 batch 的 summary
-* 中：`galBatchLines`
-* 下：`galTicketRuns`
-
-这样 Xiaoran 的工作流就很清楚：
-
-1. 看哪一批待处理
-2. 点中一批
-3. 看里面有哪些 line
-4. 看将拆成哪些 ticket runs
-5. 点按钮触发 flow / PAD
-
----
-
-# 三、`scrXiaoran` 屏幕本体设置
-
-## Name
-
-```powerapps
-scrXiaoran
-```
-
-## Fill
-
-```powerapps
-RGBA(245,246,248,1)
-```
-
-## LoadingSpinner
-
-```powerapps
-LoadingSpinner.Data
-```
-
-## OnVisible
-
-这版用 `OnVisible` 来预加载本屏幕所需数据，不依赖 `App.OnStart`。这正符合 Microsoft 对 `Screen.OnVisible` 的建议。([Microsoft Learn][1])
-
-```powerapps
-Refresh(Batches);
-Refresh(BatchLines);
-Refresh(TicketRuns);
-Refresh(PolicyEvents);
-Refresh(EmployeeScopes);
-Refresh(Employees);
-
-Set(
-    varXiaoranStatusDefault,
-    "Pending"
-);
-
-Set(
-    varSelectedBatchID,
-    Blank()
-)
-```
-
----
-
-# 四、顶部 Header
-
-## 1) `rectXiaoranHeader`
-
-```powerapps
-X = 0
-Y = 0
-Width = Parent.Width
-Height = 56
-Fill = RGBA(0,120,212,1)
-BorderThickness = 0
-```
-
-## 2) `lblXiaoranTitle`
-
-```powerapps
-Text = "Xiaoran Dashboard"
-X = 20
-Y = 0
-Width = 300
-Height = 56
-Color = RGBA(255,255,255,1)
-Size = 16
-FontWeight = FontWeight.Bold
-Fill = RGBA(0,0,0,0)
-```
-
-## 3) `lblXiaoranSub`
-
-```powerapps
-Text = "Batch review and ticket preparation"
-X = 220
-Y = 0
-Width = 320
-Height = 56
-Color = RGBA(204,228,247,1)
-Size = 11
-Fill = RGBA(0,0,0,0)
-```
-
-## 4) `lblXiaoranUser`
-
-```powerapps
-Text = "Xiaoran  ·  Admin View"
-X = Parent.Width - 260
-Y = 0
-Width = 240
-Height = 56
-Align = Align.Right
-Color = RGBA(204,228,247,1)
-Size = 12
-Fill = RGBA(0,0,0,0)
-```
-
----
-
-# 五、筛选区
-
-## 1) `ddBatchStatus`
-
-状态筛选。
-
-```powerapps
-Items = ["Pending","Processing","Done","Draft","All"]
-Default = "Pending"
-X = 20
-Y = 68
-Width = 150
-Height = 36
-```
-
-## 2) `txtBatchSearch`
-
-搜 batch 头。
-
-```powerapps
-Default = ""
-HintText = "Search BatchID / Manager / System"
-X = 184
-Y = 68
-Width = 280
-Height = 36
-```
-
-## 3) `txtLineSearch`
-
-搜当前 batch 下的 line。
-
-```powerapps
-Default = ""
-HintText = "Search EmployeeID / Name / TA"
-X = 478
-Y = 68
-Width = 280
-Height = 36
-```
-
-## 4) `btnRefreshXiaoran`
-
-```powerapps
-Text = "Refresh"
-X = Parent.Width - 120
-Y = 68
-Width = 100
-Height = 36
-
-OnSelect =
-Refresh(Batches);
-Refresh(BatchLines);
-Refresh(TicketRuns);
-Refresh(PolicyEvents);
-Refresh(EmployeeScopes);
-Refresh(Employees);
-Notify("Data refreshed.", NotificationType.Success)
-```
-
----
-
-# 六、KPI cards
-
-这里全部基于 `Batches`，因为你已经明确说了 Xiaoran 页面是 **batch-first**。
-
-## 1) Pending batches
-
-```powerapps
-Text = CountIf(Batches, Status = "Pending")
-```
-
-## 2) Pending Add lines
-
-```powerapps
-Text = Sum(Filter(Batches, Status = "Pending"), AddCount)
-```
-
-## 3) Pending Drop lines
-
-```powerapps
-Text = Sum(Filter(Batches, Status = "Pending"), DropCount)
-```
-
-## 4) Expected tickets
-
-```powerapps
-Text = Sum(Filter(Batches, Status = "Pending"), ExpectedTicketCount)
-```
-
-### 推荐位置
-
-| 卡片     |   X |   Y | Width | Height |
-| ------ | --: | --: | ----: | -----: |
-| Card 1 |  20 | 118 |   206 |     68 |
-| Card 2 | 246 | 118 |   206 |     68 |
-| Card 3 | 472 | 118 |   206 |     68 |
-| Card 4 | 698 | 118 |   206 |     68 |
-
----
-
-# 七、批次 Gallery：`galBatches`
-
-这是 Xiaoran 页的第一核心。
-
-Gallery 的模板应该完全由 `Items` 提供记录，模板内一律用 `ThisItem`。这正是 Microsoft 对 gallery 的标准用法。([Microsoft Learn][2])
-
-## Gallery 本体
-
-### Name
-
-```powerapps
-galBatches
-```
-
-### Items
-
-```powerapps
+```powerapps id="d9l1z9"
 SortByColumns(
-    Filter(
-        Batches,
-        (
-            ddBatchStatus.Selected.Value = "All" ||
-            Status = ddBatchStatus.Selected.Value
-        ) &&
-        (
-            IsBlank(txtBatchSearch.Text) ||
-            txtBatchSearch.Text in BatchID ||
-            txtBatchSearch.Text in Title ||
-            txtBatchSearch.Text in ManagerName ||
-            txtBatchSearch.Text in ManagerEmail ||
-            txtBatchSearch.Text in SystemCode
-        )
-    ),
-    "SubmittedAt",
-    SortOrder.Descending
+    EmployeeScopes,
+    "EmployeeName",
+    SortOrder.Ascending
 )
 ```
 
-### 属性
+### 结果判断
 
-```powerapps
-X = 20
-Y = 196
-Width = 430
-Height = Parent.Height - 216
-TemplateSize = 120
-TemplatePadding = 4
-ShowScrollbar = true
-DelayItemLoading = false
-```
-
-### OnSelect
-
-```powerapps
-Set(varSelectedBatchID, ThisItem.BatchID)
-```
+* 如果这一句 **能过**，说明 `EmployeeName` 没问题
+* 如果这一句 **也不行**，那就是数据源 schema 还没完全刷新好
 
 ---
 
-## `galBatches` 模板内控件
+## 再逐列加回去
 
-### 1) `rectBatchRow`
+第二步试：
 
-```powerapps
-X = 0
-Y = 0
-Width = Parent.TemplateWidth
-Height = 116
-Fill = If(ThisItem.BatchID = varSelectedBatchID, RGBA(242,248,255,1), RGBA(255,255,255,1))
-BorderColor = RGBA(220,220,220,1)
-BorderThickness = 1
-RadiusTopLeft = 6
-RadiusTopRight = 6
-RadiusBottomLeft = 6
-RadiusBottomRight = 6
-```
-
-### 2) `lblBatchHeader`
-
-```powerapps
-Text = ThisItem.BatchID & "  |  " & ThisItem.ManagerName
-X = 12
-Y = 10
-Width = 260
-Height = 22
-FontWeight = FontWeight.Bold
-Size = 13
-```
-
-### 3) `lblBatchMeta1`
-
-```powerapps
-Text =
-ThisItem.SystemCode & "  •  " &
-Text(ThisItem.SubmittedAt, "[$-en-US]yyyy-mm-dd hh:mm")
-X = 12
-Y = 34
-Width = 260
-Height = 18
-Size = 10
-Color = RGBA(90,90,90,1)
-```
-
-### 4) `lblBatchMeta2`
-
-```powerapps
-Text =
-"Add " & ThisItem.AddCount &
-"  •  Drop " & ThisItem.DropCount &
-"  •  Lines " & ThisItem.TotalLines
-X = 12
-Y = 54
-Width = 260
-Height = 18
-Size = 10
-Color = RGBA(90,90,90,1)
-```
-
-### 5) `lblBatchMeta3`
-
-```powerapps
-Text = "Expected tickets: " & ThisItem.ExpectedTicketCount
-X = 12
-Y = 74
-Width = 180
-Height = 18
-Size = 10
-Color = RGBA(90,90,90,1)
-```
-
-### 6) `lblBatchStatus`
-
-```powerapps
-Text = ThisItem.Status
-X = 300
-Y = 12
-Width = 100
-Height = 24
-Align = Align.Center
-FontWeight = FontWeight.Bold
-Fill =
-If(
-    ThisItem.Status = "Pending",
-    RGBA(255,244,206,1),
-    If(
-        ThisItem.Status = "Processing",
-        RGBA(227,242,253,1),
-        If(
-            ThisItem.Status = "Done",
-            RGBA(230,244,234,1),
-            RGBA(240,240,240,1)
-        )
-    )
-)
-Color =
-If(
-    ThisItem.Status = "Pending",
-    RGBA(140,90,0,1),
-    If(
-        ThisItem.Status = "Processing",
-        RGBA(0,90,160,1),
-        If(
-            ThisItem.Status = "Done",
-            RGBA(16,124,16,1),
-            RGBA(90,90,90,1)
-        )
-    )
-)
-RadiusTopLeft = 4
-RadiusTopRight = 4
-RadiusBottomLeft = 4
-RadiusBottomRight = 4
-```
-
-### 7) `btnApprovalFile`
-
-```powerapps
-Text = "Approval file"
-X = 272
-Y = 74
-Width = 128
-Height = 28
-Visible = !IsBlank(ThisItem.ApprovalFileURL)
-OnSelect = Launch(ThisItem.ApprovalFileURL)
-```
-
----
-
-# 八、选中批次 summary
-
-## `lblSelectedBatchTitle`
-
-```powerapps
-Text =
-If(
-    IsBlank(varSelectedBatchID),
-    "No batch selected",
-    "Selected Batch: " & varSelectedBatchID
-)
-X = 470
-Y = 196
-Width = 380
-Height = 28
-Size = 15
-FontWeight = FontWeight.Bold
-```
-
-## `lblSelectedBatchSummary`
-
-```powerapps
-Text =
-If(
-    IsBlank(varSelectedBatchID),
-    "",
-    LookUp(Batches, BatchID = varSelectedBatchID, ManagerName) &
-    "  •  " &
-    LookUp(Batches, BatchID = varSelectedBatchID, SystemCode) &
-    "  •  " &
-    LookUp(Batches, BatchID = varSelectedBatchID, Status)
-)
-X = 470
-Y = 226
-Width = 420
-Height = 20
-Size = 11
-Color = RGBA(90,90,90,1)
-```
-
----
-
-# 九、批次明细 Gallery：`galBatchLines`
-
-这是第二核心。
-这一层应该只看当前选中 batch 的 line。
-
-## Gallery 本体
-
-### Name
-
-```powerapps
-galBatchLines
-```
-
-### Items
-
-```powerapps
+```powerapps id="8szcbi"
 SortByColumns(
-    Filter(
-        BatchLines,
-        BatchID = varSelectedBatchID &&
-        (
-            IsBlank(txtLineSearch.Text) ||
-            txtLineSearch.Text in EmployeeID ||
-            txtLineSearch.Text in EmployeeName ||
-            txtLineSearch.Text in StudyList ||
-            txtLineSearch.Text in TargetTA
-        )
-    ),
+    EmployeeScopes,
     "EmployeeName",
     SortOrder.Ascending,
     "TargetTA",
@@ -593,640 +77,176 @@ SortByColumns(
 )
 ```
 
-### 属性
+第三步再加 `Environment`。
 
-```powerapps
-X = 470
-Y = 258
-Width = 390
-Height = 260
-TemplateSize = 102
-TemplatePadding = 4
-ShowScrollbar = true
-DelayItemLoading = false
-```
+这样你马上就能知道：
+
+* 是 `TargetTA` 出问题
+* 还是 `Environment` 出问题
 
 ---
 
-## `galBatchLines` 模板内控件
+# 我更推荐你的修法：改用 `Sort`，不要死磕 `SortByColumns`
 
-### 1) `rectLineRow`
+微软官方文档明确给了这种写法：
+要先按一列、再按另一列排序，可以 **嵌套 `Sort`**。([Microsoft Learn][1])
 
-```powerapps
-X = 0
-Y = 0
-Width = Parent.TemplateWidth
-Height = 98
-Fill = RGBA(255,255,255,1)
-BorderColor = RGBA(230,230,230,1)
-BorderThickness = 1
-RadiusTopLeft = 6
-RadiusTopRight = 6
-RadiusBottomLeft = 6
-RadiusBottomRight = 6
-```
+## 如果这三列都是纯文本
 
-### 2) `lblLineTitle`
+直接改成：
 
-```powerapps
-Text = ThisItem.EmployeeName & " (" & ThisItem.EmployeeID & ")"
-X = 10
-Y = 8
-Width = 220
-Height = 20
-FontWeight = FontWeight.Bold
-Size = 12
-```
-
-### 3) `lblLineTA`
-
-```powerapps
-Text =
-"TA: " & ThisItem.TargetTA &
-"  •  Env: " & ThisItem.Environment
-X = 10
-Y = 30
-Width = 180
-Height = 16
-Size = 10
-Color = RGBA(90,90,90,1)
-```
-
-### 4) `lblLineStudy`
-
-```powerapps
-Text = "Studies: " & ThisItem.StudyList
-X = 10
-Y = 48
-Width = 260
-Height = 16
-Size = 10
-Color = RGBA(90,90,90,1)
-```
-
-### 5) `lblLineAction`
-
-```powerapps
-Text = ThisItem.Action
-X = 280
-Y = 10
-Width = 80
-Height = 22
-Align = Align.Center
-FontWeight = FontWeight.Bold
-Fill =
-If(
-    ThisItem.Action = "Add",
-    RGBA(230,244,234,1),
-    RGBA(253,231,233,1)
-)
-Color =
-If(
-    ThisItem.Action = "Add",
-    RGBA(16,124,16,1),
-    RGBA(168,0,0,1)
-)
-RadiusTopLeft = 4
-RadiusTopRight = 4
-RadiusBottomLeft = 4
-RadiusBottomRight = 4
-```
-
-### 6) `lblLineStatus`
-
-```powerapps
-Text = ThisItem.LineStatus
-X = 280
-Y = 40
-Width = 80
-Height = 20
-Align = Align.Center
-Size = 10
-Fill = RGBA(240,240,240,1)
-Color = RGBA(90,90,90,1)
-RadiusTopLeft = 4
-RadiusTopRight = 4
-RadiusBottomLeft = 4
-RadiusBottomRight = 4
-```
-
-### 7) `lblLineTicket`
-
-```powerapps
-Text =
-If(
-    IsBlank(ThisItem.TicketNumber),
-    "Ticket: not assigned",
-    "Ticket: " & ThisItem.TicketNumber
-)
-X = 10
-Y = 68
-Width = 200
-Height = 16
-Size = 10
-Color = RGBA(120,120,120,1)
-```
-
-### 8) `lblLinePK`
-
-```powerapps
-Text = "PK/Title: " & ThisItem.Title
-X = 210
-Y = 68
-Width = 150
-Height = 16
-Size = 9
-Color = RGBA(140,140,140,1)
-```
-
-这个 `lblLinePK` 不是必须，但你现在既然专门加了 `Title = PK`，我建议测试阶段先显示出来，后面稳定了再隐藏。
-
----
-
-# 十、TicketRuns Gallery：`galTicketRuns`
-
-这层是 Xiaoran 页最关键的“准备提哪些 ticket”。
-
-## Gallery 本体
-
-### Name
-
-```powerapps
-galTicketRuns
-```
-
-### Items
-
-```powerapps
-SortByColumns(
-    Filter(
-        TicketRuns,
-        BatchID = varSelectedBatchID
+```powerapps id="h1hos9"
+Sort(
+    Sort(
+        Sort(
+            EmployeeScopes,
+            Environment,
+            SortOrder.Ascending
+        ),
+        TargetTA,
+        SortOrder.Ascending
     ),
-    "TicketRunID",
+    EmployeeName,
     SortOrder.Ascending
 )
 ```
 
-### 属性
+## 如果你实际是在排序 `colManagerScopes`
 
-```powerapps
-X = 876
-Y = 258
-Width = Parent.Width - 896
-Height = 260
-TemplateSize = 118
-TemplatePadding = 4
-ShowScrollbar = true
-DelayItemLoading = false
-```
+那就写成：
 
----
-
-## `galTicketRuns` 模板内控件
-
-### 1) `rectRunRow`
-
-```powerapps
-X = 0
-Y = 0
-Width = Parent.TemplateWidth
-Height = 114
-Fill = RGBA(255,255,255,1)
-BorderColor = RGBA(230,230,230,1)
-BorderThickness = 1
-RadiusTopLeft = 6
-RadiusTopRight = 6
-RadiusBottomLeft = 6
-RadiusBottomRight = 6
-```
-
-### 2) `lblRunTitle`
-
-```powerapps
-Text = ThisItem.TicketRunID
-X = 10
-Y = 8
-Width = 180
-Height = 20
-FontWeight = FontWeight.Bold
-Size = 12
-```
-
-### 3) `lblRunMeta1`
-
-```powerapps
-Text =
-ThisItem.SystemCode &
-"  •  " &
-ThisItem.Action &
-"  •  " &
-ThisItem.TargetTA
-X = 10
-Y = 30
-Width = 220
-Height = 16
-Size = 10
-Color = RGBA(90,90,90,1)
-```
-
-### 4) `lblRunMeta2`
-
-```powerapps
-Text =
-"Env: " & ThisItem.Environment &
-"  •  Users: " & ThisItem.UserCount
-X = 10
-Y = 48
-Width = 200
-Height = 16
-Size = 10
-Color = RGBA(90,90,90,1)
-```
-
-### 5) `lblRunStatus`
-
-```powerapps
-Text = ThisItem.Status
-X = 10
-Y = 68
-Width = 100
-Height = 20
-Align = Align.Center
-Fill =
-If(
-    ThisItem.Status = "Pending",
-    RGBA(255,244,206,1),
-    If(
-        ThisItem.Status = "Processing",
-        RGBA(227,242,253,1),
-        If(
-            ThisItem.Status = "Done",
-            RGBA(230,244,234,1),
-            RGBA(240,240,240,1)
-        )
-    )
-)
-Color =
-If(
-    ThisItem.Status = "Pending",
-    RGBA(140,90,0,1),
-    If(
-        ThisItem.Status = "Processing",
-        RGBA(0,90,160,1),
-        If(
-            ThisItem.Status = "Done",
-            RGBA(16,124,16,1),
-            RGBA(90,90,90,1)
-        )
-    )
-)
-RadiusTopLeft = 4
-RadiusTopRight = 4
-RadiusBottomLeft = 4
-RadiusBottomRight = 4
-```
-
-### 6) `lblRunTicket`
-
-```powerapps
-Text =
-If(
-    IsBlank(ThisItem.TicketNumber),
-    "Ticket: not created",
-    "Ticket: " & ThisItem.TicketNumber
-)
-X = 120
-Y = 68
-Width = 120
-Height = 20
-Size = 10
-Color = RGBA(120,120,120,1)
-```
-
-### 7) `lblRunPK`
-
-```powerapps
-Text = "PK/Title: " & ThisItem.Title
-X = 10
-Y = 92
-Width = 180
-Height = 14
-Size = 9
-Color = RGBA(140,140,140,1)
-```
-
----
-
-# 十一、底部按钮区
-
-这里不做 AI，只做流程动作。
-
----
-
-## 1) `btnPrepareSelectedBatch`
-
-这是 Xiaoran 点的主按钮。
-如果你后面要让它触发 Cloud Flow，这是最自然的位置。Power Apps 里按钮的 `OnSelect` 触发行为公式和 flow，本来就是官方推荐用法。([Microsoft Learn][1])
-
-### 外观
-
-```powerapps
-Text = "Prepare Ticket"
-X = Parent.Width - 250
-Y = Parent.Height - 56
-Width = 220
-Height = 40
-Fill = RGBA(0,120,212,1)
-Color = RGBA(255,255,255,1)
-FontWeight = FontWeight.Bold
-BorderThickness = 0
-RadiusTopLeft = 6
-RadiusTopRight = 6
-RadiusBottomLeft = 6
-RadiusBottomRight = 6
-
-DisplayMode =
-If(
-    IsBlank(varSelectedBatchID),
-    DisplayMode.Disabled,
-    DisplayMode.Edit
-)
-```
-
-### OnSelect
-
-先给你一个不依赖 flow 的安全版本：
-只把 batch 状态改为 `Processing`。
-
-```powerapps
-With(
-    {
-        _selectedBatch: LookUp(Batches, BatchID = varSelectedBatchID)
-    },
-    IfError(
-        Patch(
-            Batches,
-            _selectedBatch,
-            {
-                Status: "Processing"
-            }
-        );
-        Notify(
-            "Batch marked as Processing.",
-            NotificationType.Success
-        );
-        Refresh(Batches);
-        true,
-        Notify(
-            "Failed to update batch status.",
-            NotificationType.Error
-        );
-        false
-    )
-)
-```
-
-这里我故意用 `With + IfError`，因为：
-
-* `With` 可以把当前 batch 先收起来，公式更清楚。([Microsoft Learn][5])
-* `IfError` 两个分支最终都返回 Boolean，避免你之前碰到的类型不兼容问题。([Microsoft Learn][6])
-
-### 如果你后面接 cloud flow
-
-可以在 `Patch(...)` 后面加：
-
-```powerapps
-flow_PrepareTicketBatch.Run(varSelectedBatchID);
-```
-
----
-
-## 2) `btnMarkBatchDone`
-
-```powerapps
-Text = "Mark Done"
-X = Parent.Width - 490
-Y = Parent.Height - 56
-Width = 120
-Height = 40
-
-DisplayMode =
-If(
-    IsBlank(varSelectedBatchID),
-    DisplayMode.Disabled,
-    DisplayMode.Edit
-)
-
-OnSelect =
-With(
-    {
-        _selectedBatch: LookUp(Batches, BatchID = varSelectedBatchID)
-    },
-    IfError(
-        Patch(
-            Batches,
-            _selectedBatch,
-            { Status: "Done" }
-        );
-        Refresh(Batches);
-        Notify("Batch marked as Done.", NotificationType.Success);
-        true,
-        Notify("Failed to update batch.", NotificationType.Error);
-        false
-    )
+```powerapps id="omgl6i"
+Sort(
+    Sort(
+        Sort(
+            colManagerScopes,
+            Environment,
+            SortOrder.Ascending
+        ),
+        TargetTA,
+        SortOrder.Ascending
+    ),
+    EmployeeName,
+    SortOrder.Ascending
 )
 ```
 
 ---
 
-## 3) `btnBackManager`
+# 如果 `TargetTA` / `Environment` 是 Choice 列
 
-```powerapps
-Text = "← Manager View"
-X = 20
-Y = Parent.Height - 56
-Width = 130
-Height = 40
-OnSelect = Navigate(scrManager, ScreenTransition.Fade)
+那就不要直接写列名，而要排它的 `.Value`。
+因为 `Sort` 的公式必须返回字符串/数字/布尔，不可以返回 record。([Microsoft Learn][1])
+
+## 这时写成：
+
+```powerapps id="d795x5"
+Sort(
+    Sort(
+        Sort(
+            colManagerScopes,
+            Environment.Value,
+            SortOrder.Ascending
+        ),
+        TargetTA.Value,
+        SortOrder.Ascending
+    ),
+    EmployeeName,
+    SortOrder.Ascending
+)
+```
+
+如果 `EmployeeName` 也是复杂类型，就同理看是不是要 `.DisplayName` 或别的子字段，不过按你现在的描述，`EmployeeName` 大概率是纯文本。
+
+---
+
+# 还有一个要注意的官方细节
+
+如果 SharePoint / Excel 的列名里有空格，`SortByColumns` 里要写成 `_x0020_` 形式，比如：
+
+```powerapps id="4wl5uy"
+"Column_x0020_Name"
+```
+
+微软文档明确提到了这个规则。([Microsoft Learn][1])
+
+虽然你这几个列名看起来没空格，但这个规则你后面会用到。
+
+---
+
+# 我建议你现在直接这样做
+
+## 不要继续卡在 `SortByColumns`
+
+先把你原来的：
+
+```powerapps id="j83jhy"
+SortByColumns(
+    ...,
+    "EmployeeName",
+    SortOrder.Ascending,
+    "TargetTA",
+    SortOrder.Ascending,
+    "Environment",
+    SortOrder.Ascending
+)
+```
+
+改成嵌套 `Sort`。
+
+### 先试文本版：
+
+```powerapps id="e4sl0x"
+Sort(
+    Sort(
+        Sort(
+            Filter(
+                colManagerScopes,
+                Lower(Trim(ManagerEmail)) = varUserEmail
+            ),
+            Environment,
+            SortOrder.Ascending
+        ),
+        TargetTA,
+        SortOrder.Ascending
+    ),
+    EmployeeName,
+    SortOrder.Ascending
+)
+```
+
+### 如果报 `TargetTA` / `Environment` 类型不对，再改成 `.Value` 版：
+
+```powerapps id="fkcibk"
+Sort(
+    Sort(
+        Sort(
+            Filter(
+                colManagerScopes,
+                Lower(Trim(ManagerEmail)) = varUserEmail
+            ),
+            Environment.Value,
+            SortOrder.Ascending
+        ),
+        TargetTA.Value,
+        SortOrder.Ascending
+    ),
+    EmployeeName,
+    SortOrder.Ascending
+)
 ```
 
 ---
 
-# 十二、推荐的 3 个调试标签
+# 一句话判断
 
-因为你现在是 dummy 阶段，而且还特别加了 `Title = PK`，我建议先保留这 3 个 label。
+**`First(...).EmployeeName` 能读到，不代表 `SortByColumns` 里的所有列都没问题。**
+真正更稳的做法是：
 
-## `lblDebugBatchCount`
+* 先逐列测试是哪一列坏了
+* 然后直接改用嵌套 `Sort`
+* 如果列是 Choice/Lookup，就排序它的 `.Value`
 
-```powerapps
-Text = "Batches loaded: " & galBatches.AllItemsCount
-X = 20
-Y = Parent.Height - 88
-Width = 180
-Height = 14
-Size = 9
-Color = RGBA(120,120,120,1)
-```
+把你现在报错的那条完整 `SortByColumns(...)` 公式贴给我，我可以直接帮你改成你当前这个数据源能跑的版本。
 
-## `lblDebugLinesCount`
-
-```powerapps
-Text = "Lines loaded: " & galBatchLines.AllItemsCount
-X = 220
-Y = Parent.Height - 88
-Width = 180
-Height = 14
-Size = 9
-Color = RGBA(120,120,120,1)
-```
-
-## `lblDebugRunsCount`
-
-```powerapps
-Text = "Runs loaded: " & galTicketRuns.AllItemsCount
-X = 420
-Y = Parent.Height - 88
-Width = 180
-Height = 14
-Size = 9
-Color = RGBA(120,120,120,1)
-```
-
-调通以后统一：
-
-```powerapps
-Visible = false
-```
-
----
-
-# 十三、你现在需要同步改的地方
-
-因为你加了 `Title = PK`，我建议你把 `scrManager` 的 Submit 也同步改成下面这样。
-
-## `Batches` patch 时加：
-
-```powerapps
-Title: _batchID
-```
-
-## `BatchLines` patch 时加：
-
-```powerapps
-Title: _batchID & "-" & ScopeID
-```
-
-以后如果你用 flow 生成 `TicketRuns`，也让 flow 写：
-
-```text
-Title = TicketRunID
-```
-
-这样 SharePoint 默认列、默认表单、以及以后某些 Power Apps 默认卡片都不会出问题。
-
----
-
-# 十四、这版 `scrXiaoran` 和 dummy workbook 的字段是对齐的
-
-我这版公式只用了这些字段：
-
-## Batches
-
-* `Title`
-* `BatchID`
-* `PolicyEventID`
-* `SystemCode`
-* `ManagerEmail`
-* `ManagerName`
-* `SubmittedAt`
-* `Status`
-* `AddCount`
-* `DropCount`
-* `TotalLines`
-* `ExpectedTicketCount`
-* `ApprovalFileURL`
-
-## BatchLines
-
-* `Title`
-* `BatchLineID`
-* `BatchID`
-* `ScopeID`
-* `SystemCode`
-* `EmployeeID`
-* `EmployeeName`
-* `StudyList`
-* `TargetTA`
-* `Environment`
-* `CurrentAccess`
-* `Action`
-* `ManagerEmail`
-* `LineStatus`
-* `TicketRunID`
-* `TicketNumber`
-
-## TicketRuns
-
-* `Title`
-* `TicketRunID`
-* `BatchID`
-* `SystemCode`
-* `Action`
-* `TargetTA`
-* `Environment`
-* `UserCount`
-* `Status`
-* `TicketNumber`
-
-也就是说，它就是按你现在这份 dummy workbook 来写的，不是沿用你最早那套旧的 `GPS_Changes` 版本。
-
----
-
-# 十五、你现在最建议的实现顺序
-
-先不要一口气把所有按钮和 flow 都接上。
-按这个顺序最稳：
-
-### 第一步
-
-先把 `scrXiaoran` 建出来：
-
-* Header
-* filter bar
-* KPI
-* `galBatches`
-
-### 第二步
-
-确认点某个 batch 后，右侧 summary 会变。
-
-### 第三步
-
-加 `galBatchLines`
-
-### 第四步
-
-加 `galTicketRuns`
-
-### 第五步
-
-最后再加：
-
-* `Prepare Ticket`
-* `Mark Done`
-
-这样最好 debug。
-
----
-
-如果你愿意，我下一条可以继续直接给你：
-
-**“把你现在新增 `Title = PK` 后，`scrManager` 的 Submit 最终版完整重写一遍”**
-
-[1]: https://learn.microsoft.com/en-us/power-apps/maker/canvas-apps/controls/control-screen "Screen control in Power Apps - Power Apps | Microsoft Learn"
-[2]: https://learn.microsoft.com/en-us/power-apps/maker/canvas-apps/controls/control-gallery "Gallery control in Power Apps - Power Apps | Microsoft Learn"
-[3]: https://learn.microsoft.com/en-us/power-platform/power-fx/reference/function-filter-lookup "Filter, Search, and LookUp functions - Power Platform | Microsoft Learn"
-[4]: https://learn.microsoft.com/en-us/power-platform/power-fx/reference/function-patch "Patch function - Power Platform | Microsoft Learn"
-[5]: https://learn.microsoft.com/en-us/power-platform/power-fx/reference/function-with "With function - Power Platform | Microsoft Learn"
-[6]: https://learn.microsoft.com/en-us/power-platform/power-fx/reference/function-iferror "Error, IfError, IsError, and IsBlankOrError functions - Power Platform | Microsoft Learn"
+[1]: https://learn.microsoft.com/en-us/power-platform/power-fx/reference/function-sort "Sort and SortByColumns functions - Power Platform | Microsoft Learn"
