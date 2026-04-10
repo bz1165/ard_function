@@ -1,208 +1,356 @@
-这说明问题已经缩小了：
+## 问题根源分析
 
-**`EmployeeName` 这个字段本身大概率没问题。**
-`First(EmployeeScopes).EmployeeName` 能拿到值，说明 Power Apps 已经认到这列了。
+你遇到的是 **4 个相互独立的问题**，都有明确的 Microsoft 官方原因：
 
-所以 `SortByColumns(...)` 报 **无效参数**，更常见的是下面这几种情况：
+---
 
-## 最可能的 3 个原因
+### 问题 1 — `SortByColumns` 在 SharePoint List 上报 invalid argument
 
-### 1. 出问题的不是 `EmployeeName`，而是后面的 `TargetTA` 或 `Environment`
+**原因：** `SortByColumns` 用于 SharePoint List 时，要求排序列必须是**可委派（delegable）的索引列**。`EmployeeScopes` 里的 `EmployeeName`、`TargetTA`、`Environment` 在 SharePoint List 中默认不是索引列，所以报错。换成 Excel 连接时没问题，因为 Excel 数据源直接在本地处理，不走 delegation。
 
-`SortByColumns` 是按参数顺序解析的。只要后面某一列有问题，整个函数都会报“无效参数”。
-Microsoft 官方文档说明，`SortByColumns` 的列名要作为**字符串**传入，而且如果有多列，除最后一列外都要配对应的 `SortOrder`。([Microsoft Learn][1])
+**官方说明：** [Understand delegation in Power Apps](https://learn.microsoft.com/en-us/power-apps/maker/canvas-apps/delegation-overview) — SharePoint 的 `SortByColumns` 只支持被索引的列。
 
-### 2. `TargetTA` / `Environment` 在 SharePoint 里可能不是“纯文本”，而是复杂类型
+**修法：** `ClearCollect` 里只做 `Filter + AddColumns`，排序全部移到 gallery 的 `Items` 里用 `Sort()` 处理（`Sort()` 作用于 collection，不走 delegation，没有这个限制）。
 
-这很常见。比如如果它们被建成了：
+---
 
-* Choice
-* Lookup
-* Person
+### 问题 2 — `cmbPolicyEvent` 下拉没有内容
 
-那 `First(EmployeeScopes).TargetTA` 看起来“有东西”，但它拿到的可能是一个 **record**，不是纯文本。
-而 `SortByColumns` 更适合按直接列名排序；如果字段是复杂类型，往往更稳的是改用 `Sort(...)`，按一个公式去排序。微软文档也明确说了：`Sort` 是按公式排序，而这个公式必须返回 **number / string / Boolean**，不能返回 table 或 record。([Microsoft Learn][1])
+**原因：** `DefaultSelectedItems = [LookUp(...)]` 这个 `[]` 写法在 ComboBox 里会触发 schema 不匹配，导致整个 ComboBox 渲染失败，items 看上去是空的。
 
-### 3. 你当前排序的并不是 `EmployeeScopes`，而是一个经过处理的表
+**修法：** 改成 `Filter(colPolicyEvents, PolicyEventID = varSelectedPolicyEventID)`。
 
-如果你现在真正写的是：
+---
 
+### 问题 3 — `Lower(Trim(ManagerEmail)) = varUserEmail` delegation warning
+
+**原因：** SharePoint List 不支持对**列**做 `Lower()` / `Trim()` 的委派。超过 delegation limit（默认 500 条）就只能查到部分数据。
+
+**修法：** `Lower/Trim` 只加在变量赋值上（已在 `OnVisible` 里 `Set(varUserEmail, Lower(Trim(User().Email)))`），filter 里改成直接比较 `ManagerEmail = varUserEmail`，这个简单等值比较对 SharePoint 文本列**完全可委派**。
+
+---
+
+### 问题 4 — `Submit` 里 `IfError` 结构有 `true` / `false` 悬空
+
+**原因：** `IfError(expr, fallback)` 的第一个参数是要执行的表达式链，第二个是出错时的 fallback。你的代码在 `Notify("Success")` 后多了一个独立的 `; true`，这会被解析成 `IfError` 的第三个参数，导致结构错误。
+
+---
+
+## 完整正确版 `scrManager`
+
+---
+
+### Screen 本体
+
+**Fill**
 ```powerapps
-SortByColumns(colManagerScopes, ...)
+RGBA(245,246,248,1)
 ```
 
-那就要确认 `colManagerScopes` 里是不是还保留了：
-
-* `EmployeeName`
-* `TargetTA`
-* `Environment`
-
-因为 Power Fx 里的表经过 `ShowColumns / AddColumns / DropColumns` 后，会变成一张新的表。
-你在 `EmployeeScopes` 上能 `First(...).EmployeeName`，不代表 `colManagerScopes` 里也一定有这个列。
-
----
-
-# 现在最稳的排查顺序
-
-## 先只测一列
-
-先试最小版本：
-
-```powerapps id="d9l1z9"
-SortByColumns(
-    EmployeeScopes,
-    "EmployeeName",
-    SortOrder.Ascending
-)
+**LoadingSpinner**
+```powerapps
+LoadingSpinner.Data
 ```
 
-### 结果判断
+**OnVisible**
+```powerapps
+Refresh(PolicyEvents);
+Refresh(EmployeeScopes);
+Refresh(Batches);
+Refresh(BatchLines);
 
-* 如果这一句 **能过**，说明 `EmployeeName` 没问题
-* 如果这一句 **也不行**，那就是数据源 schema 还没完全刷新好
+Set(
+    varUserEmail,
+    Lower(Trim(User().Email))
+);
 
----
-
-## 再逐列加回去
-
-第二步试：
-
-```powerapps id="8szcbi"
-SortByColumns(
-    EmployeeScopes,
-    "EmployeeName",
-    SortOrder.Ascending,
-    "TargetTA",
-    SortOrder.Ascending
-)
-```
-
-第三步再加 `Environment`。
-
-这样你马上就能知道：
-
-* 是 `TargetTA` 出问题
-* 还是 `Environment` 出问题
-
----
-
-# 我更推荐你的修法：改用 `Sort`，不要死磕 `SortByColumns`
-
-微软官方文档明确给了这种写法：
-要先按一列、再按另一列排序，可以 **嵌套 `Sort`**。([Microsoft Learn][1])
-
-## 如果这三列都是纯文本
-
-直接改成：
-
-```powerapps id="h1hos9"
-Sort(
+ClearCollect(
+    colPolicyEvents,
     Sort(
-        Sort(
+        Filter(
+            PolicyEvents,
+            Status = "Ready" || Status = "Draft"
+        ),
+        ScheduledTime,
+        SortOrder.Ascending
+    )
+);
+
+Set(
+    varSelectedPolicyEventID,
+    If(
+        CountRows(Filter(colPolicyEvents, Status = "Ready")) > 0,
+        First(Filter(colPolicyEvents, Status = "Ready")).PolicyEventID,
+        If(
+            CountRows(colPolicyEvents) > 0,
+            First(colPolicyEvents).PolicyEventID,
+            Blank()
+        )
+    )
+);
+
+Set(
+    varSelectedSystemCode,
+    LookUp(
+        colPolicyEvents,
+        PolicyEventID = varSelectedPolicyEventID,
+        SystemCode
+    )
+);
+
+ClearCollect(
+    colManagerScopes,
+    AddColumns(
+        Filter(
             EmployeeScopes,
-            Environment,
-            SortOrder.Ascending
+            ManagerEmail = varUserEmail &&
+            ActiveFlag = "Y" &&
+            SystemCode = varSelectedSystemCode
         ),
-        TargetTA,
-        SortOrder.Ascending
-    ),
-    EmployeeName,
-    SortOrder.Ascending
+        SelectedAction,
+        "No Change"
+    )
+);
+
+Set(
+    varManagerName,
+    If(
+        CountRows(colManagerScopes) > 0,
+        First(colManagerScopes).ManagerName,
+        User().FullName
+    )
 )
 ```
 
-## 如果你实际是在排序 `colManagerScopes`
+---
 
-那就写成：
+### Section 1 — Header
 
-```powerapps id="omgl6i"
-Sort(
+**`rectManagerHeader`**
+```powerapps
+X = 0 | Y = 0 | Width = Parent.Width | Height = 56
+Fill = RGBA(0,120,212,1) | BorderThickness = 0
+```
+
+**`lblManagerTitle`**
+```powerapps
+Text = "Access Management"
+X = 20 | Y = 0 | Width = 280 | Height = 56
+Color = RGBA(255,255,255,1) | Size = 16 | FontWeight = FontWeight.Bold
+Fill = RGBA(0,0,0,0)
+```
+
+**`lblManagerSubtitle`**
+```powerapps
+Text = "Manager scope review"
+X = 220 | Y = 0 | Width = 220 | Height = 56
+Color = RGBA(204,228,247,1) | Size = 11 | Fill = RGBA(0,0,0,0)
+```
+
+**`lblManagerUser`**
+```powerapps
+Text = varManagerName & "  ·  " & varSelectedSystemCode
+X = Parent.Width - 320 | Y = 0 | Width = 300 | Height = 56
+Align = Align.Right | Color = RGBA(204,228,247,1) | Size = 12
+Fill = RGBA(0,0,0,0)
+```
+
+---
+
+### Section 2 — Event / Filter Bar
+
+**`cmbPolicyEvent`**
+```powerapps
+X = 20 | Y = 68 | Width = 320 | Height = 36
+Items = Filter(colPolicyEvents, Status = "Ready" || Status = "Draft")
+DisplayFields = ["EventName"]
+SearchFields = ["EventName"]
+SelectMultiple = false
+DefaultSelectedItems = Filter(colPolicyEvents, PolicyEventID = varSelectedPolicyEventID)
+InputTextPlaceholder = "Select a policy event"
+```
+
+**`cmbPolicyEvent.OnChange`**
+```powerapps
+Set(
+    varSelectedPolicyEventID,
+    cmbPolicyEvent.Selected.PolicyEventID
+);
+
+Set(
+    varSelectedSystemCode,
+    cmbPolicyEvent.Selected.SystemCode
+);
+
+ClearCollect(
+    colManagerScopes,
+    AddColumns(
+        Filter(
+            EmployeeScopes,
+            ManagerEmail = varUserEmail &&
+            ActiveFlag = "Y" &&
+            SystemCode = varSelectedSystemCode
+        ),
+        SelectedAction,
+        "No Change"
+    )
+)
+```
+
+---
+
+**`lblSelectedSystem`**
+```powerapps
+Text = "System: " & varSelectedSystemCode
+X = 356 | Y = 68 | Width = 180 | Height = 36
+Size = 12 | FontWeight = FontWeight.Semibold
+Fill = RGBA(255,255,255,1) | Color = RGBA(0,0,0,1)
+BorderColor = RGBA(220,220,220,1) | BorderThickness = 1 | PaddingLeft = 12
+RadiusTopLeft = 4 | RadiusTopRight = 4 | RadiusBottomLeft = 4 | RadiusBottomRight = 4
+```
+
+---
+
+**`ddAccessFilter`**
+```powerapps
+X = 548 | Y = 68 | Width = 180 | Height = 36
+Items = Table(
+    {Value: "All"},
+    {Value: "Current access = Yes"},
+    {Value: "Current access = No"}
+)
+Default = "All"
+```
+
+---
+
+**`txtScopeSearch`**
+```powerapps
+X = 742 | Y = 68 | Width = 320 | Height = 36
+Default = ""
+HintText = "Search name / EmployeeID / study / TA"
+```
+
+---
+
+**`btnRefreshScopes`**
+```powerapps
+Text = "Refresh"
+X = 1078 | Y = 68 | Width = 100 | Height = 36
+```
+
+**`btnRefreshScopes.OnSelect`**
+```powerapps
+Refresh(PolicyEvents);
+Refresh(EmployeeScopes);
+Refresh(Batches);
+Refresh(BatchLines);
+
+ClearCollect(
+    colPolicyEvents,
     Sort(
-        Sort(
-            colManagerScopes,
-            Environment,
-            SortOrder.Ascending
+        Filter(
+            PolicyEvents,
+            Status = "Ready" || Status = "Draft"
         ),
-        TargetTA,
+        ScheduledTime,
         SortOrder.Ascending
-    ),
-    EmployeeName,
-    SortOrder.Ascending
-)
-```
+    )
+);
 
----
+Set(
+    varSelectedSystemCode,
+    LookUp(
+        colPolicyEvents,
+        PolicyEventID = varSelectedPolicyEventID,
+        SystemCode
+    )
+);
 
-# 如果 `TargetTA` / `Environment` 是 Choice 列
-
-那就不要直接写列名，而要排它的 `.Value`。
-因为 `Sort` 的公式必须返回字符串/数字/布尔，不可以返回 record。([Microsoft Learn][1])
-
-## 这时写成：
-
-```powerapps id="d795x5"
-Sort(
-    Sort(
-        Sort(
-            colManagerScopes,
-            Environment.Value,
-            SortOrder.Ascending
+ClearCollect(
+    colManagerScopes,
+    AddColumns(
+        Filter(
+            EmployeeScopes,
+            ManagerEmail = varUserEmail &&
+            ActiveFlag = "Y" &&
+            SystemCode = varSelectedSystemCode
         ),
-        TargetTA.Value,
-        SortOrder.Ascending
-    ),
-    EmployeeName,
-    SortOrder.Ascending
-)
-```
+        SelectedAction,
+        "No Change"
+    )
+);
 
-如果 `EmployeeName` 也是复杂类型，就同理看是不是要 `.DisplayName` 或别的子字段，不过按你现在的描述，`EmployeeName` 大概率是纯文本。
+Notify("Manager scope list refreshed.", NotificationType.Success)
+```
 
 ---
 
-# 还有一个要注意的官方细节
+### Section 3 — KPI Cards
 
-如果 SharePoint / Excel 的列名里有空格，`SortByColumns` 里要写成 `_x0020_` 形式，比如：
+| Control | X | Y | Width | Height |
+|---|---|---|---|---|
+| Card 1 | 20 | 118 | 206 | 68 |
+| Card 2 | 246 | 118 | 206 | 68 |
+| Card 3 | 472 | 118 | 206 | 68 |
+| Card 4 | 698 | 118 | 206 | 68 |
 
-```powerapps id="4wl5uy"
-"Column_x0020_Name"
+**`lblKpiScopeLines`**
+```powerapps
+Text = CountRows(colManagerScopes)
 ```
 
-微软文档明确提到了这个规则。([Microsoft Learn][1])
+**`lblKpiEmployees`**
+```powerapps
+Text = CountRows(Distinct(colManagerScopes, EmployeeID))
+```
 
-虽然你这几个列名看起来没空格，但这个规则你后面会用到。
+**`lblKpiAdd`**
+```powerapps
+Text = CountIf(colManagerScopes, SelectedAction = "Add")
+```
+
+**`lblKpiDrop`**
+```powerapps
+Text = CountIf(colManagerScopes, SelectedAction = "Drop")
+```
 
 ---
 
-# 我建议你现在直接这样做
+### Section 4 — Hint
 
-## 不要继续卡在 `SortByColumns`
-
-先把你原来的：
-
-```powerapps id="j83jhy"
-SortByColumns(
-    ...,
-    "EmployeeName",
-    SortOrder.Ascending,
-    "TargetTA",
-    SortOrder.Ascending,
-    "Environment",
-    SortOrder.Ascending
-)
+**`lblScopeHint`**
+```powerapps
+Text = "Each row is one access scope. The same employee may appear more than once when they have different Target TA or Environment."
+X = 20 | Y = 196 | Width = Parent.Width - 40 | Height = 20
+Size = 11 | Color = RGBA(100,100,100,1) | Fill = RGBA(0,0,0,0)
 ```
 
-改成嵌套 `Sort`。
+---
 
-### 先试文本版：
+### Section 5 — Gallery
 
-```powerapps id="e4sl0x"
+**`galManagerScopes`**
+
+**Items**
+```powerapps
 Sort(
     Sort(
         Sort(
             Filter(
                 colManagerScopes,
-                Lower(Trim(ManagerEmail)) = varUserEmail
+                (
+                    ddAccessFilter.Selected.Value = "All" ||
+                    (ddAccessFilter.Selected.Value = "Current access = Yes" && CurrentAccess = "Yes") ||
+                    (ddAccessFilter.Selected.Value = "Current access = No"  && CurrentAccess = "No")
+                ) &&
+                (
+                    IsBlank(txtScopeSearch.Text) ||
+                    txtScopeSearch.Text in EmployeeName ||
+                    txtScopeSearch.Text in EmployeeID ||
+                    txtScopeSearch.Text in StudyList ||
+                    txtScopeSearch.Text in TargetTA
+                )
             ),
             Environment,
             SortOrder.Ascending
@@ -215,38 +363,323 @@ Sort(
 )
 ```
 
-### 如果报 `TargetTA` / `Environment` 类型不对，再改成 `.Value` 版：
+**Layout**
+```powerapps
+X = 20 | Y = 224
+Width = Parent.Width - 40
+Height = Parent.Height - 296
+TemplateSize = 86 | TemplatePadding = 4
+ShowScrollbar = true | DelayItemLoading = false
+```
 
-```powerapps id="fkcibk"
-Sort(
-    Sort(
-        Sort(
-            Filter(
-                colManagerScopes,
-                Lower(Trim(ManagerEmail)) = varUserEmail
-            ),
-            Environment.Value,
-            SortOrder.Ascending
-        ),
-        TargetTA.Value,
-        SortOrder.Ascending
-    ),
-    EmployeeName,
-    SortOrder.Ascending
+---
+
+### Section 6 — Gallery Template Controls
+
+**`rectScopeRow`**
+```powerapps
+X = 0 | Y = 0
+Width = Parent.TemplateWidth | Height = 82
+Fill = RGBA(255,255,255,1)
+BorderColor = RGBA(230,230,230,1) | BorderThickness = 1
+RadiusTopLeft = 6 | RadiusTopRight = 6 | RadiusBottomLeft = 6 | RadiusBottomRight = 6
+```
+
+**`lblScopeTitle`**
+```powerapps
+Text = ThisItem.EmployeeName & " (" & ThisItem.EmployeeID & ")"
+X = 12 | Y = 8 | Width = 260 | Height = 24
+Size = 13 | FontWeight = FontWeight.Bold
+Color = RGBA(0,0,0,1) | Fill = RGBA(0,0,0,0)
+```
+
+**`lblScopeLine1`**
+```powerapps
+Text = "Home TA: " & ThisItem.HomeTA & "   •   Target TA: " & ThisItem.TargetTA & "   •   Env: " & ThisItem.Environment
+X = 12 | Y = 34 | Width = 340 | Height = 18
+Size = 10 | Color = RGBA(90,90,90,1) | Fill = RGBA(0,0,0,0)
+```
+
+**`lblScopeLine2`**
+```powerapps
+Text = "Studies: " & ThisItem.StudyList
+X = 12 | Y = 54 | Width = 420 | Height = 18
+Size = 10 | Color = RGBA(90,90,90,1) | Fill = RGBA(0,0,0,0)
+```
+
+**`lblScopeSystem`**
+```powerapps
+Text = "System: " & ThisItem.SystemCode
+X = 450 | Y = 10 | Width = 120 | Height = 18
+Size = 10 | Color = RGBA(120,120,120,1) | Fill = RGBA(0,0,0,0)
+```
+
+**`lblCurrentAccessBadge`**
+```powerapps
+Text = If(ThisItem.CurrentAccess = "Yes", "Has access", "No access")
+X = 450 | Y = 34 | Width = 96 | Height = 24
+Align = Align.Center | FontWeight = FontWeight.Bold
+RadiusTopLeft = 4 | RadiusTopRight = 4 | RadiusBottomLeft = 4 | RadiusBottomRight = 4
+Fill = If(ThisItem.CurrentAccess = "Yes", RGBA(230,244,234,1), RGBA(254,240,230,1))
+Color = If(ThisItem.CurrentAccess = "Yes", RGBA(16,124,16,1), RGBA(169,68,0,1))
+```
+
+---
+
+### Section 7 — Gallery Template Action Buttons
+
+**`btnScopeAdd`**
+```powerapps
+Text = "Add"
+X = Parent.TemplateWidth - 330 | Y = 24 | Width = 96 | Height = 34
+BorderThickness = 1
+RadiusTopLeft = 4 | RadiusTopRight = 4 | RadiusBottomLeft = 4 | RadiusBottomRight = 4
+Fill = If(ThisItem.SelectedAction = "Add", RGBA(230,244,234,1), RGBA(255,255,255,1))
+Color = If(ThisItem.SelectedAction = "Add", RGBA(16,124,16,1), RGBA(102,102,102,1))
+BorderColor = If(ThisItem.SelectedAction = "Add", RGBA(16,124,16,1), RGBA(200,200,200,1))
+```
+
+**`btnScopeAdd.OnSelect`**
+```powerapps
+UpdateIf(
+    colManagerScopes,
+    ScopeID = ThisItem.ScopeID,
+    { SelectedAction: "Add" }
 )
 ```
 
 ---
 
-# 一句话判断
+**`btnScopeNoChange`**
+```powerapps
+Text = "No Change"
+X = Parent.TemplateWidth - 224 | Y = 24 | Width = 96 | Height = 34
+BorderThickness = 1
+RadiusTopLeft = 4 | RadiusTopRight = 4 | RadiusBottomLeft = 4 | RadiusBottomRight = 4
+Fill = If(ThisItem.SelectedAction = "No Change", RGBA(230,230,230,1), RGBA(255,255,255,1))
+Color = RGBA(80,80,80,1) | BorderColor = RGBA(200,200,200,1)
+```
 
-**`First(...).EmployeeName` 能读到，不代表 `SortByColumns` 里的所有列都没问题。**
-真正更稳的做法是：
+**`btnScopeNoChange.OnSelect`**
+```powerapps
+UpdateIf(
+    colManagerScopes,
+    ScopeID = ThisItem.ScopeID,
+    { SelectedAction: "No Change" }
+)
+```
 
-* 先逐列测试是哪一列坏了
-* 然后直接改用嵌套 `Sort`
-* 如果列是 Choice/Lookup，就排序它的 `.Value`
+---
 
-把你现在报错的那条完整 `SortByColumns(...)` 公式贴给我，我可以直接帮你改成你当前这个数据源能跑的版本。
+**`btnScopeDrop`**
+```powerapps
+Text = "Drop"
+X = Parent.TemplateWidth - 118 | Y = 24 | Width = 96 | Height = 34
+BorderThickness = 1
+RadiusTopLeft = 4 | RadiusTopRight = 4 | RadiusBottomLeft = 4 | RadiusBottomRight = 4
+Fill = If(ThisItem.SelectedAction = "Drop", RGBA(253,231,233,1), RGBA(255,255,255,1))
+Color = If(ThisItem.SelectedAction = "Drop", RGBA(168,0,0,1), RGBA(102,102,102,1))
+BorderColor = If(ThisItem.SelectedAction = "Drop", RGBA(168,0,0,1), RGBA(200,200,200,1))
+```
 
-[1]: https://learn.microsoft.com/en-us/power-platform/power-fx/reference/function-sort "Sort and SortByColumns functions - Power Platform | Microsoft Learn"
+**`btnScopeDrop.OnSelect`**
+```powerapps
+UpdateIf(
+    colManagerScopes,
+    ScopeID = ThisItem.ScopeID,
+    { SelectedAction: "Drop" }
+)
+```
+
+---
+
+### Section 8 — Bottom Bar
+
+**`btnManagerReset`**
+```powerapps
+Text = "Reset"
+X = Parent.Width - 370 | Y = Parent.Height - 56 | Width = 110 | Height = 40
+```
+
+**`btnManagerReset.OnSelect`**
+```powerapps
+ClearCollect(
+    colManagerScopes,
+    AddColumns(
+        Filter(
+            EmployeeScopes,
+            ManagerEmail = varUserEmail &&
+            ActiveFlag = "Y" &&
+            SystemCode = varSelectedSystemCode
+        ),
+        SelectedAction,
+        "No Change"
+    )
+)
+```
+
+---
+
+**`btnSubmitToXiaoran`**
+```powerapps
+Text = "Submit to Xiaoran"
+X = Parent.Width - 240 | Y = Parent.Height - 56 | Width = 220 | Height = 40
+Fill = RGBA(0,120,212,1) | Color = RGBA(255,255,255,1)
+FontWeight = FontWeight.Bold | BorderThickness = 0
+RadiusTopLeft = 6 | RadiusTopRight = 6 | RadiusBottomLeft = 6 | RadiusBottomRight = 6
+DisplayMode = If(
+    CountIf(colManagerScopes, SelectedAction <> "No Change") > 0,
+    DisplayMode.Edit,
+    DisplayMode.Disabled
+)
+```
+
+**`btnSubmitToXiaoran.OnSelect`**
+```powerapps
+With(
+    {
+        _batchID: "BAT-" & Text(Now(), "[$-en-US]yyyymmddhhmmss"),
+        _changes: Filter(colManagerScopes, SelectedAction <> "No Change")
+    },
+    If(
+        CountRows(_changes) = 0,
+        Notify(
+            "Please select at least one Add or Drop action.",
+            NotificationType.Warning
+        ),
+        IfError(
+            Patch(
+                Batches,
+                Defaults(Batches),
+                {
+                    Title:               _batchID,
+                    BatchID:             _batchID,
+                    PolicyEventID:       varSelectedPolicyEventID,
+                    SystemCode:          varSelectedSystemCode,
+                    ManagerEmail:        User().Email,
+                    ManagerName:         varManagerName,
+                    SubmittedAt:         Now(),
+                    Status:              "Pending",
+                    AddCount:            CountIf(_changes, SelectedAction = "Add"),
+                    DropCount:           CountIf(_changes, SelectedAction = "Drop"),
+                    TotalLines:          CountRows(_changes),
+                    ExpectedTicketCount: CountRows(
+                                             Distinct(
+                                                 AddColumns(
+                                                     _changes,
+                                                     TicketGroupKey,
+                                                     SystemCode & "|" & SelectedAction & "|" &
+                                                     TargetTA   & "|" & Environment
+                                                 ),
+                                                 TicketGroupKey
+                                             )
+                                         ),
+                    ApprovalFileURL:     Blank(),
+                    LastError:           Blank()
+                }
+            );
+
+            ForAll(
+                _changes As scopeLine,
+                Patch(
+                    BatchLines,
+                    Defaults(BatchLines),
+                    {
+                        Title:         _batchID & "-" & scopeLine.ScopeID,
+                        BatchLineID:   _batchID & "-" & scopeLine.ScopeID,
+                        BatchID:       _batchID,
+                        ScopeID:       scopeLine.ScopeID,
+                        SystemCode:    scopeLine.SystemCode,
+                        EmployeeID:    scopeLine.EmployeeID,
+                        EmployeeName:  scopeLine.EmployeeName,
+                        StudyList:     scopeLine.StudyList,
+                        TargetTA:      scopeLine.TargetTA,
+                        Environment:   scopeLine.Environment,
+                        CurrentAccess: scopeLine.CurrentAccess,
+                        Action:        scopeLine.SelectedAction,
+                        ManagerEmail:  User().Email,
+                        LineStatus:    "Pending",
+                        TicketRunID:   Blank(),
+                        TicketNumber:  Blank()
+                    }
+                )
+            );
+
+            Refresh(Batches);
+            Refresh(BatchLines);
+
+            ClearCollect(
+                colManagerScopes,
+                AddColumns(
+                    Filter(
+                        EmployeeScopes,
+                        ManagerEmail = varUserEmail &&
+                        ActiveFlag = "Y" &&
+                        SystemCode = varSelectedSystemCode
+                    ),
+                    SelectedAction,
+                    "No Change"
+                )
+            );
+
+            Notify(
+                "Submitted! " & CountRows(_changes) & " scope line(s) sent to Xiaoran.",
+                NotificationType.Success
+            ),
+
+            Notify(
+                "Submit failed. Please check your SharePoint column types and required fields.",
+                NotificationType.Error
+            )
+        )
+    )
+)
+```
+
+---
+
+**`btnGoAdmin`** (测试用，正式隐藏)
+```powerapps
+Text = "Admin View →"
+X = Parent.Width - 500 | Y = Parent.Height - 56 | Width = 120 | Height = 40
+OnSelect = Navigate(scrXiaoran, ScreenTransition.Fade)
+Visible = false
+```
+
+---
+
+### Section 9 — Debug Labels
+
+**`lblDebug1`**
+```powerapps
+Text = "Scopes in collection: " & CountRows(colManagerScopes)
+X = 20 | Y = Parent.Height - 92 | Width = 220 | Height = 16
+Size = 9 | Color = RGBA(120,120,120,1) | Fill = RGBA(0,0,0,0)
+```
+
+**`lblDebug2`**
+```powerapps
+Text = "Gallery loaded: " & galManagerScopes.AllItemsCount
+X = 250 | Y = Parent.Height - 92 | Width = 180 | Height = 16
+Size = 9 | Color = RGBA(120,120,120,1) | Fill = RGBA(0,0,0,0)
+```
+
+**`lblDebug3`**
+```powerapps
+Text = "Event: " & varSelectedPolicyEventID & "  |  System: " & varSelectedSystemCode
+X = 440 | Y = Parent.Height - 92 | Width = 420 | Height = 16
+Size = 9 | Color = RGBA(120,120,120,1) | Fill = RGBA(0,0,0,0)
+```
+
+---
+
+## 从 Excel 连接切换到 SharePoint List 必须做的变动总结
+
+| 项目 | Excel 连接 | SharePoint List | 原因 |
+|---|---|---|---|
+| `SortByColumns` on source | 可用 | ❌ 只有被索引列可用 | Delegation 限制 |
+| 排序 collection | `SortByColumns` / `Sort` 均可 | 用嵌套 `Sort()` | Collection 不走 delegation，`Sort()` 完全安全 |
+| `Lower(Trim(col))` in Filter | 可用（本地处理） | ⚠️ 有 warning，超限失效 | SharePoint 不能委派函数调用 |
+| 正确写法 | `Lower(Trim(col)) = var` | `col = var`（var 已 normalize） | 等值比较可委派 |
+| `DefaultSelectedItems` 的 `[]` | 可用 | ⚠️ 容易 schema 错误 | 改用 `Filter()` 更稳定 |
+| `IfError` 末尾 `; true / false` | 不影响 | ❌ 结构解析错误 | `IfError(expr, fallback)` 只需两个参数 |
