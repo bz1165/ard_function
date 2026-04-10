@@ -1,3 +1,256 @@
+这是一个 **SharePoint List 连接 ComboBox 的已知问题**。
+
+**原因：** `DisplayFields` 和 `SearchFields` 属性在 ComboBox 连接 SharePoint List 时，Power Apps Studio 会忽略你手动输入的列名，自动替换成 SharePoint 内部的第一个 metadata 字段（`ComplianceAssetId`）。这不是你的操作问题，是 SharePoint List 数据源和 ComboBox 的 schema 兼容问题，Microsoft 社区有大量报告。
+
+**最可靠的修法：** 把 `cmbPolicyEvent` 换成 **Dropdown**，并在 `OnVisible` 里用 `AddColumns` 给 `colPolicyEvents` 加一个纯文本的显示列，这样完全绕开 `DisplayFields` 的问题。
+
+---
+
+## 第一步 — 修改 `OnVisible` 里的 `ClearCollect`
+
+在现有 `ClearCollect(colPolicyEvents, ...)` 后加一行 `AddColumns`，把 `EventName` 单独提取成一个干净的显示列：
+
+```powerapps
+Refresh(PolicyEvents);
+Refresh(EmployeeScopes);
+Refresh(Batches);
+Refresh(BatchLines);
+
+Set(
+    varUserEmail,
+    Lower(Trim(User().Email))
+);
+
+ClearCollect(
+    colPolicyEvents,
+    Sort(
+        Filter(
+            PolicyEvents,
+            Status = "Ready" || Status = "Draft"
+        ),
+        ScheduledTime,
+        SortOrder.Ascending
+    )
+);
+
+ClearCollect(
+    colPolicyEventDisplay,
+    AddColumns(
+        colPolicyEvents,
+        DisplayLabel,
+        EventName & " (" & SystemCode & ")"
+    )
+);
+
+Set(
+    varSelectedPolicyEventID,
+    If(
+        CountRows(Filter(colPolicyEvents, Status = "Ready")) > 0,
+        First(Filter(colPolicyEvents, Status = "Ready")).PolicyEventID,
+        If(
+            CountRows(colPolicyEvents) > 0,
+            First(colPolicyEvents).PolicyEventID,
+            Blank()
+        )
+    )
+);
+
+Set(
+    varSelectedSystemCode,
+    LookUp(
+        colPolicyEvents,
+        PolicyEventID = varSelectedPolicyEventID,
+        SystemCode
+    )
+);
+
+Set(
+    varSelectedEventLabel,
+    LookUp(
+        colPolicyEventDisplay,
+        PolicyEventID = varSelectedPolicyEventID,
+        DisplayLabel
+    )
+);
+
+ClearCollect(
+    colManagerScopes,
+    AddColumns(
+        Filter(
+            EmployeeScopes,
+            ManagerEmail = varUserEmail &&
+            ActiveFlag = "Y" &&
+            SystemCode = varSelectedSystemCode
+        ),
+        SelectedAction,
+        "No Change"
+    )
+);
+
+Set(
+    varManagerName,
+    If(
+        CountRows(colManagerScopes) > 0,
+        First(colManagerScopes).ManagerName,
+        User().FullName
+    )
+)
+```
+
+---
+
+## 第二步 — 删除 `cmbPolicyEvent`，换成 `ddPolicyEvent`
+
+插入一个新的 **Dropdown** 控件，命名为 `ddPolicyEvent`，删掉原来的 ComboBox。
+
+**`ddPolicyEvent` 属性：**
+
+```powerapps
+X = 20
+Y = 68
+Width = 320
+Height = 36
+Items = colPolicyEventDisplay
+```
+
+`Items` 直接指向 `colPolicyEventDisplay`，这个 collection 里每一行都有 `DisplayLabel` 这个纯文字列，Dropdown 会自动找 `Value` 或者你可以指定：
+
+```powerapps
+Items = ShowColumns(colPolicyEventDisplay, "DisplayLabel", "PolicyEventID", "SystemCode")
+```
+
+**`ddPolicyEvent` 的 `Value` 属性（Dropdown 显示的文字）：**
+
+Dropdown 默认显示每行的 `Value` 字段。因为我们用的是自定义 collection，需要把 `Items` 做成标准的 `{Value: ...}` 结构：
+
+```powerapps
+Items = 
+    ForAll(
+        colPolicyEventDisplay,
+        {
+            Value:          DisplayLabel,
+            PolicyEventID:  PolicyEventID,
+            SystemCode:     SystemCode
+        }
+    )
+```
+
+这样 Dropdown 就会显示 `DisplayLabel` 的内容（例如 `GPS Access Review April 2026 (DI_GPS)`），同时每一行携带 `PolicyEventID` 和 `SystemCode` 供 `OnChange` 读取。
+
+---
+
+## 第三步 — `ddPolicyEvent.OnChange`
+
+```powerapps
+Set(
+    varSelectedPolicyEventID,
+    ddPolicyEvent.Selected.PolicyEventID
+);
+
+Set(
+    varSelectedSystemCode,
+    ddPolicyEvent.Selected.SystemCode
+);
+
+Set(
+    varSelectedEventLabel,
+    ddPolicyEvent.Selected.Value
+);
+
+ClearCollect(
+    colManagerScopes,
+    AddColumns(
+        Filter(
+            EmployeeScopes,
+            ManagerEmail = varUserEmail &&
+            ActiveFlag = "Y" &&
+            SystemCode = varSelectedSystemCode
+        ),
+        SelectedAction,
+        "No Change"
+    )
+)
+```
+
+---
+
+## 第四步 — 同步更新 `btnRefreshScopes.OnSelect`
+
+```powerapps
+Refresh(PolicyEvents);
+Refresh(EmployeeScopes);
+Refresh(Batches);
+Refresh(BatchLines);
+
+ClearCollect(
+    colPolicyEvents,
+    Sort(
+        Filter(
+            PolicyEvents,
+            Status = "Ready" || Status = "Draft"
+        ),
+        ScheduledTime,
+        SortOrder.Ascending
+    )
+);
+
+ClearCollect(
+    colPolicyEventDisplay,
+    ForAll(
+        colPolicyEvents,
+        {
+            Value:          EventName & " (" & SystemCode & ")",
+            PolicyEventID:  PolicyEventID,
+            SystemCode:     SystemCode
+        }
+    )
+);
+
+Set(
+    varSelectedSystemCode,
+    LookUp(
+        colPolicyEvents,
+        PolicyEventID = varSelectedPolicyEventID,
+        SystemCode
+    )
+);
+
+ClearCollect(
+    colManagerScopes,
+    AddColumns(
+        Filter(
+            EmployeeScopes,
+            ManagerEmail = varUserEmail &&
+            ActiveFlag = "Y" &&
+            SystemCode = varSelectedSystemCode
+        ),
+        SelectedAction,
+        "No Change"
+    )
+);
+
+Notify("Manager scope list refreshed.", NotificationType.Success)
+```
+
+---
+
+## 第五步 — 更新 `lblSelectedSystem`
+
+这个不用改，仍然读 `varSelectedSystemCode`：
+
+```powerapps
+Text = "System: " & varSelectedSystemCode
+```
+
+---
+
+## 为什么这样可以解决问题
+
+| 问题 | 原因 | 修法 |
+|---|---|---|
+| DisplayFields 自动变成 `ComplianceAssetId` | ComboBox + SharePoint List 的 schema 冲突，Studio 无法正确保存自定义 DisplayFields | 换成 Dropdown，完全不依赖 `DisplayFields` |
+| Dropdown 不需要 DisplayFields | Dropdown 只用 `Items` 里每行的 `Value` 字段显示文字 | 在 `ForAll` 里明确设 `Value` 字段 |
+| `Selected.PolicyEventID` 能正常读取 | 因为 `Items` 里每行都带了这个字段 | `ddPolicyEvent.Selected.PolicyEventID` |
 ## 问题根源分析
 
 你遇到的是 **4 个相互独立的问题**，都有明确的 Microsoft 官方原因：
