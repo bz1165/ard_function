@@ -1,4 +1,805 @@
-                                                           The SAS System
+/******************************************************************************* 
+*            FILENAME : adfacmi.sas
+*   PROGRAM DEVELOPER : Yijie Huang (huangy2e)                          
+*                DATE : 2023-08-02                                                                                 
+*  PROJECT/TRIAL CODE : CLNP023B1/CLNP023B12301
+*  REPORTING ACTIVITY : CSR_1                                          
+*         DESCRIPTION : To create adfacmi dataset                        
+*            PLATFORM : GPSII and SAS 9.4                          
+*          MACRO USED : N/A                         
+*               INPUT : analysis.adsl, analysis.adfacit                       
+*              OUTPUT : N/A                         
+*               NOTES : N/A                         
+*                                                                                                            
+*  PROGRAMMING MODIFICATIONS HISTORY                                   
+*  DATE        PROGRAMMER           DESCRIPTION                                                         
+*  ---------   ----------------     ----------------------------------    
+*  04Mar2024	huangy2e			modify data filtering for ANL01FL logic change
+*******************************************************************************/
+
+
+/************************************* Preparation section *************************************/
+%macro check_autorun;
+	%if %sysfunc(libref(data_a)) ne 0 %then %do; %autorun; %end;
+%mend check_autorun;
+%check_autorun;
+
+proc datasets lib=work kill memtype=data;
+run;
+
+
+%let Path =/vob/CLNP023B1/CLNP023B12301/csr_1/pgm/stats;
+%let Macro=/vob/CLNP023B1/CLNP023B12301/csr_1/pgm/stats;
+%let MacroPath=/vob/CLNP023B1/CLNP023B12301/csr_1/pgm/stats;
+/* 5macro to impute data based on continuous outcome and MMRM model*/
+%include "&MacroPath/5macro_part1A_33.sas";
+%include "&MacroPath/5macro_part1B_47.sas";
+%include "&MacroPath/5macro_part2A_40.sas";
+%include "&MacroPath/5macro_part2B_31.sas";
+%include "&MacroPath/5macro_part3_55.sas";
+
+/************************************* Section 2 facit scenario with MI *************************************/
+/***2.1 Preparation step***/
+/*Import the analysis dataset*/
+/*libname  analysis '/vob/CLNP023B1/CLNP023B12301/csr_1/analysis_data';*/
+data dat_part;
+      set analysis.adfacit;
+      where ANL01FL="Y" and ^missing(base) and paramcd="FACIT" and AVISIT in ("Baseline","Day 14","Day 30","Day 90","Day 180");
+      keep  usubjid trt01p trt01pn avisit _avisit avisitn paramcd param base chg aval 
+		anl05fl anl05dsc anl05dt anl06fl anl06dsc anl06dt anl07fl anl07dsc anl07dt aeflag aedcdt adt ady; /*Keeping only variables which are needed*/
+	  _avisit = tranwrd(cats(avisit)," ","_");
+run;
+
+/* Add the stratification variable */
+data dat_str;
+	set analysis.adbs;
+	where fasfl="Y";
+	keep usubjid systrcrf;
+run;
+proc sort data=dat_part;
+	by usubjid;
+run;
+proc sort data=dat_str;
+	by usubjid;
+run;
+data dat; 
+	merge dat_part dat_str;
+	by usubjid;
+run; 
+
+/* in case merge the stratification bring unlabeled data*/
+data dat_ana;
+	set dat;
+	where trt01p NE ''; 
+	nomisfl='Y';
+	proc sort;
+		by usubjid avisitn;
+run;
+
+/**************** As per SAP 5.2.1, impute the missing scheduled visits and visit date*****************/
+proc sql;	
+	create table usubjid as select distinct usubjid from dat_ana order by usubjid;
+quit;
+
+data full_visit;
+	set usubjid;
+	length avisit $50.;
+	AVISIT='Baseline';output;
+	AVISIT='Day 14';output;
+	AVISIT='Day 30';output;
+	AVISIT='Day 90';output;
+	AVISIT='Day 180';output;
+run;
+
+proc sql;
+	create table dat_ana1 as
+	select b.* from dat_ana a right join full_visit b on a.usubjid=b.usubjid and a.avisit=b.avisit;
+
+	* remerge common variables;
+	create table dat_ana1_1 as
+	select a.*, b.trt01p,b.trt01pn,b.paramcd,b.param,b.base,b.systrcrf from dat_ana1 a left join (
+	select * from dat_ana(rename=(usubjid=usubjid_ avisit=avisit_)) where avisit_='Baseline') b
+	on a.usubjid=b.usubjid_;
+
+	create table dat_ana1_2 as
+	select a.*, b.* from dat_ana1_1 a left join dat_ana(rename=(usubjid=usubjid_ avisit=avisit_) drop=trt01p trt01pn paramcd param base systrcrf) b on
+	a.usubjid=b.usubjid_ and a.avisit=b.avisit_;
+	* merge TR01SDT from adsl;
+
+	create table dat_ana1_3 as
+	select a.*,b.TR01SDT from dat_ana1_2 a left join analysis.adsl b on a.usubjid=b.usubjid;
+
+quit;
+
+* merge planned visit from SV;
+data sv;
+	set data_a.sv;
+	format svdt date9.;
+	svdt=input(svstdtc,yymmdd10.);
+run;
+
+proc sql;
+	create table dat_ana1_4 as
+	select a.*,b.svdt,b.svstdy from dat_ana1_3 a left join sv b on a.usubjid=b.usubjid and a.avisit=b.visit;
+quit;
+
+data dat_ana1_5;
+	set dat_ana1_4;
+	if missing(nomisfl) and missing(adt) and avisit ^= 'Baseline' then do;
+		* impute date;
+		if ^missing(svdt) then do;ady=svstdy;adt=svdt;end;
+		if missing(svdt) then do; ady=input(scan(avisit,2),best.);adt=tr01sdt+ady;end;
+
+		* impute flag;
+		ANL05FL='';
+		ANL05DSC='';
+		ANL06FL='';
+		ANL06DSC='';
+		ANL07FL='';
+		ANL07DSC='';
+
+		if ^missing(ANL05DT) and ADT>ANL05DT then do; 
+			ANL05FL='Y';
+			ANL05DSC='Record after initiation or intensification of anti-proteinuric therapies';
+		end;
+		if ^missing(ANL06DT) and ADT>ANL06DT then do; 
+			ANL06FL='Y';
+			ANL06DSC='Record after initiation of RRT';
+		end;
+		if ^missing(ANL07DT) and ADT>ANL07DT then do; 
+			ANL07FL='Y';
+			ANL07DSC='Record after treatment discontinuation for any other reason';
+		end;
+	end;
+run;
+
+
+/*set the order of visit*/
+proc format;
+ invalue avisit
+ "Day 14"=202
+ "Day 30"=203
+ "Day 90"=204
+ "Day 180"=205;
+
+ value  avisitc 
+ 202= "Day 14"
+ 203= "Day 30"
+ 204= "Day 90"
+ 205= "Day 180";
+run;
+
+/*remove baseline records*/
+data dat_ana4;
+	set dat_ana1_5;
+	where avisit ^= "Baseline"; 
+		AVISITN=input(AVISIT,avisit.);
+run;
+
+
+
+/**Mark the imputation methods according to SAP**/
+/*anl05fl, RECORD LEVEL, IAT
+anl06fl, RECORD LEVEL,RRT
+aeflag, PATIENT LEVEL,DC due to AE/Death*/
+/*secondary analysis*/
+data dat_ana_mi_sec;
+	set dat_ana4;
+	length ACAT1 $50.;
+	ACAT1="Secondary analysis 24";
+	ACAT1N=1;
+	ana_flag = "sec";
+	if systrcrf="" then systrcrf="N";
+	if aval=. then do imp_method="ALMCF"; end;
+	/* the reason why doing this: 5macro will impute all missing data, otherwise error*/
+	/* we will use one method for those no need for imputation, then set it to missing manually later*/
+	if trt01p = "LNP023 200mg b.i.d." and (anl05fl="Y" OR anl06fl="Y")  then do aval=.; imp_method="J2R"; end;
+	if trt01p = "LNP023 200mg b.i.d."  and aeflag="Y" and aval=. then do imp_method="J2R";end;
+ 	if trt01p = "Placebo" and  (anl05fl="Y" OR anl06fl="Y") then do aval=.; imp_method="MAR";end;
+ 	if trt01p = "Placebo" and aeflag="Y" and aval=. then do imp_method="MAR";end;
+run;
+
+
+/*supplementary analysis*/
+data dat_ana_mi_supp;
+	set dat_ana4;
+	length ACAT1 $50.;
+	ACAT1="Supplementary analysis 24.1";
+	ACAT1N=2;
+	ana_flag = "supp";
+	if systrcrf="" then systrcrf="N";
+	if aval=. then do imp_method="ALMCF"; end;/*we don't use it, but just for missing*/
+	if trt01p = "LNP023 200mg b.i.d." and (anl06fl="Y")  then do aval=.; imp_method="J2R"; end;
+	if trt01p = "LNP023 200mg b.i.d."  and aeflag="Y" and aval=. then do imp_method="J2R";end;
+ 	if trt01p = "Placebo" and  (anl06fl="Y") then do aval=.; imp_method="MAR";end;
+ 	if trt01p = "Placebo" and aeflag="Y" and aval=. then do imp_method="MAR";end;
+run;
+
+/***2.2Imputation step***/
+/**imputation model: aval=trt*time+base+strfactor**/
+/*secondary analysis*/
+
+%macro facit_mi(endpoint=);
+	%part1A(Jobname=facit_mi
+	,Data=dat_ana_mi_&endpoint.
+	,Subject=USUBJID
+	,Response=AVAL
+	,Time=AVISITN
+	,Treat=TRT01PN
+	,Catcov=SYSTRCRF
+	,Cov = BASE
+	/*,Covgroup=TRT01P corresponding to seperate variance-covaraince matrix for different arms*/
+	);
+
+	/*Ndraws=200 repsents the number of draws from the posterior distribution with a thining of 100 iterations;*/
+	%part1B(Jobname=facit_mi
+	,Ndraws=200 /*usually 200*/
+	,thin=100
+	,seed=999
+	);
+		
+	%part2A(Jobname=facit_mi_&endpoint., INName= facit_mi, MethodV= imp_method, Ref= 2)
+	%part2B(Jobname=facit_mi_&endpoint., seed=999)
+
+	data dat_ana_info;
+	   set dat_ana_mi_&endpoint.;
+	   keep acat1 acat1n usubjid avisitn ana_flag imp_method;
+	run;
+	proc sort data=dat_ana_info;
+	   by ACAT1 ACAT1N USUBJID AVISITN;
+	run;
+
+	proc sql; 
+	create table facit_mi_&endpoint._full as
+	select x.*, y.ACAT1, y.ACAT1N, y.ana_flag, y.imp_method 
+	from facit_mi_&endpoint._DataFull as x left join dat_ana_info as y
+	on x.usubjid = y.usubjid & x.avisitn=y.avisitn;
+	quit;
+
+	/*recover missing due to administrative reasons as missing status*/
+	data facit_mi_&endpoint.;
+	   set facit_mi_&endpoint._full;
+	   chg=aval-base;
+	   if imp_method="ALMCF" then do chg=.; aval=.; imp_method=''; end;
+	run;
+
+	
+	proc sort data=facit_mi_&endpoint.;
+		by USUBJID TRT01PN AVISITN draw;
+	run;
+
+	proc sort data=analysis.adfacit out=adfacit1;
+      where ANL01FL="Y" and paramcd="FACIT" and AVISIT in ("Baseline","Day 14","Day 30","Day 90","Day 180");
+		by USUBJID TRT01PN AVISITN;
+	run;
+	
+	data adfacmi_&endpoint.;
+		
+		merge facit_mi_&endpoint.(in=a) adfacit1(in=b drop=AVAL CHG BASE);
+		by USUBJID TRT01PN AVISITN;
+		if a;
+		length DTYPE $20.;
+		DTYPE=imp_method;
+		* truncate the values larger than maximum and smaller than minimum;
+		if ^missing(aval) and ^missing(DTYPE) then do;
+			if aval>52 then aval=52;
+			if aval<0 then aval=0;
+		end;
+		if nmiss(AVAL,BASE)=0 then CHG=AVAL-BASE;
+		IMPNUM=draw;
+
+		avisit=put(avisitn,avisitc.);
+	run;
+%mend;
+
+
+%facit_mi(endpoint=sec);
+%facit_mi(endpoint=supp);
+
+data adfacmi_comb1;
+	length ana_flag $10.;
+	set adfacmi_sec adfacmi_supp 
+	analysis.adfacit(where=(AVISIT="Baseline" and paramcd='FACIT'));
+	by USUBJID;	
+
+run;
+
+
+/*Remerge ANL05/ANL06/AEFLAG*/
+/*proc sql;*/
+/*	create table adfacmi_comb1 as */
+/*	select distinct a.*, b.ANL05FL, c.ANL06FL, d.AEFLAG*/
+/*	from adfacmi_comb as a*/
+/*	left join dat_ana1(where=(^missing(ANL05FL))) as b */
+/*	on a.USUBJID=b.USUBJID and a.AVISIT=b.AVISIT*/
+/*	left join dat_ana1(where=(^missing(ANL06FL))) as c */
+/*	on a.USUBJID=c.USUBJID and a.AVISIT=c.AVISIT*/
+/*	left join dat_ana1(where=(^missing(AEFLAG))) as d */
+/*	on a.USUBJID=d.USUBJID*/
+/*	order by a.USUBJID*/
+/*	;*/
+/*quit;*/
+
+proc sql noprint;
+	select distinct name into: dropvar separated by " "
+	from sashelp.vcolumn where find(libname,"WORK") and memname="ADFACMI_COMB1"
+	and (name^="USUBJID" and name in 
+		(select distinct name from sashelp.vcolumn where find(libname,"ANALYSIS") and memname="ADSL"))
+	;
+quit;
+
+data adfacmi_final;
+	length PROEVFL $1.;
+	merge adfacmi_comb1(in=a drop=&dropvar SYSTRCRF) analysis.ADSL analysis.adbs(keep=USUBJID SYSTRCRF);
+	by USUBJID;
+	if a;
+	if missing(param) and missing(paramcd) then do;
+		param='FACIT Fatigue score';
+		paramcd='FACIT';
+	end;
+	if ^missing(BASE) and FASFL='Y' then PROEVFL='Y'; else PROEVFL='N';
+	if paramcd='FACIT';
+run;
+
+*----------------------------------------------------------------------;
+*set the final dataset
+*do sorting;
+*select avariable and apply format from PDS;
+*----------------------------------------------------------------------;
+
+
+%_std_varpadding_submission( calledby =
+,in_lib = work
+,out_lib = work
+,include_ds = adfacmi_final
+,exclude_ds =
+);
+
+
+%opSetAttr(domain=adfacmi, inData=adfacmi_final, metaData  = RPRTDSM.study_adam_metadata);
+
+
+ 请参考 /************************************************************************
+*  PROJECT       : CLNP023B1
+*  STUDY         : CLNP023B12301
+*  RA            : csr_4
+*  FILENAME      : aduprmi.sas
+
+*  DATE CREATED  : 16Mar2026
+*  AUTHOR        : Huiyu Luo
+
+*  DESCRIPTION   : Create dataset aduprmi
+*  PLATFORM      : AIX 7.2 (AIX 64) (see SAS log file)
+*  SAS VERSION   : 9.4 (see SAS log file)
+
+*  MACROS CALLED : None
+*  INPUT         : ADUPCR, ADSL, ADBS
+*  OUTPUT        : analysis.aduprmi
+
+*  MODIFICATIONS : [x.xx] dd-mmm-yy, 5-2-1 id, brief description  
+20231023 hudy1 to include handling I/C for missing assessment based on visit date or scheduled visit date
+*************************************************************************/
+/*Clean work library*/
+proc datasets lib=work kill;
+run;
+
+/* GPS environment setup macro */;
+data _null_;
+    if libref('analysis') then call execute('%nrstr(%autorun;)');
+run;
+
+
+%let Path =/vob/CLNP023B1/CLNP023B12301/csr_1/pgm/stats;
+%let Macro=/vob/CLNP023B1/CLNP023B12301/csr_1/pgm/stats;
+%let MacroPath=/vob/CLNP023B1/CLNP023B12301/csr_1/pgm/stats;
+/* 5macro to impute data based on continuous outcome and MMRM model*/
+%include "&MacroPath/5macro_part1A_33.sas";
+%include "&MacroPath/5macro_part1B_47.sas";
+%include "&MacroPath/5macro_part2A_40.sas";
+%include "&MacroPath/5macro_part2B_31.sas";
+%include "&MacroPath/5macro_part3_55.sas";
+
+/** Import the analysis dataset **/
+data dat_part;
+      set analysis.adupcr;
+      where (PARAMCD="LGUPCR24" and AVISIT in ("Baseline","Day 90","Day 180") and (ANL01FL="Y" or aval=.))
+      or (PARAMCD="LGUPCRFV" and AVISIT in ("Baseline","Day 14","Day 30","Day 90","Day 180") and (ANL01FL="Y" or aval=.));
+      keep  USUBJID trt01pn avisit AVISITN _avisit PARAMCD PARAM base chg aval EST0: ICE0: IMPREA0: ANL05DT ANL06DT ANL07DT AEDCDT anl05fl anl06fl anl07fl aeflag; /*Keeping only variables which are needed*/
+	  _avisit = tranwrd(cats(avisit)," ","_");
+run;
+
+data dat_str;
+	set analysis.adbs;
+	where fasfl="Y";
+	keep USUBJID systrcrf;
+run;
+proc sort data=dat_part;
+	by USUBJID;
+run;
+proc sort data=dat_str;
+	by USUBJID;
+run;
+data dat; 
+	merge dat_part dat_str;
+	by USUBJID;
+run; 
+
+data dat_ana;
+	set dat;
+	where trt01pn NE .; /* in case merge the stratification bring unlabeled data*/
+	proc sort;
+		by paramcd PARAM USUBJID;
+run;
+
+/**************** simulation: create simulated dataset with the need for imputation *****************/
+data dat_ana1;
+	set dat_ana;
+	where avisit ^= "Baseline"; /*remove baseline records*/
+run;
+data dat_ana_base;
+	set dat_ana;
+	where avisit = "Baseline"; 
+run;
+proc sort data=dat_ana_base;by usubjid;run;
+proc sort data=dat_ana1;by usubjid;run;
+
+data dat_ana2;
+  merge dat_ana1 dat_ana_base(in=b keep=usubjid);
+  by usubjid;
+  if b;
+run;
+
+
+/**************** simulation: create simulated dataset with the need for imputation *****************/
+
+/*set the order of visit*/
+proc format;
+ invalue avisit
+ "Baseline"=99
+ "Day 14"=202
+ "Day 30"=203
+ "Day 90"=204
+ "Day 180"=205;
+ value visit
+ 99="Baseline"
+ 202="Day 14"
+ 203="Day 30"
+ 204="Day 90"
+ 205="Day 180";
+run;
+
+proc sort data=dat_ana2;
+	by USUBJID AVISITN;
+run;
+
+
+/* Mark the imputation methods according to SAP*/
+/*primary analysis*/
+data dat_ana_mi_pri;
+	set dat_ana2;
+	where PARAMCD="LGUPCR24";
+	length ACAT1 $50.;
+	ACAT1="Primary analysis";
+	ACAT1N=1;
+	ana_flag = "pri";
+	IMPREAS=IMPREA01;
+	if systrcrf="" then systrcrf="N";
+	if imprea01='Missing data' or (EST01STP='Treatment policy' and aval=.) then imp_method='ALMCF';
+	if trt01pn = 1 and EST01STP='Hypothetical strategy' then do;aval=.;chg=.; imp_method="J2R"; end;
+	if trt01pn = 1 and AEDCDT NE . and imprea01='Missing data' then do;imp_method="J2R";end;
+ 	if trt01pn = 2 and EST01STP='Hypothetical strategy'  then do;aval=.;chg=.;  imp_method="MAR";end;
+ 	if trt01pn = 2 and AEDCDT NE . and imprea01='Missing data' then do;imp_method="MAR";end;
+/*	if aval=. then do;imp_method="ALMCF"; end;*/
+	/*we don't use it, but just for missing due to administrative reasons*/
+/*	if trt01pn = 1 and (anl05fl="Y" OR anl06fl="Y")  then do;aval=.;aval=.; chg=.; imp_method="J2R"; end;*/
+/*	if trt01pn = 1  and aeflag="Y" and aval=. then do;imp_method="J2R";end;*/
+/* 	if trt01pn = 2 and  (anl05fl="Y" OR anl06fl="Y") then do;aval=.;aval=.;  chg=.;  imp_method="MAR";end;*/
+/* 	if trt01pn = 2 and aeflag="Y" and aval=. then do;imp_method="MAR";end;*/
+run;
+
+/*Sensitivity analysis 1 */
+/*data dat_ana_mi_sens1;*/
+/*	set dat_ana4;*/
+/*	where PARAMCD="LGUPCR24";*/
+/*	length ACAT1 $50.;*/
+/*	ACAT1="Sensitivity analysis 1";*/
+/*	ACAT1N=2;*/
+/*	ana_flag = "sec1";*/
+/*	if systrcrf="" then systrcrf="N";*/
+/*	if aval=. then do;imp_method="ALMCF"; end;*/
+	/*we don't use it, but just for missing due to administrative reasons*/
+/*	if trt01pn = 1 and anl05fl="Y" then do;aval=.;aval=.; chg=.; imp_method="MAR"; end;*/
+/*	if trt01pn = 1 and anl06fl="Y" then do;aval=.;aval=.; chg=.; imp_method="J2R"; end;*/
+/*	if trt01pn = 1  and aeflag="Y" and aval=. then do;imp_method="J2R";end;*/
+/* 	if trt01pn = 2 and anl05fl="Y" then do;aval=.;aval=.;  chg=.;  imp_method="MAR";end;*/
+/* 	if trt01pn = 2 and anl06fl="Y" then do;aval=.;aval=.;  chg=.;  imp_method="MAR";end;*/
+/* 	if trt01pn = 2 and aeflag="Y" and aval=. then do;imp_method="MAR";end;*/
+/*run;*/
+
+/*Sensitivity analysis 2 */
+/*data dat_ana_mi_sens2;*/
+/*	set dat_ana4;*/
+/*	where PARAMCD="LGUPCR24";*/
+/*	length ACAT1 $50.;*/
+/*	ACAT1="Sensitivity analysis 2";*/
+/*	ACAT1N=3;*/
+/*	ana_flag = "sec2";*/
+/*	if systrcrf="" then systrcrf="N";*/
+/*	if aval=. then do;imp_method="ALMCF"; end;*/
+	/*we don't use it, but just for missing due to administrative reasons*/
+/*	if trt01pn = 1 and anl05fl="Y" then do;aval=.;aval=.; chg=.; imp_method="CR"; end;*/
+/*	if trt01pn = 1 and anl06fl="Y" then do;aval=.;aval=.; chg=.; imp_method="J2R"; end;*/
+/*	if trt01pn = 1  and aeflag="Y" and aval=. then do;imp_method="J2R";end;*/
+/* 	if trt01pn = 2 and anl05fl="Y" then do;aval=.;aval=.;  chg=.;  imp_method="MAR";end;*/
+/* 	if trt01pn = 2 and anl06fl="Y" then do;aval=.;aval=.;  chg=.;  imp_method="MAR";end;*/
+/* 	if trt01pn = 2 and aeflag="Y" and aval=. then do;imp_method="MAR";end;*/
+/*run;*/
+
+/*supplementary analysis 1*/
+data dat_ana_mi_supp1;
+	set dat_ana2;
+	where PARAMCD="LGUPCR24";
+	length ACAT1 $50.;
+	ACAT1="Supplementary analysis 1";
+	ACAT1N=2;
+	ana_flag = "supp1";
+	IMPREAS=IMPREA02;
+	if systrcrf="" then systrcrf="N";
+	if imprea02='Missing data' or (EST02STP='Treatment policy' and aval=.) then imp_method='ALMCF';
+	if trt01pn = 1 and EST02STP='Hypothetical strategy' then do;aval=.;chg=.; imp_method="J2R"; end;
+	if trt01pn = 1  and AEDCDT NE . and imprea02='Missing data' then do;imp_method="J2R";end;
+ 	if trt01pn = 2 and EST02STP='Hypothetical strategy' then do;aval=.;chg=.; imp_method="MAR"; end;
+ 	if trt01pn = 2 and AEDCDT NE . and imprea02='Missing data' then do;imp_method="MAR";end;
+/*	if aval=. then do;imp_method="ALMCF"; end;*/
+	/*we don't use it, but just for missing*/
+/*	if trt01pn = 1 and (anl06fl="Y")  then do;aval=.;aval=.; chg=.; imp_method="J2R"; end;*/
+/*	if trt01pn = 1  and aeflag="Y" and aval=. then do;imp_method="J2R";end;*/
+/* 	if trt01pn = 2 and  (anl06fl="Y") then do;aval=.;aval=.;  chg=.; imp_method="MAR"; end;*/
+/* 	if trt01pn = 2 and aeflag="Y" and aval=. then do;imp_method="MAR";end;*/
+run;
+
+/*Supplementary  analysis 2*/
+data dat_ana_mi_supp2;
+	set dat_ana2;
+	where PARAMCD="LGUPCRFV";
+	length ACAT1 $50.;
+	ACAT1="Supplementary analysis 2";
+	ACAT1N=3;
+	ana_flag = "supp2";
+	IMPREAS=IMPREA03;
+	if systrcrf="" then systrcrf="N";
+	if imprea03='Missing data' or (EST03STP='Treatment policy' and aval=.) then imp_method='ALMCF';
+	if trt01pn = 1 and EST03STP='Hypothetical strategy' then do;aval=.;chg=.; imp_method="J2R"; end;
+	if trt01pn = 1 and AEDCDT NE . and imprea03='Missing data' then do;imp_method="J2R";end;
+ 	if trt01pn = 2 and EST03STP='Hypothetical strategy'  then do;aval=.;chg=.;  imp_method="MAR";end;
+ 	if trt01pn = 2 and AEDCDT NE . and imprea03='Missing data' then do;imp_method="MAR";end;
+/*	if aval=. then do;imp_method="ALMCF"; end;*/
+	/*we don't use it, but just for missing due to administrative reasons*/
+/*	if trt01pn = 1 and (anl05fl="Y" OR anl06fl="Y")  then do;aval=.;aval=.; chg=.; imp_method="J2R"; end;*/
+/*	if trt01pn = 1  and aeflag="Y" and aval=. then do;imp_method="J2R";end;*/
+/* 	if trt01pn = 2 and  (anl05fl="Y" OR anl06fl="Y") then do;aval=.;aval=.;  chg=.;  imp_method="MAR";end;*/
+/* 	if trt01pn = 2 and aeflag="Y" and aval=. then do;imp_method="MAR";end;*/
+run;
+
+/************************************* Imputation section *************************************/
+/**imputation model: log(UPCR)=trt*time+log(base)+stratification factor(not crossing with time)**/
+/*secondary analysis*/
+
+%macro upcr_mi(endpoint= );
+	%part1A(Jobname=upcr_mi
+	,Data=dat_ana_mi_&endpoint.
+	,Subject=USUBJID
+	,Response=AVAL
+	,Time=AVISITN
+	,Treat=TRT01PN
+	,Catcov=SYSTRCRF
+	,Cov = BASE
+	/*,Covgroup=TRT01P corresponding to seperate variance-covaraince matrix for different arms*/
+	);
+	
+	/*Ndraws repsents the number of draws from the posterior distribution with a thining of 100 iterations;*/
+	%part1B(Jobname=upcr_mi
+	,Ndraws=200 /*usually 200, for simple test run, 20 is used here*/
+	,thin=100
+	,seed=999
+	);
+		
+	%part2A(Jobname=upcr_mi_&endpoint., INName= upcr_mi, MethodV= imp_method, Ref= 2)
+	%part2B(Jobname=upcr_mi_&endpoint., seed=999)
+	
+	data dat_ana_info;
+	   set dat_ana_mi_&endpoint.;
+	   keep ACAT1 ACAT1N PARAMCD PARAM USUBJID avisit ana_flag imp_method /* ANL05FL ANL06FL AEFLAG */;
+	run;
+	proc sort data=dat_ana_info;
+	   by ACAT1 ACAT1N PARAMCD PARAM USUBJID AVISIT;
+	run;
+
+	data upcr_mi_&endpoint._DataFull;
+		set upcr_mi_&endpoint._DataFull;
+		length AVISIT $60.;
+		AVISIT=put(AVISITN, visit.);
+	run;
+
+	proc sql; 
+	create table upcr_mi_&endpoint._full as
+	select x.*, y.ACAT1, y.ACAT1N, y.PARAMCD, y. PARAM, y.ana_flag, y.imp_method/* , y.ANL05FL, y.ANL06FL, y.AEFLAG */
+	from upcr_mi_&endpoint._DataFull as x left join dat_ana_info as y
+	on x.USUBJID = y.USUBJID & x.avisit=y.avisit;
+	quit;
+	
+	data upcr_mi_&endpoint.;
+	   set upcr_mi_&endpoint._full;
+	   CHG=AVAL-BASE;
+	   if imp_method="ALMCF" then do;CHG=.;AVAL=.; imp_method=''; end;/*recover missing due to administrative reasons as missing status*/
+	run;
+	
+	proc sort data=upcr_mi_&endpoint.;
+		by USUBJID TRT01PN AVISIT;
+	run;
+	
+	%if &endpoint^=supp2 %then %do;
+	proc sort data=analysis.adupcr out=adupcr1;
+      where PARAMCD="LGUPCR24" and ANL01FL="Y" and AVISIT in ("Baseline","Day 90","Day 180");
+		by USUBJID TRT01PN AVISIT;
+	run;
+	%end;
+	%else %do;
+	proc sort data=analysis.adupcr out=adupcr1;
+      where PARAMCD="LGUPCRFV" and ANL01FL="Y" and AVISIT in ("Baseline","Day 14","Day 30","Day 90","Day 180");
+		by USUBJID TRT01PN AVISIT;
+	run;
+	%end;
+	
+	data aduprmi_&endpoint.;
+		length AVISIT $60.;
+		merge upcr_mi_&endpoint.(in=a) adupcr1(in=b drop=AVAL CHG BASE);
+		by USUBJID TRT01PN AVISIT;
+		if a;
+		if nmiss(AVAL,BASE)=0 then CHG=AVAL-BASE;
+		IMPNUM=draw;
+		length DTYPE $20.;
+		DTYPE=imp_method;
+		AVISITN=input(AVISIT,avisit.);
+	run;
+	
+%mend;
+
+%upcr_mi(endpoint=pri);
+/*%upcr_mi(endpoint=sens1);*/
+/*%upcr_mi(endpoint=sens2);*/
+%upcr_mi(endpoint=supp1);
+%upcr_mi(endpoint=supp2);
+
+/*Remerge ANL05/ANL06/AEFLAG*/
+/*proc sql;*/
+/*	create table aduprmi_comb1 as */
+/*	select distinct a.*, b.ANL05FL,  c.ANL06FL,  e.ANL07FL,  d.AEFLAG */
+/*	from aduprmi_comb as a*/
+/*	left join dat_ana4(where=(^missing(ANL05FL))) as b */
+/*	on a.USUBJID=b.USUBJID and a.AVISIT=b.AVISIT and a.PARAMCD=b.PARAMCD*/
+/*	left join dat_ana4(where=(^missing(ANL06FL))) as c */
+/*	on a.USUBJID=c.USUBJID and a.AVISIT=c.AVISIT and a.PARAMCD=c.PARAMCD*/
+/*	left join dat_ana4(where=(^missing(ANL07FL))) as e */
+/*	on a.USUBJID=e.USUBJID and a.AVISIT=e.AVISIT and a.PARAMCD=e.PARAMCD*/
+/*	left join dat_ana4(where=(^missing(AEFLAG))) as d */
+/*	on a.USUBJID=d.USUBJID and a.PARAMCD=d.PARAMCD*/
+/*	order by a.USUBJID*/
+/*	;*/
+/*quit;*/
+proc sql;
+	create table aduprmi_pri1 as 
+	select distinct a.*, b.EST01STP, b.ICE01F, b.IMPREA01
+	from aduprmi_pri(DROP=EST01STP ICE01F IMPREA01) as a
+	left join dat_ana2(where=(^missing(EST01STP))) as b 
+	on a.USUBJID=b.USUBJID and a.AVISIT=b.AVISIT and a.PARAMCD=b.PARAMCD
+	order by a.USUBJID
+	;
+quit;
+
+proc sql;
+	create table aduprmi_supp11 as 
+	select distinct a.*, b.EST02STP, b.ICE02F, b.IMPREA02
+	from aduprmi_supp1(DROP=EST02STP ICE02F IMPREA02)  as a
+	left join dat_ana2(where=(^missing(EST02STP))) as b 
+	on a.USUBJID=b.USUBJID and a.AVISIT=b.AVISIT and a.PARAMCD=b.PARAMCD
+	order by a.USUBJID
+	;
+quit;
+
+proc sql;
+	create table aduprmi_supp21 as 
+	select distinct a.*, b.EST03STP, b.ICE03F, b.IMPREA03
+	from aduprmi_supp2(DROP=EST03STP ICE03F IMPREA03)  as a
+	left join dat_ana2(where=(^missing(EST03STP))) as b 
+	on a.USUBJID=b.USUBJID and a.AVISIT=b.AVISIT and a.PARAMCD=b.PARAMCD
+	order by a.USUBJID
+	;
+quit;
+
+data aduprmi_comb;
+	length ana_flag $10.;
+	set aduprmi_pri1 /*aduprmi_sens1 aduprmi_sens2*/ aduprmi_supp11 aduprmi_supp21 
+	analysis.adupcr(where=(PARAMCD in ("LGUPCR24","LGUPCRFV") and AVISIT="Baseline"));
+	by USUBJID;	
+	drop ANL05FL ANL06FL ANL07FL AEFLAG;
+run;
+
+/*proc sql;*/
+/*	create table aduprmi_comb1 as */
+/*	select distinct a.*, b.ANL05FL,  c.ANL06FL,  e.ANL07FL,  d.AEFLAG */
+/*	from aduprmi_comb as a*/
+/*	left join dat_ana2(where=(^missing(ANL05FL))) as b */
+/*	on a.USUBJID=b.USUBJID and a.AVISIT=b.AVISIT and a.PARAMCD=b.PARAMCD*/
+/*	left join dat_ana2(where=(^missing(ANL06FL))) as c */
+/*	on a.USUBJID=c.USUBJID and a.AVISIT=c.AVISIT and a.PARAMCD=c.PARAMCD*/
+/*	left join dat_ana2(where=(^missing(ANL07FL))) as e */
+/*	on a.USUBJID=e.USUBJID and a.AVISIT=e.AVISIT and a.PARAMCD=e.PARAMCD*/
+/*	left join dat_ana2(where=(^missing(AEFLAG))) as d */
+/*	on a.USUBJID=d.USUBJID and a.PARAMCD=d.PARAMCD*/
+/*	order by a.USUBJID*/
+/*	;*/
+/*quit;*/
+proc sql noprint;
+	select distinct name into: dropvar separated by " "
+	from sashelp.vcolumn where find(libname,"WORK") and memname="ADUPRMI_COMB1"
+	and (name^="USUBJID" and name in 
+		(select distinct name from sashelp.vcolumn where find(libname,"ANALYSIS") and memname="ADSL"))
+	;
+quit;
+
+data aduprmi_final;
+	merge aduprmi_comb(in=a drop=&dropvar SYSTRCRF) analysis.ADSL analysis.adbs(keep=USUBJID SYSTRCRF);
+	by USUBJID;
+	if a;
+    if (EST01STP='Hypothetical strategy' or EST02STP='Hypothetical strategy' or EST03STP='Hypothetical strategy') and ANL05DT ne . then do;
+      ANL05FL="Y";
+      ANL05DSC="Record after initiation or intensification of anti-proteinuric therapies";
+	end;
+    if (EST01STP='Hypothetical strategy' or EST02STP='Treatment policy' or EST03STP='Hypothetical strategy') and ANL06DT ne .  then do;
+      ANL06FL="Y";
+      ANL06DSC="Record after initiation of RRT";
+	end;
+    if EST01STP='Treatment policy' or EST02STP='Treatment policy' or EST03STP='Treatment policy' then do;
+	  ANL07FL="Y";
+      ANL07DSC="Record after treatment discontinuation for any other reason";
+	end;
+	if AEDCDT NE . then do;AEFLAG='Y';end;
+	if dtype ne '' then do;
+	  if ana_flag='pri' then IMPREAS=IMPREA01;
+	  if ana_flag='supp1' then IMPREAS=IMPREA02;
+	  if ana_flag='supp2' then IMPREAS=IMPREA03;
+    end;
+/*    if ANL05FL="Y" then ANL05DSC="Record after initiation or intensification of anti-proteinuric therapies";*/
+/*    if ANL06FL="Y" then ANL06DSC="Record after initiation of RRT";*/
+/*    if ANL07FL="Y" then ANL07DSC="Record after treatment discontinuation for any other reason";*/
+run;
+
+*----------------------------------------------------------------------;
+*set the final dataset
+*do sorting;
+*select avariable and apply format from PDS;
+*----------------------------------------------------------------------;
+/*proc sort data=analysis.aduprmi out=dev; by USUBJID SUBJID ACAT1N  PARAMCD AVISITN IMPNUM;run;*/
+/*proc sort data=aduprmi_final; by USUBJID SUBJID ACAT1N  PARAMCD AVISITN IMPNUM;run;*/
+/**/
+/*PROC COMPARE BASE=dev COMPARE=aduprmi_final LISTALL;*/
+/*RUN;*/
+
+%_std_varpadding_submission( calledby =
+,in_lib = work
+,out_lib = work
+,include_ds = aduprmi_final
+,exclude_ds =
+);
+
+
+%opSetAttr(domain=aduprmi, inData=aduprmi_final, metaData  = RPRTDSM.study_adam_metadata);
+PDS更新了，然后ADUPCR， ADUPRMI也先出了一版，你可以参考，大概的逻辑就是我们之前是在MI里面dummy了planed的visit，现在给换成在原始的数据集里给先dummy好，这样MI里就可以直接用 然后53	20250402	Huiyu Luo	ADEGRMI	IMPREAS	Add variable IMPREAS	
+ADEGRMI	IMPREAS	Imputation Rason	C					15				Predecessor		Set to IMPREA01, IMPREA02, IMPREA03 based on  ACAT1																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																							
+请仔细思考 提供修改补丁
+
+The SAS System
 
 1        
                                                    The FREQ Procedure                                                               
