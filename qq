@@ -1,4 +1,14 @@
-/************************************************************************
+7504   data facit_all;
+7505     merge facit_dummy2(in=b) facit_act;
+ERROR: Variable anl01dsc has been defined as both character and numeric.
+ERROR: Variable anl03dsc has been defined as both character and numeric.
+ERROR: Variable crit1 has been defined as both character and numeric.
+ERROR: Variable crit2 has been defined as both character and numeric.
+ERROR: Variable ablfl has been defined as both character and numeric.
+ERROR: Variable crit1fl has been defined as both character and numeric.
+ERROR: Variable crit2fl has been defined as both character and numeric.
+ERROR: Variable anl01fl has been defined as both character and numeric.
+ERROR: Variable anl03fl has been defined as both character and numeric./************************************************************************
 *  PROJECT       : CLNP023B1
 *  STUDY         : CLNP023B12301
 *  RA            : csr_4
