@@ -1,3 +1,99 @@
+
+Check 1：确认 FACIT baseline 还在
+proc freq data=final;
+  tables paramcd*ablfl / list missing;
+  where paramcd='FACIT';
+run;
+
+proc print data=final(obs=50);
+  where paramcd='FACIT' and ablfl='Y';
+  var usubjid paramcd adt avisit avisitn ablfl base aval chg;
+run;
+
+你要看：
+
+FACIT 是否还有 ABLFL='Y'
+baseline record 的 AVISIT='Baseline'，AVISITN=99
+Check 2：确认 dummy 只加在 planned visits 缺失处
+proc print data=final(obs=100);
+  where paramcd='FACIT'
+    and missing(adt)
+    and not missing(avisitn)
+    and avisitn ne 99;
+  var usubjid paramcd avisit avisitn padt base aval est01stp ice01f imprea01 est02stp ice02f imprea02;
+run;
+
+你要看：
+
+这些应该是 dummy rows
+ADT 缺失
+PADT 应该有值
+AVISIT/AVISITN 是 planned visits
+Check 3：确认实际 FACIT 非 planned visit 还在
+proc print data=final(obs=100);
+  where paramcd='FACIT'
+    and not missing(adt)
+    and missing(avisitn);
+  var usubjid paramcd visit adt avisit avisitn aval;
+run;
+
+你要看：
+
+非 planned visit 的实际记录是否还存在
+这正是上一版最容易被误删的部分
+Check 4：确认没有同一 subject/visit 重复 FACIT
+proc sort data=final(where=(paramcd='FACIT'))
+          out=chk_facit_dup dupout=dup_facit nodupkey;
+  by usubjid paramcd avisitn adt atm;
+run;
+
+proc print data=dup_facit(obs=100);
+run;
+
+如果这里有很多重复，就说明 dummy append 可能和实际记录还存在重叠问题。
+
+Check 5：确认 planned visit 补齐是否完整
+proc freq data=final;
+  tables avisit / missing;
+  where paramcd='FACIT';
+run;
+
+proc freq data=final;
+  tables avisit*(missing(adt)) / list missing;
+  where paramcd='FACIT' and avisit in ('Baseline','Day 1','Day 14','Day 30','Day 90','Day 180','Day 210','Day 270','Day 360');
+run;
+
+你要看：
+
+planned visits 都出现了
+有实际记录的 visit 不应该全变成 dummy
+dummy 只应该出现在原本缺失的 visit
+Check 6：确认新增 estimand 变量在 FACIT 上有值
+proc freq data=final;
+  tables paramcd*ice01f paramcd*ice02f / list missing;
+  where paramcd='FACIT';
+run;
+
+proc print data=final(obs=100);
+  where paramcd='FACIT' and (ice01f='Y' or ice02f='Y' or imprea01='Missing data' or imprea02='Missing data');
+  var usubjid avisit adt padt anl05dt anl06dt anl07dt est01stp ice01f imprea01 est02stp ice02f imprea02;
+run;
+Check 7：直接确认 baseline 没有在 dummy step 后消失
+
+这个 check 最直接。你可以在 adfacit3 和 adfacit3a 各跑一次：
+
+proc sql;
+  select count(*) as n_baseline_before
+  from adfacit3
+  where paramcd='FACIT' and ablfl='Y';
+
+  select count(*) as n_baseline_after
+  from adfacit3a
+  where paramcd='FACIT' and ablfl='Y';
+quit;
+
+如果这两个数一样，说明你这次修正把 baseline 保住了。
+
 /************************************************************************
 *  PROJECT       : CLNP023B1
 *  STUDY         : CLNP023B12301
