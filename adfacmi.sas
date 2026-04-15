@@ -1,3 +1,92 @@
+还不能说 **dataset 已经完全正确**，但它已经比前一版明显更接近正确了。
+
+现在可以确认的是：
+`FACIT` baseline 的确保住了。你做的 before/after check 都是 21，而且 `ABLFL='Y'` 的 `FACIT` 记录也正好是 21 条，这说明你修掉了之前 dummy merge 把 baseline 吃掉的问题。`ICE01F/ICE02F` 也已经开始正常赋值，不再是全空。
+
+但是我不会现在就判定“完全正确”，因为你这份 check 里还有一个**很关键的红旗**：
+
+`AVISIT` 的频数里，`Baseline=21`，但 `Day 360=10`。按你现在这套逻辑，既然是给 `FACIT` 先补 planned visit dummy，那么每个 baseline subject 理论上都应该在每个 planned visit 上至少有 1 条记录（实际或 dummy）。PDS 里 planned visits 也明确包括 `360/EOS`。所以如果 baseline subject 有 21 个，`Day 360` 不应该只有 10 条，这说明 **Day 360 dummy 没有被完整保留下来**，或者 `Day 360` 的 `SV/TV` 匹配名和你 dummy 用的 visit 名不一致，导致 `PADT` 为空，最后又被 delete 掉了。
+
+还有一个次级风险：
+你现在 `Day 14=25`、`Day 30=25`、`Day 1/90/180/210/270=23`，都大于 baseline subject 数 21。这不一定错，因为可能有同一 subject 在同一个 analysis visit 上存在多条实际记录；但如果 PDS 对 `ANL01FL` 的要求是“**unique non-missing record for each visit**”，那你还需要再确认这些 visit 上是否有重复记录，以及是否已经选出了唯一分析记录。单看这份输出，还不能证明这一点已经正确。
+
+所以我的判断是：
+
+**Baseline 修对了。**
+**dummy 思路也对了。**
+**但 dataset 还不能最终盖章为正确，因为 Day 360 明显不完整。**
+
+你先跑下面这组 check，能非常快地把问题定位出来。
+
+```sas
+/* 1) 哪些 baseline subject 没有 Day 360 */
+proc sql;
+  create table chk_miss_d360 as
+  select distinct a.usubjid
+  from final as a
+  where a.paramcd='FACIT'
+    and a.ablfl='Y'
+    and not exists (
+      select 1
+      from final as b
+      where b.usubjid=a.usubjid
+        and b.paramcd='FACIT'
+        and b.avisit='Day 360'
+    );
+quit;
+
+proc print data=chk_miss_d360;
+run;
+```
+
+```sas
+/* 2) 看 Day 360 dummy 是否因为 PADT 缺失被删掉 */
+proc print data=adfacit6;
+  where paramcd='FACIT'
+    and avisit='Day 360';
+  var usubjid avisit avisitn adt padt svstdt visitdy base aval;
+run;
+```
+
+```sas
+/* 3) 检查 TV / SV 里到底是 Day 360 还是 End of Study */
+proc sql;
+  select distinct visit
+  from derived.tv
+  where upcase(visit) like '%360%'
+     or upcase(visit) like '%END%'
+     or upcase(visit) like '%EOS%';
+
+  select distinct visit
+  from derived.sv
+  where upcase(visit) like '%360%'
+     or upcase(visit) like '%END%'
+     or upcase(visit) like '%EOS%';
+quit;
+```
+
+```sas
+/* 4) 检查同一 subject 同一 analysis visit 是否有多条 FACIT */
+proc sort data=final(where=(paramcd='FACIT'))
+          out=facit_nodup
+          dupout=facit_dup
+          nodupkey;
+  by usubjid paramcd avisitn;
+run;
+
+proc print data=facit_dup(obs=100);
+  var usubjid paramcd visit avisit avisitn adt atm aval anl01fl;
+run;
+```
+
+如果第 3 个 check 发现 `derived.tv` / `derived.sv` 里用的是 `End of Study` 而不是 `Day 360`，那你 dummy 那段就要把 `Day 360` 特殊处理一下，不要只按 `a.avisit=b.visit` 去连。
+
+我现在最建议你先把上面这 4 个 check 跑出来，尤其是 `Day 360` 那个。只要你把结果贴给我，我可以直接帮你判断是：
+
+* 只是 `visit name` 不匹配，
+* 还是 `PADT` 逻辑导致被删，
+* 还是 `ANL01FL` 还需要补“唯一记录”筛选。
+
 /******************************************************************************* 
 *            FILENAME : adfacmi.sas
 *   PROGRAM DEVELOPER : Yijie Huang (huangy2e)                          
