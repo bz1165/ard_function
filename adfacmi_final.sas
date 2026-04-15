@@ -965,3 +965,225 @@ quit;
 
 1. `EST01/EST02` 的赋值是否完全符合你们 PDT
 2. `final` 里最后那条 delete 规则是否还需要再微调，避免误删某些特殊 missing actual records
+
+
+
+
+                                                   The FREQ Procedure                                                               
+                                                                                                                                    
+                                                                      Cumulative    Cumulative                                      
+                         PARAMCD    ABLFL    Frequency     Percent     Frequency      Percent                                       
+                         ---------------------------------------------------------------------                                      
+                         FACIT                    175       89.29           175        89.29                                        
+                         FACIT      Y              21       10.71           196       100.00                                        
+
+
+      Obs           USUBJID           PARAMCD           ADT     AVISIT     AVISITN    ABLFL    BASE    AVAL    CHG                  
+                                                                                                                                    
+       79    CLNP023B12301_1001009     FACIT     2025-07-15    Baseline       99        Y       23      23                          
+      138    CLNP023B12301_1001010     FACIT     2026-01-29    Baseline       99        Y       47      47                          
+      191    CLNP023B12301_1002004     FACIT     2025-12-30    Baseline       99        Y       44      44                          
+      257    CLNP023B12301_1005002     FACIT     2025-12-29    Baseline       99        Y       44      44                          
+      424    CLNP023B12301_2054004     FACIT     2025-12-05    Baseline       99        Y       49      49                          
+      529    CLNP023B12301_3311002     FACIT     2025-07-14    Baseline       99        Y       52      52                          
+      590    CLNP023B12301_3311003     FACIT     2026-01-21    Baseline       99        Y       43      43                          
+      756    CLNP023B12301_3404001     FACIT     2025-03-05    Baseline       99        Y       32      32                          
+      885    CLNP023B12301_3502004     FACIT     2023-09-04    Baseline       99        Y       33      33                          
+     1001    CLNP023B12301_3601011     FACIT     2025-07-01    Baseline       99        Y       49      49                          
+     1127    CLNP023B12301_3602003     FACIT     2023-09-26    Baseline       99        Y       38      38                          
+     1256    CLNP023B12301_3602004     FACIT     2023-09-19    Baseline       99        Y       48      48                          
+     1346    CLNP023B12301_3902003     FACIT     2025-07-01    Baseline       99        Y       23      23                          
+     1416    CLNP023B12301_4001007     FACIT     2025-12-10    Baseline       99        Y       47      47                          
+     1568    CLNP023B12301_5002001     FACIT     2024-08-15    Baseline       99        Y       21      21                          
+     1697    CLNP023B12301_5006015     FACIT     2024-12-04    Baseline       99        Y       40      40                          
+     1800    CLNP023B12301_5006016     FACIT     2025-07-28    Baseline       99        Y       36      36                          
+     1872    CLNP023B12301_5016001     FACIT     2024-08-13    Baseline       99        Y       52      52                          
+     2053    CLNP023B12301_5211001     FACIT     2025-12-10    Baseline       99        Y       42      42                          
+     2173    CLNP023B12301_6012001     FACIT     2024-08-22    Baseline       99        Y       49      49                          
+     2302    CLNP023B12301_6013001     FACIT     2023-09-26    Baseline       99        Y       45      45                          
+
+
+                                                   The FREQ Procedure                                                               
+                                                                                                                                    
+                                                                  Cumulative    Cumulative                                          
+                             AVISIT      Frequency     Percent     Frequency      Percent                                           
+                             -------------------------------------------------------------                                          
+                             Baseline          21       10.71            21        10.71                                            
+                             Day 1             23       11.73            44        22.45                                            
+                             Day 14            25       12.76            69        35.20                                            
+                             Day 180           23       11.73            92        46.94                                            
+                             Day 210           23       11.73           115        58.67                                            
+                             Day 270           23       11.73           138        70.41                                            
+                             Day 30            25       12.76           163        83.16                                            
+                             Day 360           10        5.10           173        88.27                                            
+                             Day 90            23       11.73           196       100.00                                            
+
+
+                                                   The FREQ Procedure                                                               
+                                                                                                                                    
+                                                                       Cumulative    Cumulative                                     
+                         PARAMCD    ICE01F    Frequency     Percent     Frequency      Percent                                      
+                         ----------------------------------------------------------------------                                     
+                         FACIT      N              191       97.45           191        97.45                                       
+                         FACIT      Y                5        2.55           196       100.00                                       
+                                                                                                                                    
+                                                                                                                                    
+                                                                       Cumulative    Cumulative                                     
+                         PARAMCD    ICE02F    Frequency     Percent     Frequency      Percent                                      
+                         ----------------------------------------------------------------------                                     
+                         FACIT      N              191       97.45           191        97.45                                       
+                         FACIT      Y                5        2.55           196       100.00                                       
+
+
+                                                       n_baseline_                                                                  
+                                                            before                                                                  
+                                                      ------------                                                                  
+                                                                21                                                                  
+
+
+                                                       n_baseline_                                                                  
+                                                             after                                                                  
+                                                      ------------                                                                  
+                                                                21                                                                  
+
+56226   
+56227   proc print data=final(obs=100);
+56228     where paramcd='FACIT'
+56229       and missing(adt)
+56230       and not missing(avisitn)
+56231       and avisitn ne 99;
+56232     var usubjid paramcd avisit avisitn padt base aval est01stp ice01f imprea01 est02stp ice02f imprea02;
+ERROR: Variable PADT not found.
+56233   run;
+
+NOTE: The SAS System stopped processing this step because of errors.
+NOTE: PROCEDURE PRINT used (Total process time):
+      real time           0.00 seconds
+      cpu time            0.00 seconds
+      
+56234   
+
+
+56235   proc print data=final(obs=100);
+56236     where paramcd='FACIT'
+56237       and not missing(adt)
+56238       and missing(avisitn);
+39                                                         The SAS System                            04:10 Wednesday, April 15, 2026
+
+56239     var usubjid paramcd visit adt avisit avisitn aval;
+56240   run;
+
+NOTE: No observations were selected from data set WORK.FINAL.
+NOTE: There were 0 observations read from the data set WORK.FINAL.
+      WHERE (paramcd='FACIT') and (not MISSING(adt)) and MISSING(avisitn);
+NOTE: PROCEDURE PRINT used (Total process time):
+      real time           0.00 seconds
+      cpu time            0.00 seconds
+      
+
+56241   
+56242   proc sort data=final(where=(paramcd='FACIT'))
+56243             out=chk_facit_dup dupout=dup_facit nodupkey;
+56244     by usubjid paramcd avisitn adt atm;
+56245   run;
+
+NOTE: There were 196 observations read from the data set WORK.FINAL.
+      WHERE paramcd='FACIT';
+NOTE: 0 observations with duplicate key values were deleted.
+NOTE: The data set WORK.CHK_FACIT_DUP has 196 observations and 133 variables.
+NOTE: The data set WORK.DUP_FACIT has 0 observations and 133 variables.
+NOTE: PROCEDURE SORT used (Total process time):
+      real time           0.00 seconds
+      cpu time            0.00 seconds
+      
+
+56246   
+56247   proc print data=dup_facit(obs=100);
+56248   run;
+
+NOTE: No observations in data set WORK.DUP_FACIT.
+NOTE: PROCEDURE PRINT used (Total process time):
+      real time           0.00 seconds
+      cpu time            0.00 seconds
+      
+
+56249   
+56250   proc freq data=final;
+56251     tables avisit / missing;
+56252     where paramcd='FACIT';
+56253   run;
+
+NOTE: There were 196 observations read from the data set WORK.FINAL.
+      WHERE paramcd='FACIT';
+NOTE: The PROCEDURE FREQ printed page 54.
+NOTE: PROCEDURE FREQ used (Total process time):
+      real time           0.00 seconds
+      cpu time            0.00 seconds
+      
+
+56254   
+56255   proc freq data=final;
+56256     tables avisit*(missing(adt)) / list missing;
+                                -    -
+                                79   22
+                                     200
+ERROR: Variable MISSING not found.
+40                                                         The SAS System                            04:10 Wednesday, April 15, 2026
+
+ERROR 79-322: Expecting a ).
+ERROR 22-322: Syntax error, expecting one of the following: a name, ;, (, *, /, _ALL_, _CHARACTER_, _CHAR_, _NUMERIC_.  
+ERROR 200-322: The symbol is not recognized and will be ignored.
+56257     where paramcd='FACIT' and avisit in ('Baseline','Day 1','Day 14','Day 30','Day 90','Day 180','Day 210','Day
+56257 ! 270','Day 360');
+56258   run;
+
+NOTE: The SAS System stopped processing this step because of errors.
+NOTE: PROCEDURE FREQ used (Total process time):
+      real time           0.00 seconds
+      cpu time            0.00 seconds
+      
+56259   
+
+
+56260   proc freq data=final;
+56261     tables paramcd*ice01f paramcd*ice02f / list missing;
+56262     where paramcd='FACIT';
+56263   run;
+
+NOTE: There were 196 observations read from the data set WORK.FINAL.
+      WHERE paramcd='FACIT';
+NOTE: The PROCEDURE FREQ printed page 55.
+NOTE: PROCEDURE FREQ used (Total process time):
+      real time           0.00 seconds
+      cpu time            0.00 seconds
+      
+
+56264   
+56265   proc print data=final(obs=100);
+56266     where paramcd='FACIT' and (ice01f='Y' or ice02f='Y' or imprea01='Missing data' or imprea02='Missing data');
+56267     var usubjid avisit adt padt anl05dt anl06dt anl07dt est01stp ice01f imprea01 est02stp ice02f imprea02;
+ERROR: Variable PADT not found.
+56268   run;
+
+NOTE: The SAS System stopped processing this step because of errors.
+NOTE: PROCEDURE PRINT used (Total process time):
+      real time           0.00 seconds
+      cpu time            0.00 seconds
+      
+56269   
+
+
+56270   proc sql;
+56271     select count(*) as n_baseline_before
+56272     from adfacit3
+56273     where paramcd='FACIT' and ablfl='Y';
+56274   
+56275     select count(*) as n_baseline_after
+56276     from adfacit3a
+56277     where paramcd='FACIT' and ablfl='Y';
+56278   quit;
+NOTE: The PROCEDURE SQL printed pages 56-57.
+NOTE: PROCEDURE SQL used (Total process time):
+      real time           0.01 seconds
+      cpu time            0.01 seconds
+
