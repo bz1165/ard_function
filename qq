@@ -1,4 +1,151 @@
 
+                                                   The FREQ Procedure                                                               
+                                                                                                                                    
+                                                                      Cumulative    Cumulative                                      
+                         PARAMCD    ABLFL    Frequency     Percent     Frequency      Percent                                       
+                         ---------------------------------------------------------------------                                      
+                         FACIT                    175       89.29           175        89.29                                        
+                         FACIT      Y              21       10.71           196       100.00                                        
+
+
+      Obs           USUBJID           PARAMCD           ADT     AVISIT     AVISITN    ABLFL    BASE    AVAL    CHG                  
+                                                                                                                                    
+       79    CLNP023B12301_1001009     FACIT     2025-07-15    Baseline       99        Y       23      23                          
+      138    CLNP023B12301_1001010     FACIT     2026-01-29    Baseline       99        Y       47      47                          
+      191    CLNP023B12301_1002004     FACIT     2025-12-30    Baseline       99        Y       44      44                          
+      257    CLNP023B12301_1005002     FACIT     2025-12-29    Baseline       99        Y       44      44                          
+      424    CLNP023B12301_2054004     FACIT     2025-12-05    Baseline       99        Y       49      49                          
+      529    CLNP023B12301_3311002     FACIT     2025-07-14    Baseline       99        Y       52      52                          
+      590    CLNP023B12301_3311003     FACIT     2026-01-21    Baseline       99        Y       43      43                          
+      756    CLNP023B12301_3404001     FACIT     2025-03-05    Baseline       99        Y       32      32                          
+      885    CLNP023B12301_3502004     FACIT     2023-09-04    Baseline       99        Y       33      33                          
+     1001    CLNP023B12301_3601011     FACIT     2025-07-01    Baseline       99        Y       49      49                          
+     1127    CLNP023B12301_3602003     FACIT     2023-09-26    Baseline       99        Y       38      38                          
+     1256    CLNP023B12301_3602004     FACIT     2023-09-19    Baseline       99        Y       48      48                          
+     1346    CLNP023B12301_3902003     FACIT     2025-07-01    Baseline       99        Y       23      23                          
+     1416    CLNP023B12301_4001007     FACIT     2025-12-10    Baseline       99        Y       47      47                          
+     1568    CLNP023B12301_5002001     FACIT     2024-08-15    Baseline       99        Y       21      21                          
+     1697    CLNP023B12301_5006015     FACIT     2024-12-04    Baseline       99        Y       40      40                          
+     1800    CLNP023B12301_5006016     FACIT     2025-07-28    Baseline       99        Y       36      36                          
+     1872    CLNP023B12301_5016001     FACIT     2024-08-13    Baseline       99        Y       52      52                          
+     2053    CLNP023B12301_5211001     FACIT     2025-12-10    Baseline       99        Y       42      42                          
+     2173    CLNP023B12301_6012001     FACIT     2024-08-22    Baseline       99        Y       49      49                          
+     2302    CLNP023B12301_6013001     FACIT     2023-09-26    Baseline       99        Y       45      45                          
+
+
+  Obs        USUBJID        PARAMCD AVISIT  AVISITN BASE AVAL EST01STP ICE01F   IMPREA01   EST02STP ICE02F   IMPREA02               
+                                                                                                                                    
+   80 CLNP023B12301_1001009  FACIT  Day 1     201    23                  N    Missing data            N    Missing data             
+   86 CLNP023B12301_1001009  FACIT  Day 270   207    23                  N    Missing data            N    Missing data             
+  139 CLNP023B12301_1001010  FACIT  Day 1     201    47                  N    Missing data            N    Missing data             
+  142 CLNP023B12301_1001010  FACIT  Day 90    204    47                  N    Missing data            N    Missing data             
+  143 CLNP023B12301_1001010  FACIT  Day 180   205    47                  N    Missing data            N    Missing data             
+  144 CLNP023B12301_1001010  FACIT  Day 210   206    47                  N    Missing data            N    Missing data             
+  145 CLNP023B12301_1001010  FACIT  Day 270   207    47                  N    Missing data            N    Missing data             
+  192 CLNP023B12301_1002004  FACIT  Day 1     201    44                  N    Missing data            N    Missing data             
+  195 CLNP023B12301_1002004  FACIT  Day 90    204    44                  N    Missing data            N    Missing data             
+  196 CLNP023B12301_1002004  FACIT  Day 180   205    44                  N    Missing data            N    Missing data             
+  197 CLNP023B12301_1002004  FACIT  Day 210   206    44                  N    Missing data            N    Missing data             
+  198 CLNP023B12301_1002004  FACIT  Day 270   207    44                  N    Missing data            N    Missing data             
+  258 CLNP023B12301_1005002  FACIT  Day 1     201    44                  N    Missing data            N    Missing data             
+  262 CLNP023B12301_1005002  FACIT  Day 180   205    44                  N    Missing data            N    Missing data             
+  263 CLNP023B12301_1005002  FACIT  Day 210   206    44                  N    Missing data            N    Missing data             
+  264 CLNP023B12301_1005002  FACIT  Day 270   207    44                  N    Missing data            N    Missing data             
+  425 CLNP023B12301_2054004  FACIT  Day 1     201    49                  N    Missing data            N    Missing data             
+  427 CLNP023B12301_2054004  FACIT  Day 30    203    49                  N    Missing data            N    Missing data             
+  429 CLNP023B12301_2054004  FACIT  Day 180   205    49                  N    Missing data            N    Missing data             
+  430 CLNP023B12301_2054004  FACIT  Day 210   206    49                  N    Missing data            N    Missing data             
+  431 CLNP023B12301_2054004  FACIT  Day 270   207    49                  N    Missing data            N    Missing data             
+  530 CLNP023B12301_3311002  FACIT  Day 1     201    52                  N    Missing data            N    Missing data             
+  591 CLNP023B12301_3311003  FACIT  Day 1     201    43                  N    Missing data            N    Missing data             
+  594 CLNP023B12301_3311003  FACIT  Day 90    204    43                  N    Missing data            N    Missing data             
+  595 CLNP023B12301_3311003  FACIT  Day 180   205    43                  N    Missing data            N    Missing data             
+  596 CLNP023B12301_3311003  FACIT  Day 210   206    43                  N    Missing data            N    Missing data             
+  597 CLNP023B12301_3311003  FACIT  Day 270   207    43                  N    Missing data            N    Missing data             
+  757 CLNP023B12301_3404001  FACIT  Day 1     201    32                  N    Missing data            N    Missing data             
+  886 CLNP023B12301_3502004  FACIT  Day 1     201    33                  N    Missing data            N    Missing data             
+ 1002 CLNP023B12301_3601011  FACIT  Day 1     201    49                  N    Missing data            N    Missing data             
+ 1128 CLNP023B12301_3602003  FACIT  Day 1     201    38                  N    Missing data            N    Missing data             
+ 1257 CLNP023B12301_3602004  FACIT  Day 1     201    48                  N    Missing data            N    Missing data             
+ 1347 CLNP023B12301_3902003  FACIT  Day 1     201    23                  N    Missing data            N    Missing data             
+ 1351 CLNP023B12301_3902003  FACIT  Day 180   205    23                  N    Missing data            N    Missing data             
+ 1353 CLNP023B12301_3902003  FACIT  Day 270   207    23                  N    Missing data            N    Missing data             
+ 1417 CLNP023B12301_4001007  FACIT  Day 1     201    47                  N    Missing data            N    Missing data             
+ 1421 CLNP023B12301_4001007  FACIT  Day 180   205    47                  N    Missing data            N    Missing data             
+ 1422 CLNP023B12301_4001007  FACIT  Day 210   206    47                  N    Missing data            N    Missing data             
+ 1423 CLNP023B12301_4001007  FACIT  Day 270   207    47                  N    Missing data            N    Missing data             
+ 1569 CLNP023B12301_5002001  FACIT  Day 1     201    21                  N    Missing data            N    Missing data             
+
+
+                                                            E                I              E                I                      
+                  U             P            A              S                M              S                M                      
+                  S             A      A     V              T         I      P              T         I      P                      
+                  U             R      V     I              0         C      R              0         C      R                      
+                  B             A      I     S   B A        1         E      E              2         E      E                      
+     O            J             M      S     I   A V        S         0      A              S         0      A                      
+     b            I             C      I     T   S A        T         1      0              T         2      0                      
+     s            D             D      T     N   E L        P         F      1              P         F      2                      
+                                                                                                                                    
+   1698 CLNP023B12301_5006015 FACIT Day 1   201 40                    N Missing data                  N Missing data                
+   1801 CLNP023B12301_5006016 FACIT Day 1   201 36                    N Missing data                  N Missing data                
+   1807 CLNP023B12301_5006016 FACIT Day 270 207 36                    N Missing data                  N Missing data                
+   1873 CLNP023B12301_5016001 FACIT Day 1   201 52                    N Missing data                  N Missing data                
+   1876 CLNP023B12301_5016001 FACIT Day 90  204 52   Treatment policy Y Post ICE     Treatment policy Y Post ICE                    
+   1877 CLNP023B12301_5016001 FACIT Day 180 205 52   Treatment policy Y Post ICE     Treatment policy Y Post ICE                    
+   1878 CLNP023B12301_5016001 FACIT Day 210 206 52   Treatment policy Y Post ICE     Treatment policy Y Post ICE                    
+   1879 CLNP023B12301_5016001 FACIT Day 270 207 52   Treatment policy Y Post ICE     Treatment policy Y Post ICE                    
+   2054 CLNP023B12301_5211001 FACIT Day 1   201 42                    N Missing data                  N Missing data                
+   2058 CLNP023B12301_5211001 FACIT Day 180 205 42                    N Missing data                  N Missing data                
+   2059 CLNP023B12301_5211001 FACIT Day 210 206 42                    N Missing data                  N Missing data                
+   2060 CLNP023B12301_5211001 FACIT Day 270 207 42                    N Missing data                  N Missing data                
+   2174 CLNP023B12301_6012001 FACIT Day 1   201 49                    N Missing data                  N Missing data                
+   2303 CLNP023B12301_6013001 FACIT Day 1   201 45                    N Missing data                  N Missing data                
+
+
+                                                   The FREQ Procedure                                                               
+                                                                                                                                    
+                                                                  Cumulative    Cumulative                                          
+                             AVISIT      Frequency     Percent     Frequency      Percent                                           
+                             -------------------------------------------------------------                                          
+                             Baseline          21       10.71            21        10.71                                            
+                             Day 1             23       11.73            44        22.45                                            
+                             Day 14            25       12.76            69        35.20                                            
+                             Day 180           23       11.73            92        46.94                                            
+                             Day 210           23       11.73           115        58.67                                            
+                             Day 270           23       11.73           138        70.41                                            
+                             Day 30            25       12.76           163        83.16                                            
+                             Day 360           10        5.10           173        88.27                                            
+                             Day 90            23       11.73           196       100.00                                            
+
+
+                                                   The FREQ Procedure                                                               
+                                                                                                                                    
+                                                                       Cumulative    Cumulative                                     
+                         PARAMCD    ICE01F    Frequency     Percent     Frequency      Percent                                      
+                         ----------------------------------------------------------------------                                     
+                         FACIT      N              191       97.45           191        97.45                                       
+                         FACIT      Y                5        2.55           196       100.00                                       
+                                                                                                                                    
+                                                                                                                                    
+                                                                       Cumulative    Cumulative                                     
+                         PARAMCD    ICE02F    Frequency     Percent     Frequency      Percent                                      
+                         ----------------------------------------------------------------------                                     
+                         FACIT      N              191       97.45           191        97.45                                       
+                         FACIT      Y                5        2.55           196       100.00                                       
+
+
+                                                       n_baseline_                                                                  
+                                                            before                                                                  
+                                                      ------------                                                                  
+                                                                21                                                                  
+
+
+                                                       n_baseline_                                                                  
+                                                             after                                                                  
+                                                      ------------                                                                  
+                                                                21                                                                  
+
+
 Check 1：确认 FACIT baseline 还在
 proc freq data=final;
   tables paramcd*ablfl / list missing;
