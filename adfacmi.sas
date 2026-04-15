@@ -1,6 +1,92 @@
                                                            The SAS System
 
-1          ;*';*";*/;quit;run;
+1        
+                                                   The FREQ Procedure                                                               
+                                                                        Cumulative    Cumulative                                    
+                        PARAMCD    AVISIT      Frequency     Percent     Frequency      Percent                                     
+                        ------------------------------------------------------------------------                                    
+                        FACIT      Baseline          21       14.29            21        14.29                                      
+                        FACIT      Day 1              2        1.36            23        15.65                                      
+                        FACIT      Day 14            25       17.01            48        32.65                                      
+                        FACIT      Day 180           14        9.52            62        42.18                                      
+                        FACIT      Day 210           15       10.20            77        52.38                                      
+                        FACIT      Day 270           12        8.16            89        60.54                                      
+                        FACIT      Day 30            25       17.01           114        77.55                                      
+                        FACIT      Day 360           10        6.80           124        84.35                                      
+                        FACIT      Day 90            23       15.65           147       100.00                                      
+ 
+ 
+                                                           E                I              E                I                       
+                    U             P           A            S                M              S                M                       
+                    S             A     A     V            T         I      P              T         I      P                       
+                    U             R     V     I            0         C      R              0         C      R                       
+                    B             A     I     S   B        1         E      E              2         E      E                       
+       O            J             M     S     I   A        S         0      A              S         0      A                       
+       b            I             C     I     T   S        T         1      0              T         2      0                       
+       s            D             D     T     N   E        P         F      1              P         F      2                       
+       97 CLNP023B12301_1001010 FACIT Day 90 204 47                    Missing data                    Missing data                 
+      146 CLNP023B12301_1002004 FACIT Day 90 204 44                    Missing data                    Missing data                 
+      371 CLNP023B12301_2054004 FACIT Day 30 203 49                    Missing data                    Missing data                 
+      532 CLNP023B12301_3311003 FACIT Day 90 204 43                    Missing data                    Missing data                 
+     1781 CLNP023B12301_5016001 FACIT Day 90 204 52 Treatment policy Y Missing data Treatment policy Y Missing data                 
+ 
+ 
+                                                   The FREQ Procedure                                                               
+                                                                       Cumulative    Cumulative                                     
+                         PARAMCD    ICE01F    Frequency     Percent     Frequency      Percent                                      
+                         ----------------------------------------------------------------------                                     
+                         FACIT                     145       98.64           145        98.64                                       
+                         FACIT      Y                2        1.36           147       100.00                                       
+
+                                                                       Cumulative    Cumulative                                     
+                         PARAMCD    ICE02F    Frequency     Percent     Frequency      Percent                                      
+                         ----------------------------------------------------------------------                                     
+                         FACIT                     145       98.64           145        98.64                                       
+                         FACIT      Y                2        1.36           147       100.00                                       
+ 
+ 
+   Obs         USUBJID         PARAMCD    AVISIT          ADT     ANL07DT  ANL07FL      EST01STP          EST02STP                  
+  1781  CLNP023B12301_5016001  FACIT     Day 90                2024-11-04     Y     Treatment policy  Treatment policy              
+  1782  CLNP023B12301_5016001  FAC07008  Baseline  2024-08-13  2024-11-04                                                           
+  1783  CLNP023B12301_5016001  FAC07008  Day 14    2024-08-27  2024-11-04                                                           
+  1784  CLNP023B12301_5016001  FAC07008  Day 30    2024-09-12  2024-11-04                                                           
+  1785  CLNP023B12301_5016001  FAC07008  Day 360   2024-11-26  2024-11-04     Y                                                     
+  1786  CLNP023B12301_5016001  FAC07012  Baseline  2024-08-13  2024-11-04                                                           
+  1787  CLNP023B12301_5016001  FAC07012  Day 14    2024-08-27  2024-11-04                                                           
+  1788  CLNP023B12301_5016001  FAC07012  Day 30    2024-09-12  2024-11-04                                                           
+  1789  CLNP023B12301_5016001  FAC07012  Day 360   2024-11-26  2024-11-04     Y                                                     
+  1790  CLNP023B12301_5016001  FAC07010  Baseline  2024-08-13  2024-11-04                                                           
+  1791  CLNP023B12301_5016001  FAC07010  Day 14    2024-08-27  2024-11-04                                                           
+  1792  CLNP023B12301_5016001  FAC07010  Day 30    2024-09-12  2024-11-04                                                           
+  1793  CLNP023B12301_5016001  FAC07010  Day 360   2024-11-26  2024-11-04     Y                                                     
+  1794  CLNP023B12301_5016001  FAC07001  Baseline  2024-08-13  2024-11-04                                                           
+  1795  CLNP023B12301_5016001  FAC07001  Day 14    2024-08-27  2024-11-04                                                           
+  1796  CLNP023B12301_5016001  FAC07001  Day 30    2024-09-12  2024-11-04                                                           
+  1797  CLNP023B12301_5016001  FAC07001  Day 360   2024-11-26  2024-11-04     Y                                                     
+  1798  CLNP023B12301_5016001  FAC07003  Baseline  2024-08-13  2024-11-04                                                           
+  1799  CLNP023B12301_5016001  FAC07003  Day 14    2024-08-27  2024-11-04                                                           
+  1800  CLNP023B12301_5016001  FAC07003  Day 30    2024-09-12  2024-11-04                                                           
+  1801  CLNP023B12301_5016001  FAC07003  Day 360   2024-11-26  2024-11-04     Y                                                     
+  1802  CLNP023B12301_5016001  FAC07004  Baseline  2024-08-13  2024-11-04                                                           
+  1803  CLNP023B12301_5016001  FAC07004  Day 14    2024-08-27  2024-11-04                                                           
+  1804  CLNP023B12301_5016001  FAC07004  Day 30    2024-09-12  2024-11-04                                                           
+  1805  CLNP023B12301_5016001  FAC07004  Day 360   2024-11-26  2024-11-04     Y                                                     
+  1806  CLNP023B12301_5016001  FAC07002  Baseline  2024-08-13  2024-11-04                                                           
+  1807  CLNP023B12301_5016001  FAC07002  Day 14    2024-08-27  2024-11-04                                                           
+  1808  CLNP023B12301_5016001  FAC07002  Day 30    2024-09-12  2024-11-04                                                           
+  1809  CLNP023B12301_5016001  FAC07002  Day 360   2024-11-26  2024-11-04     Y                                                     
+  1810  CLNP023B12301_5016001  FAC07007  Baseline  2024-08-13  2024-11-04                                                           
+  1811  CLNP023B12301_5016001  FAC07007  Day 14    2024-08-27  2024-11-04                                                           
+  1812  CLNP023B12301_5016001  FAC07007  Day 30    2024-09-12  2024-11-04                                                           
+  1813  CLNP023B12301_5016001  FAC07007  Day 360   2024-11-26  2024-11-04     Y                                                     
+  1814  CLNP023B12301_5016001  FAC07009  Baseline  2024-08-13  2024-11-04                                                           
+  1815  CLNP023B12301_5016001  FAC07009  Day 14    2024-08-27  2024-11-04                                                           
+  1816  CLNP023B12301_5016001  FAC07009  Day 30    2024-09-12  2024-11-04                                                           
+  1817  CLNP023B12301_5016001  FAC07009  Day 360   2024-11-26  2024-11-04     Y                                                     
+  1818  CLNP023B12301_5016001  FAC07013  Baseline  2024-08-13  2024-11-04                                                           
+  1819  CLNP023B12301_5016001  FAC07013  Day 14    2024-08-27  2024-11-04                                                           
+  1820  CLNP023B12301_5016001  FAC07013  Day 30    2024-09-12  2024-11-04                                                           
+   ;*';*";*/;quit;run;
 2          OPTIONS PAGENO=MIN;
 3          %LET _CLIENTTASKLABEL='adfacmi.sas';
 4          %LET _CLIENTPROCESSFLOWNAME='Process Flow';
