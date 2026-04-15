@@ -1,31 +1,3 @@
-你这个判断是对的，而且这个修法比我上一版更对。
-
-关键点就是你说的这句：
-
-```sas
-if b;
-```
-
-因为 `facit_dummy2` 只有 planned visits，不含 `Baseline`，所以一旦用它做主表 merge，再 `if b;`，就会把：
-
-* `FACIT` baseline 记录
-* 所有非 planned visit 的实际 `FACIT` 记录
-
-一起丢掉。
-
-这和 `ADUPCR` 的思路不一致。更合理的做法就是：
-
-* **保留原始 `adfacit3` 全部实际记录**
-* **只补那些 planned visit 上实际不存在的 dummy**
-* 然后把 dummy append 回去
-
-你给的思路是对的。我下面给你的是**按这个修正后的完整版本**，并且把前面你报错的 character/numeric 问题也一起处理掉了。
-
----
-
-# 正确完整版本 `adfacit.sas`
-
-```sas
 /************************************************************************
 *  PROJECT       : CLNP023B1
 *  STUDY         : CLNP023B12301
@@ -34,13 +6,12 @@ if b;
 *  DESCRIPTION   : Create dataset ADFACIT (csr_4 PDS / VLM / METHOD compliant)
 *  PLATFORM      : AIX 7.1 (AIX 64) (see SAS log file)
 *  SAS VERSION   : 9.4 (see SAS log file)
-*  INPUT         : SDTM QS (with SUPPQS), ADaM ADSL, SDTM DS/FACM
+*  INPUT         : SDTM QS (with SUPPQS), ADaM ADSL, SDTM DS/FACM/SV/TV
 *  OUTPUT        : analysis.adfacit
-*  MODIFICATIONS : Reworked from csr_3 to match csr_4 changes
+*  MODIFICATIONS : Add dummy visits for MI; Add EST01STP ICE01F IMPREA01 EST02STP ICE02F IMPREA02 per PDS update
 *************************************************************************/
 
-proc datasets lib=work kill nolist;
-quit;
+proc datasets lib=work kill nolist; quit;
 
 /* GPS environment setup macro */
 data _null_;
@@ -48,8 +19,9 @@ data _null_;
 run;
 
 /* ------------------------------- */
-/* Formats                         */
+/* Formats for planned visit names */
 /* ------------------------------- */
+/* [CHANGE 1] Added 'Day 90' = 204 */
 proc format;
   invalue avisitn
     'Baseline' = 99
@@ -76,14 +48,12 @@ proc format;
 quit;
 
 /* ------------------------------- */
-/* Read QS + SUPPQS and pre-derive */
+/* Read QS  SUPPQS and pre-derive */
 /* ------------------------------- */
-%opMergeSupp(
-  inData     = derived.qs,
-  outData    = qs_raw,
-  inSuppData = derived.suppqs,
-  keepQnam   =
-);
+%opMergeSupp(inData=derived.qs,
+             outData=qs_raw,
+             inSuppData=derived.suppqs,
+             keepQnam=);
 
 proc sort data=qs_raw nodupkey;
   by usubjid subjid qscat qstest qsscat visit qsdtc qsorres;
@@ -91,38 +61,32 @@ run;
 
 /* Keep only FACIT-Fatigue 13 items */
 data qs_items;
-  set qs_raw(rename=(
-        qstest   = param
-        qstestcd = paramcd
-        lg       = qslg
-        qseval   = qseval
-      ));
+  set qs_raw(rename=(qstest=param qstestcd=paramcd lg=qslg QSEVAL   = qseval ));
   where qscat = 'FACIT-FATIGUE 13-ITEM V4';
 
   length avalc $100;
+  /* Prefer QSSTRESN; if missing, translate QSORRES text */
   aval  = coalesce(qsstresn, input(upcase(qsorres), facit_val.));
   avalc = strip(upcase(qsorres));
 
+  /* Datetime splits */
   adt = input(scan(qsdtc,1,'T'), yymmdd10.);
   atm = input(scan(qsdtc,2,'T'), time8.);
   if length(qsdtc)=19 then adtm = input(qsdtc, e8601dt.);
-
   format adt yymmdd10. atm time5.;
 run;
 
-/* Map PARAMN from Analysis Parameters for item-level rows */
+/* Map PARAMN from Analysis Parameters (for item-level rows) */
 proc sql;
   create table qs_items_m as
-  select a.*,
-         b.paramcd as paramcd_,
-         b.paramn
+  select a.*
+       , b.paramcd as paramcd_ 
+       , b.paramn
   from qs_items as a
   left join
-       (
-         select param, paramcd, paramn
-         from rprtdsm.analysis_parameters
-         where not missing(paramn)
-       ) as b
+       (select param, paramcd, paramn
+          from rprtdsm.analysis_parameters
+         where not missing(paramn)) as b
     on a.param = b.param
   ;
 quit;
@@ -132,61 +96,59 @@ proc sort data=qs_items_m;
 run;
 
 /* ------------------------------- */
-/* Join ADSL and derive visit vars */
+/* Join ADSL and ADY/APERIOD base */
 /* ------------------------------- */
 data qs_items_j;
   merge qs_items_m(in=a)
-        analysis.adsl(in=b drop=subjid rename=(siteid=siteid_adsl));
+        analysis.adsl(in=b drop=subjid);
   by usubjid;
   if a;
 
-  if adt>=trtsdt>. then ady = adt - trtsdt + 1;
+  /* ADY relative to first dose */
+  if adt>=trtsdt> . then ady = adt - trtsdt + 1;
   else if .<adt<trtsdt then ady = adt - trtsdt;
 
+  /* [CHANGE 2a] Added 'Day 90' to planned visit list */
   length avisit $40;
   if visit = 'End of Study' then visit = 'Day 360';
-
   if visit in ('Day 1','Day 14','Day 30','Day 90','Day 180','Day 210','Day 270','Day 360') then avisit = visit;
-  else avisit = '';
-
+  else avisit = ''; /* non-planned set to null */
   avisitn = input(avisit, avisitn.);
-
-  if missing(siteid) then siteid = siteid_adsl;
-  drop siteid_adsl;
 run;
 
 /* ------------------------------- */
-/* Derive FACIT/FACITEXP/FACITIMP  */
+/* Derive FACIT/FACITEXP/FACITIMP */
 /* ------------------------------- */
 proc sort data=qs_items_j;
   by studyid usubjid subjid visit visitnum adt atm adtm qslg qseval;
 run;
 
+
 proc transpose data=qs_items_j(where=(not missing(paramcd_)))
                out=qs_wide(drop=_name_);
   by studyid usubjid subjid visit visitnum adt atm adtm qslg qseval;
   var aval;
-  id paramcd_;
+  id paramcd_;   
 run;
 
-/*
-  Compute scores:
-  - reverse-keyed items where applicable
-  - FAT_N = N(non-missing items)
-  - if FAT_N/13 > 0.5 then prorated total FACIT
-  - derived rows: FACIT, FACITEXP, FACITIMP
+
+/* Compute scores per METHOD:
+   - reverse-keyed items to 4 - score where applicable
+   - FAT_N = N(non-missing of 13 items)
+   - if FAT_N/13  0.5 then prorated totals
+   - derived rows: FACIT, FACITEXP, FACITIMP
 */
 data facit_der;
   length param $40 paramcd $8 paramtyp $7 avalc $100;
   set qs_wide;
 
-  array item{13} FAC07001-FAC07013;
-  array hi   HI7 HI12;
-  array ana  AN1-AN5;
-  array anb  AN7 AN8 AN12 AN14-AN16;
+  array ITEM  {13} FAC07001-FAC07013;
+  array HI    HI7 HI12;
+  array ANa   AN1-AN5;  /* AN1 AN2 AN3 AN4 AN5 */
+  array ANb   AN7 AN8 AN12 AN14-AN16;
 
   do i=1 to 13;
-    if item[i] in (8,9) then item[i]=.;
+    if ITEM[i] in (8,9) then ITEM[i]=.;
   end;
 
   if not missing(FAC07001) then HI7  = 4 - FAC07001;
@@ -195,8 +157,8 @@ data facit_der;
   if not missing(FAC07004) then AN2  = 4 - FAC07004;
   if not missing(FAC07005) then AN3  = 4 - FAC07005;
   if not missing(FAC07006) then AN4  = 4 - FAC07006;
-  if not missing(FAC07007) then AN5  = FAC07007;
-  if not missing(FAC07008) then AN7  = FAC07008;
+  if not missing(FAC07007) then AN5  =      FAC07007; 
+  if not missing(FAC07008) then AN7  =      FAC07008; 
   if not missing(FAC07009) then AN8  = 4 - FAC07009;
   if not missing(FAC07010) then AN12 = 4 - FAC07010;
   if not missing(FAC07011) then AN14 = 4 - FAC07011;
@@ -207,67 +169,46 @@ data facit_der;
 
   if FAT_N/13 > .50 then do;
     aval  = sum(of HI7 HI12 AN1-AN5 AN7 AN8 AN12 AN14-AN16) * 13 / FAT_N;
-    avalc = strip(put(aval, best.));
-    param='FACIT Fatigue score';
-    paramcd='FACIT';
-    paramtyp='DERIVED';
-    output;
+    avalc = strip(put(aval,best.));
+    param='FACIT Fatigue score'; paramcd='FACIT'; paramtyp='DERIVED'; output;
 
     aval  = sum(of HI7 HI12 AN1 AN2 AN5);
-    avalc = strip(put(aval, best.));
-    param='FACIT Experience score';
-    paramcd='FACITEXP';
-    paramtyp='DERIVED';
-    output;
+    avalc = strip(put(aval,best.));
+    param='FACIT Experience score'; paramcd='FACITEXP'; paramtyp='DERIVED'; output;
 
     aval  = sum(of AN3 AN4 AN7 AN8 AN12 AN14-AN16);
-    avalc = strip(put(aval, best.));
-    param='FACIT Impact score';
-    paramcd='FACITIMP';
-    paramtyp='DERIVED';
-    output;
+    avalc = strip(put(aval,best.));
+    param='FACIT Impact score'; paramcd='FACITIMP'; paramtyp='DERIVED'; output;
   end;
 
-  keep studyid usubjid subjid visit visitnum adt atm adtm qslg qseval
-       param paramcd paramtyp aval avalc;
+  keep studyid usubjid subjid visit visitnum adt atm adtm qslg qseval param paramcd paramtyp aval avalc;
 run;
 
-/* Map PARAMN for derived rows */
+
+/* Map PARAMN for derived rows from Analysis Parameters */
 proc sql;
   create table facit_der_m as
   select a.*, b.paramn
   from facit_der as a
   left join
-       (
-         select param, paramcd, paramn
-         from rprtdsm.analysis_parameters
-         where not missing(paramn)
-       ) as b
-    on a.param = b.param
-   and a.paramcd = b.paramcd
+       (select param, paramcd, paramn
+          from rprtdsm.analysis_parameters
+         where not missing(paramn)) as b
+    on a.param = b.param and a.paramcd = b.paramcd
   ;
 quit;
 
 /* ------------------------------- */
-/* Union item-level + derived rows */
+/* Union items  derived, join ADSL */
 /* ------------------------------- */
 data adfacit0;
-  set qs_items_j(
-        keep=studyid usubjid subjid siteid
-             param paramcd paramn
-             visit visitnum
-             adt atm adtm
-             qslg qseval qsstat qsreasnd
-             aval avalc qsseq
-             avisit avisitn
-      )
-      facit_der_m
-  ;
+  set qs_items_j(in=i keep=studyid usubjid subjid siteid param paramcd paramn
+                        visit visitnum adt atm adtm qslg qseval aval avalc QSSEQ
+						   avisit avisitn)
+      facit_der_m;
 run;
 
-proc sort data=adfacit0;
-  by usubjid paramcd adt atm adtm;
-run;
+proc sort data=adfacit0; by usubjid paramcd adt atm adtm; run;
 
 data adfacit1;
   merge adfacit0(in=a)
@@ -275,30 +216,29 @@ data adfacit1;
   by usubjid;
   if a;
 
+  /* Recompute ADY after union to be safe */
   if adt>=trtsdt>. then ady = adt - trtsdt + 1;
   else if .<adt<trtsdt then ady = adt - trtsdt;
 
-  if aperiod=. then do;
-    if .<ap01sdt<=adt<=coalesce(ap02sdt, ap01edt) then aperiod=1;
-    else if .<ap02sdt<adt<=ap02edt then aperiod=2;
+  /* APERIOD per PDS */
+  if aperiod = . then do;
+    if .< ap01sdt <= adt <= coalesce(ap02sdt, ap01edt) then aperiod = 1;
+    else if .< ap02sdt <  adt <= ap02edt                       then aperiod = 2;
   end;
-
   length aperiodc $30;
   if aperiod=1 then aperiodc='Double-blind';
   else if aperiod=2 then aperiodc='Open-label';
 
-  if upcase(coalescec(paramtyp,''))='DERIVED' then do;
-    qsstat   = '';
-    qsreasnd = '';
-    qslg     = '';
-    qseval   = '';
+  /* Clean derived vs item-level text */
+  if upcase(coalescec(paramtyp,'')) = 'DERIVED' then do;
+    qsstat = ''; qsreasnd = ''; qslg=''; qseval='';
   end;
 
+  /* [CHANGE 2b] Added 'Day 90' to planned visit list */
   if missing(avisit) then do;
     length _v $40;
     _v = visit;
     if _v = 'End of Study' then _v = 'Day 360';
-
     if _v in ('Day 1','Day 14','Day 30','Day 90','Day 180','Day 210','Day 270','Day 360') then do;
       avisit  = _v;
       avisitn = visitnum;
@@ -307,21 +247,22 @@ data adfacit1;
       avisit  = '';
       avisitn = .;
     end;
+    drop _v;
   end;
 
   if missing(siteid) then siteid = siteid_adsl;
-  drop siteid_adsl _v;
+  drop siteid_adsl;
 
   length anl01dsc anl03dsc $100 crit1 crit2 $50;
 run;
 
 /* ------------------------------- */
-/* Baseline                        */
+/* Baseline (last non-missing AVAL before/at TRTSDT), duplicated by paramcd */
 /* ------------------------------- */
-proc sort data=adfacit1;
-  by usubjid paramcd adt atm adtm;
-run;
+proc sort data=adfacit1; by usubjid paramcd adt atm adtm; run;
 
+
+/* --- Baseline candidates: last non-missing AVAL with ADT <= TRTSDT --- */
 data base_cand;
   set adfacit1;
   where adt <= trtsdt and not missing(aval);
@@ -331,428 +272,307 @@ run;
 data base_last;
   set base_cand;
   by usubjid paramcd adt atm adtm;
-  if last.paramcd;
+  if last.paramcd;                 /* last before/at first dose */
   keep usubjid paramcd adt aval;
-  rename adt  = baseadt
-         aval = base;
+  rename adt = baseadt
+         aval= base;
 run;
 
+/* Merge BASE and BASEADT back */
 proc sql;
   create table adfacit2 as
   select a.*, b.base, b.baseadt
   from adfacit1 as a
   left join base_last as b
-    on a.usubjid=b.usubjid
-   and a.paramcd=b.paramcd
+    on a.usubjid=b.usubjid and a.paramcd=b.paramcd
   ;
 quit;
 
+/* CHG only for derived params and post-baseline */
 data adfacit3;
   set adfacit2;
 
+  /* Mark baseline row: last ADT <= TRTSDT, force AVISIT to Baseline */
   length ablfl $1;
-
-  if not missing(baseadt) and adt=baseadt then do;
-    ablfl   = 'Y';
-    avisit  = 'Baseline';
-    avisitn = 99;
+  if not missing(baseadt) and adt = baseadt then do;
+    ablfl  = 'Y';
+    avisit = 'Baseline';
+    avisitn= 99;
   end;
 
+  /* CHG only for derived params and post-baseline records */
   if upcase(coalescec(paramtyp,''))='DERIVED' then do;
     if ablfl ne 'Y' and nmiss(aval, base)=0 then chg = aval - base;
   end;
 
+  /* Criteria flags */
   if not missing(chg) then do;
-    if chg >= 5 then do;
-      crit1fl='Y';
-      crit1='5-point improvement';
-    end;
-    if chg >= 3 then do;
-      crit2fl='Y';
-      crit2='3-point improvement';
-    end;
+    if chg >= 5 then do; crit1fl='Y'; crit1='5-point improvement'; end;
+    if chg >= 3 then do; crit2fl='Y'; crit2='3-point improvement'; end;
   end;
 
-  if upcase(coalescec(paramtyp,''))='DERIVED' and (ablfl='Y' or not missing(aval)) then do;
+  /* ANL01FL/ANL03FL for derived params only */
+  if upcase(coalescec(paramtyp,''))='DERIVED' and (ablfl='Y' or aval ne .) then do;
     anl01fl='Y';
     anl01dsc='Unique record for each visit';
   end;
-
-  if ablfl='Y' or (aperiod=1 and not missing(aval)) then do;
+  if ablfl='Y' or aperiod=1 then do;
     anl03fl='Y';
     anl03dsc='Record for treatment randomized period analysis';
   end;
 run;
 
-/* Recompute TRTA/TRTP after ABLFL finalized */
+/* Re-compute TRTA/TRTP after ABLFL is finalized (per PDS) */
 data adfacit3;
+  set adfacit3;  /* overwrite */
+  if aperiod=1 or ablfl='Y' then do; trta=trt01a; trtan=trt01an; trtp=trt01p; trtpn=trt01pn; end;
+  else if aperiod=2                then do; trta=trt02a; trtan=trt02an; trtp=trt02p; trtpn=trt02pn; end;
+run;
+
+
+/* ================================================================= */
+/* [CHANGE 3] Create dummy visits for FACIT MI                       */
+/* Following ADUPCR pattern: dummy planned visits with planned dates  */
+/* ================================================================= */
+
+/* Get subjects with baseline FACIT */
+data facit_base_d;
   set adfacit3;
-  if aperiod=1 or ablfl='Y' then do;
-    trta  = trt01a;
-    trtan = trt01an;
-    trtp  = trt01p;
-    trtpn = trt01pn;
-  end;
-  else if aperiod=2 then do;
-    trta  = trt02a;
-    trtan = trt02an;
-    trtp  = trt02p;
-    trtpn = trt02pn;
-  end;
+  where paramcd='FACIT' and ablfl='Y' and fasfl='Y';
+  keep usubjid param paramcd base;
 run;
+proc sort data=facit_base_d nodupkey; by usubjid; run;
 
-/* ------------------------------- */
-/* Add planned-visit dummy records */
-/* only when actual FACIT visit    */
-/* does not already exist          */
-/* ------------------------------- */
-proc sort data=adfacit3 out=facit_bl nodupkey;
-  by usubjid paramcd;
-  where paramcd='FACIT' and ablfl='Y';
-run;
-
-data facit_dummy0;
-  set facit_bl(
-    keep=studyid usubjid subjid siteid
-         param paramcd paramn paramtyp
-         trtsdt trt01a trt01an trt01p trt01pn
-         trt02a trt02an trt02p trt02pn
-         ap01sdt ap01edt ap02sdt ap02edt
-         base
-  );
-
-  length avisit $40;
-  do avisit='Day 1','Day 14','Day 30','Day 90','Day 180','Day 210','Day 270','Day 360';
+/* Create dummy visit shell for visits needed by MI */
+data dummy_facit;
+  set facit_base_d;
+  do avisit="Day 14","Day 30","Day 90","Day 180";
     avisitn = input(avisit, avisitn.);
     output;
   end;
 run;
 
+/* Merge planned visit dates from SV and TV, plus ADSL variables */
 proc sql;
-  create table facit_dummy1 as
-  select a.*,
-         input(b.svstdtc, yymmdd10.) as svstdt format=date9.,
-         c.visitdy
-  from facit_dummy0 as a
-  left join derived.sv as b
-    on a.usubjid=b.usubjid
-   and a.avisit=b.visit
-  left join derived.tv as c
-    on a.avisit=c.visit
+  create table dummy_visit as 
+  select a.*, 
+         input(b.SVSTDTC, yymmdd10.) as SVSTDT format=date9., 
+         c.VISITDY,
+         d.*
+  from dummy_facit as a 
+  left join derived.sv as b 
+    on a.USUBJID=b.USUBJID and a.AVISIT=b.VISIT 
+  left join derived.tv as c 
+    on a.AVISIT=c.VISIT
+  left join analysis.adsl(drop=subjid) as d 
+    on a.USUBJID=d.USUBJID
   ;
 quit;
 
-data facit_dummy2;
-  set facit_dummy1;
+data dummy_final;
   format plandt padt date9.;
-
-  if nmiss(trtsdt, visitdy)=0 then plandt = trtsdt + visitdy - 1;
-  padt = coalesce(svstdt, plandt);
-
-  if .<ap01sdt<=padt<=coalesce(ap02sdt, ap01edt) then aperiod=1;
-  else if .<ap02sdt<padt<=ap02edt then aperiod=2;
-
+  set dummy_visit;
+  /* Impute planned date: prefer SV scheduled date, then calculate from TRTSDT + VISITDY */
+  if nmiss(TRTSDT, VISITDY)=0 then plandt = TRTSDT + VISITDY - 1;
+  padt = coalesce(SVSTDT, plandt);
+  paramtyp = 'DERIVED';
+  /* Set treatment variables for period 1 */
+  trta=trt01a; trtan=trt01an; trtp=trt01p; trtpn=trt01pn;
+  /* APERIOD for dummy records */
+  if aperiod = . then do;
+    if .< ap01sdt <= padt <= coalesce(ap02sdt, ap01edt) then aperiod = 1;
+    else if .< ap02sdt < padt <= ap02edt then aperiod = 2;
+  end;
   length aperiodc $30;
   if aperiod=1 then aperiodc='Double-blind';
   else if aperiod=2 then aperiodc='Open-label';
-
-  if aperiod=1 then do;
-    trta  = trt01a;
-    trtan = trt01an;
-    trtp  = trt01p;
-    trtpn = trt01pn;
-  end;
-  else if aperiod=2 then do;
-    trta  = trt02a;
-    trtan = trt02an;
-    trtp  = trt02p;
-    trtpn = trt02pn;
-  end;
-
-  length
-    visit    $40
-    qsstat   $200
-    qsreasnd $200
-    qslg     $200
-    qseval   $200
-    avalc    $200
-    crit1    $50
-    crit2    $50
-    crit1fl  $1
-    crit2fl  $1
-    anl01fl  $1
-    anl03fl  $1
-    ablfl    $1
-    anl01dsc $100
-    anl03dsc $100
-    ice01f   $1
-    ice02f   $1
-    est01stp $200
-    est02stp $200
-    imprea01 $200
-    imprea02 $200
-  ;
-
-  call missing(
-    visit, qsstat, qsreasnd, qslg, qseval,
-    adt, atm, adtm, ady, aval, avalc, chg,
-    crit1, crit1fl, crit2, crit2fl,
-    anl01fl, anl01dsc, anl03fl, anl03dsc,
-    ablfl, qsseq,
-    ice01f, ice02f, est01stp, est02stp, imprea01, imprea02
-  );
 run;
 
-proc sort data=facit_dummy2;
-  by usubjid paramcd avisitn;
-run;
+/* Only add dummies where no actual FACIT record exists for that visit */
+proc sort data=dummy_final; by usubjid paramcd avisitn; run;
 
 data existing_facit;
   set adfacit3;
-  where paramcd='FACIT';
+  where paramcd='FACIT' and avisitn in (202, 203, 204, 205);
   keep usubjid paramcd avisitn;
 run;
-
-proc sort data=existing_facit nodupkey;
-  by usubjid paramcd avisitn;
-run;
+proc sort data=existing_facit nodupkey; by usubjid paramcd avisitn; run;
 
 data dummy_new;
-  merge facit_dummy2(in=d) existing_facit(in=e);
+  merge dummy_final(in=d) existing_facit(in=e);
   by usubjid paramcd avisitn;
   if d and not e;
 run;
 
+/* Append dummy records to actual data */
 data adfacit3a;
-  set adfacit3
-      dummy_new;
+  set adfacit3 dummy_new;
 run;
+proc sort data=adfacit3a; by usubjid paramcd adt; run;
+
+/* ================================================================= */
+/* End of dummy visit creation                                        */
+/* ================================================================= */
+
 
 /* ------------------------------- */
-/* ANL05/ANL06/ANL07 subject dates */
+/* ANL05/ANL06 from FACM; ANL07 from DS */
 /* ------------------------------- */
 
-/* ANL05: first anti-proteinuric therapy ICE */
+/* ANL05: first ANTI-PROTEINURIC THERAPIES RELATED INTERCURRENT EVENTS (FAORRES='Y') on/after TRTSDT */
 data fa_ap;
-  merge derived.facm(in=a)
-        analysis.adsl(keep=usubjid trtsdt);
+  merge data_a.facm(in=a) analysis.adsl(keep=usubjid trtsdt);
   by usubjid;
-  if a
-     and upcase(facat)='ANTI-PROTEINURIC THERAPIES RELATED INTERCURRENT EVENTS'
-     and faorres='Y';
-
-  fadt = input(fadtc, ??yymmdd10.);
-  if fadt >= trtsdt > .;
-
+  if a and upcase(facat)='ANTI-PROTEINURIC THERAPIES RELATED INTERCURRENT EVENTS' and faorres='Y';
+  if length(fadtc)=10 then fadt = input(fadtc, yymmdd10.);
+  if fadt >= trtsdt;
   format fadt yymmdd10.;
 run;
+proc sort data=fa_ap; by usubjid fadt; run;
+data fa_ap1; set fa_ap; by usubjid fadt; if first.usubjid; keep usubjid fadt; rename fadt=anl05dt; run;
 
-proc sort data=fa_ap;
-  by usubjid fadt;
-run;
-
-data fa_ap1;
-  set fa_ap;
-  by usubjid fadt;
-  if first.usubjid;
-  keep usubjid fadt;
-  rename fadt=anl05dt;
-run;
-
-/* ANL06: first RRT ICE */
+/* ANL06: first RENAL REPLACEMENT THERAPY RELATED INTERCURRENT EVENTS (FAORRES='Y') on/after TRTSDT */
 data fa_rr;
-  merge derived.facm(in=a)
-        analysis.adsl(keep=usubjid trtsdt);
+  merge data_a.facm(in=a) analysis.adsl(keep=usubjid trtsdt);
   by usubjid;
-  if a
-     and upcase(facat)='RENAL REPLACEMENT THERAPY RELATED INTERCURRENT EVENTS'
-     and faorres='Y';
-
-  fadt = input(fadtc, ??yymmdd10.);
-  if fadt >= trtsdt > .;
-
+  if a and upcase(facat)='RENAL REPLACEMENT THERAPY RELATED INTERCURRENT EVENTS' and faorres='Y';
+  if length(fadtc)=10 then fadt = input(fadtc, yymmdd10.);
+  if fadt >= trtsdt;
   format fadt yymmdd10.;
 run;
+proc sort data=fa_rr; by usubjid fadt; run;
+data fa_rr1; set fa_rr; by usubjid fadt; if first.usubjid; keep usubjid fadt; rename fadt=anl06dt; run;
 
-proc sort data=fa_rr;
-  by usubjid fadt;
-run;
-
-data fa_rr1;
-  set fa_rr;
-  by usubjid fadt;
-  if first.usubjid;
-  keep usubjid fadt;
-  rename fadt=anl06dt;
-run;
-
-/* ANL07: first treatment discontinuation for other reason */
+/* ANL07: first treatment discontinuation for other reason (BLINDED only; exclude COMPLETED/ADVERSE), on/after TRTSDT */
 data ds_oth;
-  merge derived.ds(in=a)
-        analysis.adsl(keep=usubjid trtsdt);
+  merge data_a.ds(in=a) analysis.adsl(keep=usubjid trtsdt);
   by usubjid;
   if a
-     and dsscat in ('BLINDED TREATMENT DISPOSITION','OPEN LABEL TREATMENT DISPOSITION')
-     and prxmatch('/COMPLETED|ADVERSE/i', dsdecod)=0;
-
-  anl07dt = input(dsstdtc, ??yymmdd10.);
-  if anl07dt >= trtsdt > .;
-
+     and dsscat = 'BLINDED TREATMENT DISPOSITION'
+     and prxmatch('/COMPLETED|ADVERSE/i', dsdecod) = 0;
+  if length(dsstdtc)=10 then anl07dt = input(dsstdtc, yymmdd10.);
+  if anl07dt >= trtsdt;
   format anl07dt yymmdd10.;
 run;
+proc sort data=ds_oth; by usubjid anl07dt; run;
+data ds_oth1; set ds_oth; by usubjid anl07dt; if first.usubjid; keep usubjid anl07dt; run;
 
-proc sort data=ds_oth;
-  by usubjid anl07dt;
-run;
-
-data ds_oth1;
-  set ds_oth;
-  by usubjid anl07dt;
-  if first.usubjid;
-  keep usubjid anl07dt;
-run;
-
-/* Attach dates */
+/* [CHANGE 4] Attach ANL05/06/07 subject-level dates — read from adfacit3a instead of adfacit3 */
 proc sql;
   create table adfacit4 as
   select a.*,
          b.anl05dt,
          c.anl06dt,
          d.anl07dt
-  from adfacit3a as a
-  left join fa_ap1  as b on a.usubjid=b.usubjid
-  left join fa_rr1  as c on a.usubjid=c.usubjid
-  left join ds_oth1 as d on a.usubjid=d.usubjid
+    from adfacit3a as a
+    left join fa_ap1 as b on a.usubjid=b.usubjid
+    left join fa_rr1 as c on a.usubjid=c.usubjid
+    left join ds_oth1 as d on a.usubjid=d.usubjid
   ;
 quit;
 
-/* Record-level post-ICE flags + new estimand vars */
+/* [CHANGE 5] Set record-level flags; use coalesce(adt, padt) to handle dummy records */
 data adfacit5;
   set adfacit4;
-  length anl05fl anl06fl anl07fl ice01f ice02f $1
-         anl05dsc anl06dsc anl07dsc $100
-         est01stp est02stp imprea01 imprea02 $200;
+  length anl05fl anl06fl anl07fl $1 anl05dsc anl06dsc anl07dsc $100;
 
-  refdt = coalesce(adt, padt);
-  format refdt date9.;
+  _cmpdt = coalesce(adt, padt);
 
-  if not missing(anl05dt) and refdt > anl05dt then do;
+  if not missing(anl05dt) and anl05dt >= trtsdt and _cmpdt > anl05dt then do;
     anl05fl='Y';
     anl05dsc='Record after initiation or intensification of anti-proteinuric therapies';
   end;
 
-  if not missing(anl06dt) and refdt > anl06dt then do;
+  if not missing(anl06dt) and anl06dt >= trtsdt and _cmpdt > anl06dt then do;
     anl06fl='Y';
     anl06dsc='Record after initiation of RRT';
   end;
 
-  if not missing(anl07dt) and refdt > anl07dt then do;
+  if not missing(anl07dt) and anl07dt >= trtsdt and _cmpdt > anl07dt then do;
     anl07fl='Y';
     anl07dsc='Record after treatment discontinuation for any other reason';
   end;
 
-  if paramcd='FACIT' then do;
-    ice01f='N';
-    ice02f='N';
-
-    if refdt > anl05dt > . then do;
-      est01stp='Hypothetical strategy';
-      ice01f='Y';
-      imprea01='Post ICE';
-
-      est02stp='Treatment policy';
-      ice02f='Y';
-      imprea02='Post ICE';
-    end;
-    else if refdt > anl06dt > . then do;
-      est01stp='Hypothetical strategy';
-      ice01f='Y';
-      imprea01='Post ICE';
-
-      est02stp='Hypothetical strategy';
-      ice02f='Y';
-      imprea02='Post ICE';
-    end;
-    else if refdt > anl07dt > . then do;
-      est01stp='Treatment policy';
-      ice01f='Y';
-      imprea01='Post ICE';
-
-      est02stp='Treatment policy';
-      ice02f='Y';
-      imprea02='Post ICE';
-    end;
-
-    if missing(aval) then do;
-      if missing(imprea01) then imprea01='Missing data';
-      if missing(imprea02) then imprea02='Missing data';
-    end;
-  end;
-
-  drop refdt;
+  drop _cmpdt;
 run;
 
 /* ------------------------------- */
-/* AEFLAG / AEDCDT                 */
+/* AEFLAG/AEDCDT  */
 /* ------------------------------- */
 data ds_ae_p1;
-  merge derived.ds(in=a)
-        analysis.adsl(keep=usubjid ap01sdt ap01edt);
+  merge data_a.ds(in=a) analysis.adsl(keep=usubjid ap01sdt ap01edt);
   by usubjid;
-  if a
-     and dsscat='STUDY DISPOSITION'
-     and index(upcase(dsdecod),'ADVERSE')>0;
-
-  aedcdt = input(dsstdtc, ??yymmdd10.);
+  if a and dsscat='STUDY DISPOSITION' and index(upcase(dsdecod),'ADVERSE')>0;
+  if length(dsstdtc)=10 then aedcdt = input(dsstdtc, yymmdd10.);
+  /* Period-1 window only */
   if ap01sdt <= aedcdt <= ap01edt;
-
   format aedcdt yymmdd10.;
 run;
-
-proc sort data=ds_ae_p1;
-  by usubjid aedcdt;
-run;
-
-data ds_ae_p1_1;
-  set ds_ae_p1;
-  by usubjid aedcdt;
-  if first.usubjid;
-  keep usubjid aedcdt;
-run;
+proc sort data=ds_ae_p1 nodupkey; by usubjid; run;
 
 proc sql;
   create table adfacit6 as
-  select a.*,
-         e.aedcdt,
+  select a.*, e.aedcdt,
          case when not missing(e.aedcdt) then 'Y' else '' end as aeflag length=1
   from adfacit5 as a
-  left join ds_ae_p1_1 as e
+  left join ds_ae_p1 as e
     on a.usubjid=e.usubjid
   ;
 quit;
 
-/* ------------------------------- */
-/* Final dataset                   */
-/* ------------------------------- */
-data final;
+
+/* ================================================================= */
+/* [CHANGE 6] Derive EST01STP ICE01F IMPREA01 EST02STP ICE02F IMPREA02 */
+/* Per PDS:                                                            */
+/*   EST01: Anti-proteinuric + RRT = Hypothetical; Disc other = Trt policy */
+/*   EST02: RRT only = Hypothetical; Anti-proteinuric + Disc other = Trt policy */
+/* Following ADUPCR pattern for ICE priority and padt fallback        */
+/* ================================================================= */
+data adfacit7;
+  length EST01STP EST02STP $30 ICE01F ICE02F $1 IMPREA01 IMPREA02 $200;
   set adfacit6;
 
-  if missing(aval) and missing(avalc)
-     and not (
-       paramcd='FACIT'
-       and upcase(coalescec(paramtyp,''))='DERIVED'
-       and missing(adt)
-       and not missing(padt)
-       and avisitn ne 99
-     )
-  then delete;
+  if paramcd = 'FACIT' and avisitn not in (., 99) then do;
+     ice01f='N';    
+   ice02f='N';
+    _cmpdt = coalesce(adt, padt);
 
-  drop plandt padt svstdt visitdy;
+    /* Check ICE in priority order: anti-proteinuric -> RRT -> disc other */
+    if _cmpdt > anl05dt > . then do;
+      EST01STP = 'Hypothetical strategy'; ICE01F = 'Y'; IMPREA01 = 'Post ICE';
+      EST02STP = 'Treatment policy';      ICE02F = 'Y'; IMPREA02 = 'Post ICE';
+    end;
+    else if _cmpdt > anl06dt > . then do;
+      EST01STP = 'Hypothetical strategy'; ICE01F = 'Y'; IMPREA01 = 'Post ICE';
+      EST02STP = 'Hypothetical strategy'; ICE02F = 'Y'; IMPREA02 = 'Post ICE';
+    end;
+    else if _cmpdt > anl07dt > . then do;
+      EST01STP = 'Treatment policy'; ICE01F = 'Y'; IMPREA01 = 'Post ICE';
+      EST02STP = 'Treatment policy'; ICE02F = 'Y'; IMPREA02 = 'Post ICE';
+    end;
+
+    /* If AVAL is missing (including dummy records), override IMPREA to 'Missing data' */
+    if missing(aval) then do;
+      if missing (imprea01) then IMPREA01 = 'Missing data';
+      if missing (imprea02) then IMPREA02 = 'Missing data';
+    end;
+  end;
+
+  drop _cmpdt;
+run;
+
+
+/* [CHANGE 7] Final cleanup — preserve dummy records (they have IMPREA populated) */
+data final;
+  set adfacit7;
+  /* Delete truly empty records, but keep dummy FACIT records for MI */
+  if missing(aval) and missing(avalc) and missing(IMPREA01) then delete;
 run;
 
 proc sort data=final;
-  by studyid usubjid subjid paramcd avisitn adt atm qsseq;
+  by studyid usubjid subjid param avisitn adt;
 run;
+
 
 /* Submission padding and attribute assignment */
 %_std_varpadding_submission(
@@ -763,64 +583,7 @@ run;
   exclude_ds =
 );
 
-%opSetAttr(
-  domain   = adfacit,
-  inData   = final,
-  metaData = RPRTDSM.study_adam_metadata
-);
-```
-
----
-
-# 你这次修改为什么是正确的
-
-你现在这个版本的 dummy 逻辑变成了：
-
-```sas
-data existing_facit;
-  set adfacit3;
-  where paramcd='FACIT';
-  keep usubjid paramcd avisitn;
-run;
-
-data dummy_new;
-  merge facit_dummy2(in=d) existing_facit(in=e);
-  by usubjid paramcd avisitn;
-  if d and not e;
-run;
-
-data adfacit3a;
-  set adfacit3
-      dummy_new;
-run;
-```
-
-这个逻辑有 3 个优点：
-
-### 1. Baseline FACIT 不会丢
-
-因为 baseline 本来就在 `adfacit3` 里，现在 `adfacit3a` 是直接 `set adfacit3 dummy_new;`，所以 baseline 会保留。
-
-### 2. 非 planned visit 的实际 FACIT 也不会丢
-
-以前你是先 merge 到 dummy visit 框架上，所以非 planned visit 没有壳子，就被丢了。
-现在所有实际记录都保留，再 append dummy，不会丢。
-
-### 3. planned visits 只在缺失时补 dummy
-
-这样最接近你给的 `ADUPCR` 思路：原始数据里先把 MI 需要的 planned visits 补齐，但不会覆盖已经存在的实际记录。
-
----
-
-# 建议你现在一定跑的检查代码
-
-下面这些 check 是为了验证这次修正是不是**真的把 baseline 和非 planned visit 保住了**。
-
----
-
-## Check 1：确认 FACIT baseline 还在
-
-```sas
+%opSetAttr(domain=adfacit, inData=final, metaData=RPRTDSM.study_adam_metadata);
 proc freq data=final;
   tables paramcd*ablfl / list missing;
   where paramcd='FACIT';
@@ -830,57 +593,23 @@ proc print data=final(obs=50);
   where paramcd='FACIT' and ablfl='Y';
   var usubjid paramcd adt avisit avisitn ablfl base aval chg;
 run;
-```
 
-你要看：
-
-* `FACIT` 是否还有 `ABLFL='Y'`
-* baseline record 的 `AVISIT='Baseline'`，`AVISITN=99`
-
----
-
-## Check 2：确认 dummy 只加在 planned visits 缺失处
-
-```sas
 proc print data=final(obs=100);
   where paramcd='FACIT'
     and missing(adt)
     and not missing(avisitn)
     and avisitn ne 99;
-  var usubjid paramcd avisit avisitn padt base aval est01stp ice01f imprea01 est02stp ice02f imprea02;
+  var usubjid paramcd avisit avisitn  base aval est01stp ice01f imprea01 est02stp ice02f imprea02;
 run;
-```
 
-你要看：
-
-* 这些应该是 dummy rows
-* `ADT` 缺失
-* `PADT` 应该有值
-* `AVISIT/AVISITN` 是 planned visits
-
----
-
-## Check 3：确认实际 FACIT 非 planned visit 还在
-
-```sas
 proc print data=final(obs=100);
   where paramcd='FACIT'
     and not missing(adt)
     and missing(avisitn);
   var usubjid paramcd visit adt avisit avisitn aval;
 run;
-```
 
-你要看：
 
-* 非 planned visit 的实际记录是否还存在
-* 这正是上一版最容易被误删的部分
-
----
-
-## Check 4：确认没有同一 subject/visit 重复 FACIT
-
-```sas
 proc sort data=final(where=(paramcd='FACIT'))
           out=chk_facit_dup dupout=dup_facit nodupkey;
   by usubjid paramcd avisitn adt atm;
@@ -888,15 +617,7 @@ run;
 
 proc print data=dup_facit(obs=100);
 run;
-```
 
-如果这里有很多重复，就说明 dummy append 可能和实际记录还存在重叠问题。
-
----
-
-## Check 5：确认 planned visit 补齐是否完整
-
-```sas
 proc freq data=final;
   tables avisit / missing;
   where paramcd='FACIT';
@@ -906,19 +627,8 @@ proc freq data=final;
   tables avisit*(missing(adt)) / list missing;
   where paramcd='FACIT' and avisit in ('Baseline','Day 1','Day 14','Day 30','Day 90','Day 180','Day 210','Day 270','Day 360');
 run;
-```
 
-你要看：
 
-* planned visits 都出现了
-* 有实际记录的 visit 不应该全变成 dummy
-* dummy 只应该出现在原本缺失的 visit
-
----
-
-## Check 6：确认新增 estimand 变量在 FACIT 上有值
-
-```sas
 proc freq data=final;
   tables paramcd*ice01f paramcd*ice02f / list missing;
   where paramcd='FACIT';
@@ -928,15 +638,7 @@ proc print data=final(obs=100);
   where paramcd='FACIT' and (ice01f='Y' or ice02f='Y' or imprea01='Missing data' or imprea02='Missing data');
   var usubjid avisit adt padt anl05dt anl06dt anl07dt est01stp ice01f imprea01 est02stp ice02f imprea02;
 run;
-```
 
----
-
-## Check 7：直接确认 baseline 没有在 dummy step 后消失
-
-这个 check 最直接。你可以在 `adfacit3` 和 `adfacit3a` 各跑一次：
-
-```sas
 proc sql;
   select count(*) as n_baseline_before
   from adfacit3
@@ -946,244 +648,3 @@ proc sql;
   from adfacit3a
   where paramcd='FACIT' and ablfl='Y';
 quit;
-```
-
-如果这两个数一样，说明你这次修正把 baseline 保住了。
-
----
-
-# 我再帮你总结一下这次真正修对的点
-
-你这次最重要的改正不是“语法”，而是**数据集构建策略**：
-
-* 错误思路：用 dummy visit 框架去承载 FACIT，再 merge 实际记录
-* 正确思路：保留所有实际 FACIT，再只补缺失的 planned visit dummy
-
-这在 ADaM 里很关键，因为 baseline、unplanned visit、actual record 不能被 dummy 框架反客为主。
-
-你把新 log 或者上面 check 的结果贴给我后，我可以继续帮你做下一轮确认，重点帮你看两件事：
-
-1. `EST01/EST02` 的赋值是否完全符合你们 PDT
-2. `final` 里最后那条 delete 规则是否还需要再微调，避免误删某些特殊 missing actual records
-
-
-
-
-                                                   The FREQ Procedure                                                               
-                                                                                                                                    
-                                                                      Cumulative    Cumulative                                      
-                         PARAMCD    ABLFL    Frequency     Percent     Frequency      Percent                                       
-                         ---------------------------------------------------------------------                                      
-                         FACIT                    175       89.29           175        89.29                                        
-                         FACIT      Y              21       10.71           196       100.00                                        
-
-
-      Obs           USUBJID           PARAMCD           ADT     AVISIT     AVISITN    ABLFL    BASE    AVAL    CHG                  
-                                                                                                                                    
-       79    CLNP023B12301_1001009     FACIT     2025-07-15    Baseline       99        Y       23      23                          
-      138    CLNP023B12301_1001010     FACIT     2026-01-29    Baseline       99        Y       47      47                          
-      191    CLNP023B12301_1002004     FACIT     2025-12-30    Baseline       99        Y       44      44                          
-      257    CLNP023B12301_1005002     FACIT     2025-12-29    Baseline       99        Y       44      44                          
-      424    CLNP023B12301_2054004     FACIT     2025-12-05    Baseline       99        Y       49      49                          
-      529    CLNP023B12301_3311002     FACIT     2025-07-14    Baseline       99        Y       52      52                          
-      590    CLNP023B12301_3311003     FACIT     2026-01-21    Baseline       99        Y       43      43                          
-      756    CLNP023B12301_3404001     FACIT     2025-03-05    Baseline       99        Y       32      32                          
-      885    CLNP023B12301_3502004     FACIT     2023-09-04    Baseline       99        Y       33      33                          
-     1001    CLNP023B12301_3601011     FACIT     2025-07-01    Baseline       99        Y       49      49                          
-     1127    CLNP023B12301_3602003     FACIT     2023-09-26    Baseline       99        Y       38      38                          
-     1256    CLNP023B12301_3602004     FACIT     2023-09-19    Baseline       99        Y       48      48                          
-     1346    CLNP023B12301_3902003     FACIT     2025-07-01    Baseline       99        Y       23      23                          
-     1416    CLNP023B12301_4001007     FACIT     2025-12-10    Baseline       99        Y       47      47                          
-     1568    CLNP023B12301_5002001     FACIT     2024-08-15    Baseline       99        Y       21      21                          
-     1697    CLNP023B12301_5006015     FACIT     2024-12-04    Baseline       99        Y       40      40                          
-     1800    CLNP023B12301_5006016     FACIT     2025-07-28    Baseline       99        Y       36      36                          
-     1872    CLNP023B12301_5016001     FACIT     2024-08-13    Baseline       99        Y       52      52                          
-     2053    CLNP023B12301_5211001     FACIT     2025-12-10    Baseline       99        Y       42      42                          
-     2173    CLNP023B12301_6012001     FACIT     2024-08-22    Baseline       99        Y       49      49                          
-     2302    CLNP023B12301_6013001     FACIT     2023-09-26    Baseline       99        Y       45      45                          
-
-
-                                                   The FREQ Procedure                                                               
-                                                                                                                                    
-                                                                  Cumulative    Cumulative                                          
-                             AVISIT      Frequency     Percent     Frequency      Percent                                           
-                             -------------------------------------------------------------                                          
-                             Baseline          21       10.71            21        10.71                                            
-                             Day 1             23       11.73            44        22.45                                            
-                             Day 14            25       12.76            69        35.20                                            
-                             Day 180           23       11.73            92        46.94                                            
-                             Day 210           23       11.73           115        58.67                                            
-                             Day 270           23       11.73           138        70.41                                            
-                             Day 30            25       12.76           163        83.16                                            
-                             Day 360           10        5.10           173        88.27                                            
-                             Day 90            23       11.73           196       100.00                                            
-
-
-                                                   The FREQ Procedure                                                               
-                                                                                                                                    
-                                                                       Cumulative    Cumulative                                     
-                         PARAMCD    ICE01F    Frequency     Percent     Frequency      Percent                                      
-                         ----------------------------------------------------------------------                                     
-                         FACIT      N              191       97.45           191        97.45                                       
-                         FACIT      Y                5        2.55           196       100.00                                       
-                                                                                                                                    
-                                                                                                                                    
-                                                                       Cumulative    Cumulative                                     
-                         PARAMCD    ICE02F    Frequency     Percent     Frequency      Percent                                      
-                         ----------------------------------------------------------------------                                     
-                         FACIT      N              191       97.45           191        97.45                                       
-                         FACIT      Y                5        2.55           196       100.00                                       
-
-
-                                                       n_baseline_                                                                  
-                                                            before                                                                  
-                                                      ------------                                                                  
-                                                                21                                                                  
-
-
-                                                       n_baseline_                                                                  
-                                                             after                                                                  
-                                                      ------------                                                                  
-                                                                21                                                                  
-
-56226   
-56227   proc print data=final(obs=100);
-56228     where paramcd='FACIT'
-56229       and missing(adt)
-56230       and not missing(avisitn)
-56231       and avisitn ne 99;
-56232     var usubjid paramcd avisit avisitn padt base aval est01stp ice01f imprea01 est02stp ice02f imprea02;
-ERROR: Variable PADT not found.
-56233   run;
-
-NOTE: The SAS System stopped processing this step because of errors.
-NOTE: PROCEDURE PRINT used (Total process time):
-      real time           0.00 seconds
-      cpu time            0.00 seconds
-      
-56234   
-
-
-56235   proc print data=final(obs=100);
-56236     where paramcd='FACIT'
-56237       and not missing(adt)
-56238       and missing(avisitn);
-39                                                         The SAS System                            04:10 Wednesday, April 15, 2026
-
-56239     var usubjid paramcd visit adt avisit avisitn aval;
-56240   run;
-
-NOTE: No observations were selected from data set WORK.FINAL.
-NOTE: There were 0 observations read from the data set WORK.FINAL.
-      WHERE (paramcd='FACIT') and (not MISSING(adt)) and MISSING(avisitn);
-NOTE: PROCEDURE PRINT used (Total process time):
-      real time           0.00 seconds
-      cpu time            0.00 seconds
-      
-
-56241   
-56242   proc sort data=final(where=(paramcd='FACIT'))
-56243             out=chk_facit_dup dupout=dup_facit nodupkey;
-56244     by usubjid paramcd avisitn adt atm;
-56245   run;
-
-NOTE: There were 196 observations read from the data set WORK.FINAL.
-      WHERE paramcd='FACIT';
-NOTE: 0 observations with duplicate key values were deleted.
-NOTE: The data set WORK.CHK_FACIT_DUP has 196 observations and 133 variables.
-NOTE: The data set WORK.DUP_FACIT has 0 observations and 133 variables.
-NOTE: PROCEDURE SORT used (Total process time):
-      real time           0.00 seconds
-      cpu time            0.00 seconds
-      
-
-56246   
-56247   proc print data=dup_facit(obs=100);
-56248   run;
-
-NOTE: No observations in data set WORK.DUP_FACIT.
-NOTE: PROCEDURE PRINT used (Total process time):
-      real time           0.00 seconds
-      cpu time            0.00 seconds
-      
-
-56249   
-56250   proc freq data=final;
-56251     tables avisit / missing;
-56252     where paramcd='FACIT';
-56253   run;
-
-NOTE: There were 196 observations read from the data set WORK.FINAL.
-      WHERE paramcd='FACIT';
-NOTE: The PROCEDURE FREQ printed page 54.
-NOTE: PROCEDURE FREQ used (Total process time):
-      real time           0.00 seconds
-      cpu time            0.00 seconds
-      
-
-56254   
-56255   proc freq data=final;
-56256     tables avisit*(missing(adt)) / list missing;
-                                -    -
-                                79   22
-                                     200
-ERROR: Variable MISSING not found.
-40                                                         The SAS System                            04:10 Wednesday, April 15, 2026
-
-ERROR 79-322: Expecting a ).
-ERROR 22-322: Syntax error, expecting one of the following: a name, ;, (, *, /, _ALL_, _CHARACTER_, _CHAR_, _NUMERIC_.  
-ERROR 200-322: The symbol is not recognized and will be ignored.
-56257     where paramcd='FACIT' and avisit in ('Baseline','Day 1','Day 14','Day 30','Day 90','Day 180','Day 210','Day
-56257 ! 270','Day 360');
-56258   run;
-
-NOTE: The SAS System stopped processing this step because of errors.
-NOTE: PROCEDURE FREQ used (Total process time):
-      real time           0.00 seconds
-      cpu time            0.00 seconds
-      
-56259   
-
-
-56260   proc freq data=final;
-56261     tables paramcd*ice01f paramcd*ice02f / list missing;
-56262     where paramcd='FACIT';
-56263   run;
-
-NOTE: There were 196 observations read from the data set WORK.FINAL.
-      WHERE paramcd='FACIT';
-NOTE: The PROCEDURE FREQ printed page 55.
-NOTE: PROCEDURE FREQ used (Total process time):
-      real time           0.00 seconds
-      cpu time            0.00 seconds
-      
-
-56264   
-56265   proc print data=final(obs=100);
-56266     where paramcd='FACIT' and (ice01f='Y' or ice02f='Y' or imprea01='Missing data' or imprea02='Missing data');
-56267     var usubjid avisit adt padt anl05dt anl06dt anl07dt est01stp ice01f imprea01 est02stp ice02f imprea02;
-ERROR: Variable PADT not found.
-56268   run;
-
-NOTE: The SAS System stopped processing this step because of errors.
-NOTE: PROCEDURE PRINT used (Total process time):
-      real time           0.00 seconds
-      cpu time            0.00 seconds
-      
-56269   
-
-
-56270   proc sql;
-56271     select count(*) as n_baseline_before
-56272     from adfacit3
-56273     where paramcd='FACIT' and ablfl='Y';
-56274   
-56275     select count(*) as n_baseline_after
-56276     from adfacit3a
-56277     where paramcd='FACIT' and ablfl='Y';
-56278   quit;
-NOTE: The PROCEDURE SQL printed pages 56-57.
-NOTE: PROCEDURE SQL used (Total process time):
-      real time           0.01 seconds
-      cpu time            0.01 seconds
-
