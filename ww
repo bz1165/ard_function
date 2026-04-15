@@ -1,0 +1,290 @@
+DI_GPS
+DI_GPS
+GPS (Global Programming and Statistics) is a standard programming environment used by Clinical Programmers and Statisticians during development of programs to statistically analyse clinical trial data. It is used as a repository for data imported from CT4 or external source (e.g. CROs) in SAS datasets and for generating outputs (e.g. tables, listings) which form part of a regulatory submission report. Also known as GPS II.
+
+asterisk Indicates required
+Requested by
+Beichen Zhai
+ddcd5de5c32666942cbad90e0501313e
+Mobile Number
+Requested for
+Beichen Zhai
+ddcd5de5c32666942cbad90e0501313e
+Email ID
+beichen.zhai@novartis.com
+Request Type
+Application Service Request
+
+Application Service Request
+Subcategory
+03 Restrict/Un-restrict Studies & RAs or add/delete users to Restricted Studies & RAs
+
+03 Restrict/Un-restrict Studies & RAs or add/delete users to Restricted Studies & RAs
+Please select this service request to below :
+1. To get access to Restricted Studies and Restricted Reporting Activities.
+2. To revoke access from Restricted Studies and Restricted Reporting Activities
+3. To apply restriction on Studies or Reporting Activities.
+4. To remove the restrictions on Studies or Reporting Activities
+
+Please Note -
+1. This request must be submitted by the Program Programmer (PP) or the Program Statistician (PS) or the Group Head(GH). If user is raising the request then it is required to attach the email apporval from PP or PS or GH, otherwise the request will be rejected.
+
+2. If the Project/Study/Reporting Activities is not listed in the applicable fields then please mention it in Additional Comments.
+
+
+Action
+
+Add UserDrop UserRestrict StudyUnRestrict Study
+ List of users
+    
+Novartis Unique ID (GPS)
+Note
+If applicable, please add additional details in Additional Comments.
+Project (Ex: CABC011A)
+Study (Ex: CABC011A2301)
+Reporting Activities( Ra)
+If the RA is not available, Please specify the list of RAs in Additional comments
+
+-- None --
+GPS II Environment/ Instance
+
+ProductionTestDevelopment
+Type of Access
+GPS: Write access for Restricted Area
+Options
+
+I certify to attach the prerequisite email approvals from Program Programmer (PP) or the Program Statistician (PS) or the Group Head(GH) (in case of user raising the request) / I certify that I am the PP/PS/GH
+Additonal Comments
+ Add attachments
+
+
+PS (Global Programming and Statistics) is a standard programming environment used by Clinical Programmers and Statisticians during development of programs to statistically analyse clinical trial data. It is used as a repository for data imported from CT4 or external source (e.g. CROs) in SAS datasets and for generating outputs (e.g. tables, listings) which form part of a regulatory submission report. Also known as GPS II.
+
+asterisk Indicates required
+Requested by
+Beichen Zhai
+ddcd5de5c32666942cbad90e0501313e
+Mobile Number
+Requested for
+Beichen Zhai
+ddcd5de5c32666942cbad90e0501313e
+Email ID
+beichen.zhai@novartis.com
+Request Type
+Application Service Request
+
+Application Service Request
+Subcategory
+03 Restrict/Un-restrict Studies & RAs or add/delete users to Restricted Studies & RAs
+
+03 Restrict/Un-restrict Studies & RAs or add/delete users to Restricted Studies & RAs
+Please select this service request to below :
+1. To get access to Restricted Studies and Restricted Reporting Activities.
+2. To revoke access from Restricted Studies and Restricted Reporting Activities
+3. To apply restriction on Studies or Reporting Activities.
+4. To remove the restrictions on Studies or Reporting Activities
+
+Please Note -
+1. This request must be submitted by the Program Programmer (PP) or the Program Statistician (PS) or the Group Head(GH). If user is raising the request then it is required to attach the email apporval from PP or PS or GH, otherwise the request will be rejected.
+
+2. If the Project/Study/Reporting Activities is not listed in the applicable fields then please mention it in Additional Comments.
+
+
+Action
+
+Add UserDrop UserRestrict StudyUnRestrict Study
+"Requested For" user's Novartis Unique ID (GPS)?
+ZHAIBE1
+Note
+If applicable, please add additional details in Additional Comments.
+Project (Ex: CABC011A)
+Study (Ex: CABC011A2301)
+Reporting Activities( Ra)
+If the RA is not available, Please specify the list of RAs in Additional comments
+
+-- None --
+GPS II Environment/ Instance
+
+ProductionTestDevelopment
+Options
+
+I certify to attach the prerequisite email approvals from Program Programmer (PP) or the Program Statistician (PS) or the Group Head(GH) (in case of user raising the request) / I certify that I am the PP/PS/GH
+Additonal Comments
+ Add attachments
+
+
+DI_GPS
+DI_GPS
+GPS (Global Programming and Statistics) is a standard programming environment used by Clinical Programmers and Statisticians during development of programs to statistically analyse clinical trial data. It is used as a repository for data imported from CT4 or external source (e.g. CROs) in SAS datasets and for generating outputs (e.g. tables, listings) which form part of a regulatory submission report. Also known as GPS II.
+
+asterisk Indicates required
+Requested by
+Beichen Zhai
+ddcd5de5c32666942cbad90e0501313e
+Mobile Number
+Requested for
+Beichen Zhai
+ddcd5de5c32666942cbad90e0501313e
+Email ID
+beichen.zhai@novartis.com
+Request Type
+Application Service Request
+
+Application Service Request
+Subcategory
+12 Create Release 3 Clinical Project/Project Reporting Activity
+
+12 Create Release 3 Clinical Project/Project Reporting Activity
+1. Please select this service to request for creating any Project/Project RA.
+
+2. Please select this service to request for creating any Project/Project RA.
+
+3. <n> denotes that several incremented versions can exist, the correct next number is automatically applied.
+
+
+"Requested For" user's Novartis Unique ID (GPS)?
+ZHAIBE1
+Note
+If applicable, please add additional details in Additional Comments.
+Project (Ex: CABC011A)
+Study (Ex: CABC011A2301)
+GPS II Environment/ Instance
+
+ProductionTestDevelopment
+Therapeutic Area
+Selection of more than 1 Therapeutic Area is allowed
+    
+Folders util and gps_migr will be created per default. Please select any additional Reporting Activities below:
+pub Type
+
+CONF
+
+JOU
+
+<n>
+scs type
+
+COUREG
+sce type
+
+COUREG
+haq type
+
+COUREG
+sup type
+
+COUREG
+rmp
+
+YesNo
+cdx_<n>
+
+YesNo
+mas_<n>
+
+YesNo
+ib
+
+YesNo
+source_pool
+
+YesNo
+pk_<n>
+
+YesNo
+anon_<n>
+
+YesNo
+Additonal Comments
+ Add attachments
+
+
+
+DI_GPS
+DI_GPS
+GPS (Global Programming and Statistics) is a standard programming environment used by Clinical Programmers and Statisticians during development of programs to statistically analyse clinical trial data. It is used as a repository for data imported from CT4 or external source (e.g. CROs) in SAS datasets and for generating outputs (e.g. tables, listings) which form part of a regulatory submission report. Also known as GPS II.
+
+asterisk Indicates required
+Requested by
+Beichen Zhai
+ddcd5de5c32666942cbad90e0501313e
+Mobile Number
+Requested for
+Beichen Zhai
+ddcd5de5c32666942cbad90e0501313e
+Email ID
+beichen.zhai@novartis.com
+Request Type
+Application Service Request
+
+Application Service Request
+Subcategory
+13 GPS - Create Release 3 Clinical Protocol / Protocol Reporting Activity
+
+13 GPS - Create Release 3 Clinical Protocol / Protocol Reporting Activity
+1. Please select this service to request for creating any Protocol/Protocol RA.
+
+2. Both dmc_open_<n> and dmc_closed_<n> will be created when dmc_<n> is checked ! 
+-If not mentioned in the Additional comments field, RAs ia and dmc_closed_<n> will be protected by a default special group. 
+
+3. <n>denotes that several incremented versions can exist, numbering is automatic.
+
+
+"Requested For" user's Novartis Unique ID (GPS)?
+ZHAIBE1
+Note
+If applicable, please add additional details in Additional Comments.
+Project (Ex: CABC011A)
+Study (Ex: CABC011A2301)
+Folders sourcedata, util and RAs csr_1 and dm will be created per default. Please select any additional Reporting Activities (RAs) below:
+pub Type
+
+CONF
+
+JOU
+
+<n>
+csr_<n>
+
+YesNo
+mas_<n>
+
+YesNo
+exp
+
+YesNo
+ia
+
+YesNo
+ib
+
+YesNo
+cdx_<n>
+
+YesNo
+anon_<n>
+
+YesNo
+dmc_<n>
+
+YesNo
+Additonal Comments
+ Add attachments
+
+
+Associate Name	User ID (5-2-1)	Title/Position	DU	Name of Program	Name of Project	Name of the Study	Role of associate	"1-continue without US pts
+2-continue to support global NDA (prj access retain)
+3-subset approach
+4-transit now
+5-continue for ongoing China NDA/HAQ 
+6-continue for upcoming China NDA"	"GPS SNOW ticket
+SR 03;
+SR 12;
+SR 13;"	"IT Action
+(Retain project access; 
+Retain study access;
+Remove access; 
+Subset VOB;
+Grant access per request;
+N/A as GPS folder not created)"	Strat Date	End date	Additional Comments
+
