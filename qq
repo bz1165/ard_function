@@ -1,0 +1,3001 @@
+50	20250402	Huiyu Luo	ADFACIT	EST01STP, ICE01F, IMPREA01, EST02STP, ICE02F, IMPREA02	Add variable EST01STP, ICE01F, IMPREA01, EST02STP, ICE02F, IMPREA02	
+	ADFACIT	STUDYID	Study Identifier	C					1						ADSL.STUDYID
+ADFACIT	USUBJID	Unique Subject Identifier	C					2						ADSL.USUBJID
+ADFACIT	SUBJID	Subject Identifier for the Study	C					3						ADSL.SUBJID
+ADFACIT	SITEID	Study Site Identifier	C					4						ADSL.SITEID
+ADFACIT	QSSEQ	Sequence Number	N					5						QS.QSSEQ
+ADFACIT	PARAM	Parameter	C					6						"QSTEST for PARAMTYPE=""""
+else see tab analysis_param"
+ADFACIT	PARAMCD	Parameter Code	C					7						See tab 'Analysis_PARAM'
+ADFACIT	PARAMN	Parameter (N)	N					8						See tab 'Analysis_PARAM'
+ADFACIT	PARAMTYP	Parameter Type	C					9						"DERIVED" when PARAMCD in ("FACIT","FACITEXP" ,"FACITIMP")
+ADFACIT	AVAL	Analysis Value	N					10						See VLM
+ADFACIT	AVALC	Analysis Value (C)	C					11						"set to character value of AVAL when PPARAMCD in (""FACIT"",""FACITEXP"" ,""FACITIMP"").
+Set to QS.QSORRES for the rest of PARAMCD"
+ADFACIT	TRTA	Actual Treatment	C					12						"If ADFACIT.APERIOD = 1 or ABLFL=""Y"" then equal to ADSL.TRT01A,  
+else if ADAE.APERIOD = 2 then equal to ADSL.TRT02A"
+ADFACIT	TRTAN	Actual Treatment (N)	N					13						"1=LNP
+2=PBO"
+ADFACIT	TRTP	Planned Treatment	C					14						"If ADFACIT.APERIOD = 1 or ABLFL=""Y""  then equal to ADSL.TRT01P,  
+else if ADLB.APERIOD = 2 then equal to ADSL.TRT02P"
+ADFACIT	TRTPN	Planned Treatment (N)	N					15						"1=LNP
+2=PBO"
+ADFACIT	APERIOD	Period	N					16						"if .<AP01SDT<=ADT<=coalesce(AP02SDT,AP01EDT) then 1
+if .<AP02SDT<ADT<=AP02EDT then 2"
+ADFACIT	APERIODC	Period (C)	C					17						"1=""Double-blind""
+2=""Open-label"""
+ADFACIT	ABLFL	Baseline Record Flag	C			Y		18						Assign 'Y' for last non-missing observations before first dose (ADT<=TRTSDT)
+
+ADFACIT	BASE	Baseline Value	N					20						Set equal to AVAL when ABLFL = "Y" and populate it for baseline and all post-baseline record
+ADFACIT	CHG	Change from Baseline	N					21						AVAL-BASE, populate only for post-baseline visits and PARAMCD in ("FACIT","FACITEXP" ,"FACITIMP")
+
+ADFACIT	VISIT	Visit Name	C					24						QS.VISIT
+ADFACIT	AVISIT	Analysis Visit	C					25						Set to "Baseline" when ABLFL="Y". For planned visits(Day 1, 14, 30, 90, 180, 210, 270, 360/EOS), carry VISIT to AVISIT, else leave as null
+ADFACIT	AVISITN	Analysis Visit (N)	N					26						Set to 99 for AVISIT='Baseline". For planned visits(Day 1, 14, 30, 90, 180, 210, 270, 360/EOS), carry VISITNUM to AVISITN, else leave as null
+
+
+Will not be populated at pre-baseline records."
+ADFACIT	CRIT1	Analysis Criterion 1	C					29						"5-point improvement" when CRIT1FL="Y"
+ADFACIT	CRIT1FL	Criterion 1 Evaluation Result Flag	C					30						"Y" when CHG>=5
+ADFACIT	CRIT2	Analysis Criterion 2	C					31						"3-point improvement" when CRIT2FL="Y"
+ADFACIT	CRIT2FL	Criterion 2 Evaluation Result Flag	C					32						"Y" when CHG>=3
+ADFACIT	ANL01FL	Analysis Flag 01	C					33						Set equal to "Y" for baseline and unique non-missing values for derived params, regardless of the existence of baseline (paramtyp='DERIVED')
+ADFACIT	ANL01DSC	Analysis Flag 01 Description	C					34						="Unique record for each visit" if ANL01FL='Y'
+ADFACIT	ANL03FL	Analysis Flag 03	C			Y		35				Derived		Set "Y" to done baseline and all post-baseline assessment done in randomized period.
+ADFACIT	ANL03DSC	Analysis Flag 03 Description	C					36				Assigned		Set to "Record for treatment randomized period analysis" if ADFACIT.ANL03FL='Y'
+
+ADFACIT	EST01STP	Estimand 01 planned handling strategy	C					37						"For paramcd ='FACIT', if intercurrent events are: 
+1. The initiation or intensification of anti-proteinuric therapies
+2. Initiation of renal replacement therapy (e.g., dialysis or kidney transplantation)
+then 'Hypothetical strategy'
+else if intercurren event is Treatment discontinuation for any reason (other than the anti-proteinuric therapies or RRT), then 'Treatment policy'"
+ADFACIT	ICE01F	Impacting ICE for Est. 01 Flag	C					38						If the record after I/C then set to 'Y', else 'N'
+ADFACIT	IMPREA01	Imputation Rason for Est. 01	C					39						"If the record after I/C then set to 'Post ICE';
+Else if the value of the record is missing, then set to 'Missing data'"
+ADFACIT	EST02STP	Estimand 02 planned handling strategy	C					40						"For paramcd ='FACIT', if intercurrent event is Initiation of renal replacement therapy (e.g., dialysis or kidney transplantation) then 'Hypothetical strategy'; 
+else if intercurren event is The initiation or intensification of anti-proteinuric therapies or Treatment discontinuation for any reason (other than the anti-proteinuric therapies or RRT), then 'Treatment policy'"
+ADFACIT	ICE02F	Impacting ICE for Est. 02 Flag	C					41						If the record after I/C then set to 'Y', else 'N'
+ADFACIT	IMPREA02	Imputation Rason for Est. 02	C					42						"If the record after I/C then set to 'Post ICE';
+Else if the value of the record is missing, then set to 'Missing data'"
+ADFACIT	ANL05DT	Date of 1st anti-proteinuric therapies	N		DATE9.			43				Derived		Subject level flag. Pick up the earliest date of FACM.FADTC>=ADSL.TRTSDT when FA.FAORRES="Y" and UPCASE(FACM.FACAT) ="ANTI-PROTEINURIC THERAPIES RELATED INTERCURRENT EVENTS"
+
+ADFACIT	ANL06DT	Date of 1st RRT	N		DATE9.			46				Derived		Subject level flag. Pick up the earliest date of FACM.FADTC>=ADSL.TRTSDT when FACM.FAORRES="Y" and UPCASE(FACM.FACAT) ="RENAL REPLACEMENT THERAPY RELATED INTERCURRENT EVENTS"
+
+ADFACIT	ANL07DT	Date of Treatment Disc. for Other Reason	N		DATE9.			49				Derived		Subject level flag. Pick up the earliest date of DS.DSSTDTC where DSSCAT in ("BLINDED TREATMENT DISPOSITION" "OPEN LABEL TREATMENT DISPOSITION")and prxmatch("/COMPLETED|ADVERSE/",DSDECOD)=0
+
+ADFACIT	AEFLAG	Study DC for AE or Renal Death Period 1	C			Y		52				Derived		Set to "Y" if index(DS.DSDECOD, "ADVERSE")>0 and DS.DSSCAT="STUDY DISPOSITION" and ADSL.AP01SDT<=DS.DSSTDTC<=ADSL.AP01EDT
+ADFACIT	AEDCDT	Study DC due to AE or renal death Date	N		DATE9.			53				Derived		DS.DSSTDTC if index(DS.DSDECOD, "ADVERSE")>0 and DS.DSSCAT="STUDY DISPOSITION" and ADSL.AP01SDT<=DS.DSSTDTC<=ADSL.AP01EDT
+ADFACIT	ADT	Analysis Date	N		DATE9.			54						Date part of QS.QSDTC converted to numeric
+ADFACIT	ATM	Analysis Time	N		time5.			55						Timepart of QS.QSDTC converted to numeric, set to null if time part is missing
+ADFACIT	ADY	Analysis Relative Day	N					56						"ADT-TRTSDT where ADT<TRTSDT.
+ADT-TRTSDT+1 where ADT>=TRTSDT."
+
+ADFACIT	QSSTAT	Questionnaire status 	C					57						QS.QSSTAT
+ADFACIT	QSREASND	Reason for not done	C					58						QS.QSREASND
+ADFACIT	QSLG	Language of Questionnaire	C					59						QS.LG
+ADFACIT	QSEVAL	Evaluator	C					60						QS.EVAL
+
+PDS更新了，然后ADUPCR， ADUPRMI也先出了一版，你可以参考，大概的逻辑就是我们之前是在MI里面dummy了planed的visit，现在给换成在原始的数据集里给先dummy好，这样MI里就可以直接用。然后就是加了几个变量。我先给你现在ADUPCR的code /************************************************************************
+*  PROJECT       : CLNP023B1
+*  STUDY         : CLNP023B12301
+*  RA            : csr_4
+*  FILENAME      : adupcr.sas
+
+*  DATE CREATED  : 10Mar2026
+*  AUTHOR        : Huiyu Luo
+
+*  DESCRIPTION   : Create dataset ADUPCR
+*  PLATFORM      : AIX 7.2 (AIX 64) (see SAS log file)
+*  SAS VERSION   : 9.4 (see SAS log file)
+
+*  MACROS CALLED : None
+*  INPUT         : ADLB, ADSL
+*  OUTPUT        : analysis.adupcr
+
+*  MODIFICATIONS : [x.xx] dd-mmm-yy, 5-2-1 id, brief description  
+*************************************************************************/
+
+/*Clean work library*/
+proc datasets lib=work kill;
+run;
+
+/* GPS environment setup macro */;
+data _null_;
+    if libref('analysis') then call execute('%nrstr(%autorun;)');
+run;
+
+*----------------------------------------------------------------------;
+				*read in adsl, adlb dataset;
+*----------------------------------------------------------------------;
+data adupcr1_1;
+  set analysis.adlb;
+  where PARAMCD in ('UPCRFMV','UPCR24H') and FASFL="Y"
+  and VISIT not in ("Lab results at the time of diagnosis for C3G Medical History","Renal Complement Pathway Hx");
+  if nmiss(AVAL, BASE)=0 and AVISITN^=99 then R2BASE=AVAL/BASE;
+  if BASE not in (.,0) and AVISITN^=99 then PCHG=(AVAL-BASE)/BASE*100;
+run;
+
+data adupcr1_2;
+  set analysis.adlb;
+  where PARAMCD in ('UPCRFMV','UPCR24H') and FASFL="Y"
+  and VISIT not in ("Lab results at the time of diagnosis for C3G Medical History","Renal Complement Pathway Hx");
+  if PARAMCD="UPCRFMV" then do;
+    PARAM="Log-transformed UPCR FMV collection (g/g)";
+    PARAMCD="LGUPCRFV";
+  end;
+  else if PARAMCD="UPCR24H" then do;
+    PARAM="Log-transformed UPCR 24 hour collection (g/g)";
+    PARAMCD="LGUPCR24";
+  end;
+
+  array num [*] AVAL BASE;
+  do i=1 to dim(num);
+    if ^missing(num{i}) then num{i}=log(num{i});
+  end;
+
+  if nmiss(AVAL, BASE)=0 and AVISITN^=99 then CHG=AVAL-BASE;
+  if nmiss(AVAL, BASE)=0 and AVISITN^=99 then R2BASE=AVAL/BASE;
+  if BASE not in (.,0) then PCHG=(AVAL-BASE)/BASE*100;
+run;
+
+proc sort data=adupcr1_2 out=lgupcr24 nodupkey;by usubjid paramcd; where paramcd='LGUPCR24' and avisit='Baseline';run;
+proc sort data=adupcr1_2 out=lgupcrfv nodupkey;by usubjid paramcd; where paramcd='LGUPCRFV' and avisit='Baseline';run;
+
+data dummy_lgupcr24;
+  set lgupcr24(keep= usubjid  param paramcd BASE);
+  do avisit="Baseline","Day 90","Day 180";
+    output;
+  end;
+run;
+
+data dummy_lgupcrfv;
+  set lgupcrfv(keep= usubjid  param paramcd BASE);
+  do avisit="Baseline","Day 14","Day 30","Day 90","Day 180";
+    output;
+  end;
+run;
+
+/*set the order of visit*/
+proc format;
+ invalue avisit
+ "Baseline"=99
+ "Day 14"=202
+ "Day 30"=203
+ "Day 90"=204
+ "Day 180"=205;
+run;
+
+data dummy;
+  set dummy_lgupcr24 dummy_lgupcrfv;
+  AVISITN=input(AVISIT,avisit.);
+run;
+
+/*Merge visit date and treatment start date for further step*/
+proc sql;
+	create table dummy_visit as 
+	select a.*, input(b.SVSTDTC,yymmdd10.) as SVSTDT format=date9., c.VISITDY, d.*
+	from dummy as a 
+	left join derived.sv as b 
+	on a.USUBJID=b.USUBJID and a.AVISIT=b.VISIT 
+	left join derived.tv as c 
+	on a.AVISIT=c.VISIT
+	left join analysis.adsl as d 
+	on a.USUBJID=d.USUBJID
+	;
+quit;
+
+data dummy_final;
+  format plandt padt date9.;
+  set dummy_visit;
+  if nmiss(TRTSDT,VISITDY)=0 then plandt=TRTSDT+VISITDY-1;
+  padt=coalesce(SVSTDT, plandt);
+run;
+
+proc sort data=dummy_final;by usubjid paramcd avisitn;run;
+proc sort data=adupcr1_2;by usubjid paramcd avisitn;run;
+
+data adupcr1_3;
+  merge dummy_final(in=b) adupcr1_2;
+  by usubjid paramcd avisitn;
+/*  if b;*/
+run;
+
+data adupcr2;
+  set adupcr1_1 adupcr1_3;
+  obs=_N_;
+run;
+
+
+/**************Intercurrent Events*************/
+
+/*The initiation or intensification of anti-proteinuric therapies*/
+data ant_cm;
+  merge derived.facm(where=(FACAT="ANTI-PROTEINURIC THERAPIES RELATED INTERCURRENT EVENTS" and FAORRES="Y" )) 
+  analysis.adsl(in=a keep=USUBJID subjid TRTSDT FASFL);
+  by USUBJID subjid;
+  if a;
+  ASTDT=input(FADTC,??yymmdd10.);
+  if ASTDT>=TRTSDT>.;
+  keep USUBJID subjid ASTDT;
+run;
+
+proc sql;
+  create table cmdt as 
+  select distinct USUBJID, subjid, ASTDT 
+  from ant_cm
+  group by USUBJID, subjid
+  having ASTDT=min(ASTDT)
+  ;
+
+  create table adupcr3 as 
+  select a.*, b.ASTDT as ASTDT_CM
+  from adupcr2 as a 
+  left join cmdt as b 
+  on a.USUBJID=b.USUBJID and a.subjid=b.subjid/*  and a.ADT>b.ASTDT>. */
+  ;
+quit;
+
+/*The initiation of RRT (i.e., hemodialysis or transplant)*/
+data rrt;
+  merge derived.facm(where=(FACAT="RENAL REPLACEMENT THERAPY RELATED INTERCURRENT EVENTS" and FAORRES="Y")) 
+  analysis.adsl(in=a keep=USUBJID subjid TRTSDT FASFL);
+  by USUBJID subjid;
+  if a;
+  ASTDT=input(FADTC,??yymmdd10.);
+  if ASTDT>=TRTSDT>.;
+  keep USUBJID subjid ASTDT;
+run;
+
+proc sql;
+  create table prdt as 
+  select distinct USUBJID,subjid, ASTDT 
+  from rrt
+  group by USUBJID, subjid
+  having ASTDT=min(ASTDT)
+  ;
+
+  create table adupcr4 as 
+  select a.*, b.ASTDT as ASTDT_PR
+  from adupcr3 as a 
+  left join prdt as b 
+  on a.USUBJID=b.USUBJID and a.subjid=b.subjid/* and a.ADT>b.ASTDT>. */
+  ;
+quit;
+
+/*EOT due to other reason*/
+data eot;
+  merge derived.ds(where=(DSSCAT in ("BLINDED TREATMENT DISPOSITION") and prxmatch("/COMPLETED|ADVERSE/",DSDECOD)=0)) 
+  analysis.adsl(in=a keep=USUBJID subjid TRTSDT FASFL);
+  by USUBJID subjid ;
+  if a;
+  ASTDT=input(DSSTDTC,??yymmdd10.);
+  if ASTDT>=TRTSDT>.;
+  keep USUBJID subjid ASTDT;
+run;
+
+proc sql;
+  create table eotdt as 
+  select distinct USUBJID,subjid, ASTDT 
+  from eot
+  group by USUBJID, subjid
+  having ASTDT=min(ASTDT)
+  ;
+
+  create table adupcr5 as 
+  select a.*, b.ASTDT as ASTDT_EOT
+  from adupcr4 as a 
+  left join eotdt as b 
+  on a.USUBJID=b.USUBJID and a.subjid=b.subjid /* and a.ADT>b.ASTDT>. */
+  ;
+quit;
+
+
+/*Study DC due to AE or renal death*/
+data dsae;
+  merge derived.ds(where=(DSSCAT="STUDY DISPOSITION" and DSCAT="DISPOSITION EVENT" and find(DSDECOD,"ADVERSE")))
+  analysis.adsl(in=a keep=USUBJID subjid AP01SDT AP01EDT);
+  by USUBJID subjid;
+  if a;
+  ASTDT=input(DSSTDTC,??yymmdd10.);
+  if AP01SDT<=ASTDT<=AP01EDT;
+  keep USUBJID subjid ASTDT DSDECOD;
+run;
+
+
+proc sql;
+  create table adupcr6 as 
+  select a.*, b.ASTDT as ASTDT_DS
+  from adupcr5 as a 
+  left join dsae as b 
+  on a.USUBJID=b.USUBJID and a.subjid=b.subjid
+  ;
+
+quit;
+
+
+data adupcr_final;
+  length CRIT1 CRIT2 IMPREA01 IMPREA02 IMPREA03 $200.;
+  set adupcr6;
+  if paramcd='LGUPCR24' then do;
+    if adt>astdt_cm>. then do;EST01STP='Hypothetical strategy'; ICE01F='Y'; IMPREA01='Post ICE';EST02STP='Treatment policy'; ICE02F='Y'; IMPREA02='Post ICE';end;
+    else if adt>astdt_pr>. then do;EST01STP='Hypothetical strategy'; ICE01F='Y'; IMPREA01='Post ICE'; EST02STP='Hypothetical strategy'; ICE02F='Y'; IMPREA02='Post ICE';end;
+	else if adt>ASTDT_EOT>. then do;EST01STP='Treatment policy'; ICE01F='Y';IMPREA01='Post ICE';EST02STP='Treatment policy'; ICE02F='Y';IMPREA02='Post ICE';end;
+	if aval=. then do;IMPREA01='Missing data';IMPREA02='Missing data';end;
+	if adt=. then do;
+      if padt>astdt_cm>. then do;EST01STP='Hypothetical strategy'; ICE01F='Y'; IMPREA01='Post ICE';EST02STP='Treatment policy'; ICE02F='Y'; IMPREA02='Post ICE';end;
+      else if padt>astdt_pr>. then do;EST01STP='Hypothetical strategy'; ICE01F='Y'; IMPREA01='Post ICE';EST02STP='Hypothetical strategy'; ICE02F='Y'; IMPREA02='Post ICE';end;
+	  else if padt>ASTDT_EOT>. then do;EST01STP='Treatment policy'; ICE01F='Y';IMPREA01='Post ICE';EST02STP='Treatment policy'; ICE02F='Y';IMPREA02='Post ICE';end;
+	end;
+  end;
+  if paramcd='LGUPCRFV' then do;
+    if adt>astdt_cm>. then do;EST03STP='Hypothetical strategy'; ICE03F='Y'; IMPREA03='Post ICE';end;
+    else if adt>astdt_pr>. then do;EST03STP='Hypothetical strategy'; ICE03F='Y'; IMPREA03='Post ICE';end;
+	else if adt>ASTDT_EOT>. then do;EST03STP='Treatment policy'; ICE03F='Y';IMPREA03='Post ICE';end;
+	if aval=. then IMPREA03='Missing data';
+	if adt=. then do;
+      if padt>astdt_cm>. then do;EST03STP='Hypothetical strategy'; ICE03F='Y'; IMPREA03='Post ICE';end;
+      else if padt>astdt_pr>. then do;EST03STP='Hypothetical strategy'; ICE03F='Y'; IMPREA03='Post ICE';end;
+	  else if padt>ASTDT_EOT>. then do;EST03STP='Treatment policy'; ICE03F='Y';IMPREA03='Post ICE';end;
+	end;
+  end;
+  ANL05DT=ASTDT_CM;
+  ANL06DT=ASTDT_PR;
+  ANL07DT=ASTDT_EOT;
+  AEDCDT=ASTDT_DS;
+  if ADT>ASTDT_CM>. then do;
+    ANL05FL="Y";
+    ANL05DSC="Record after initiation or intensification of anti-proteinuric therapies";
+  end;
+  if ADT>ASTDT_PR>. then do;
+    ANL06FL="Y";
+    ANL06DSC="Record after initiation of RRT";
+  end;
+  if ADT>ASTDT_EOT>. then do;
+    ANL07FL="Y";
+    ANL07DSC="Record after treatment discontinuation for any other reason";
+  end;
+  if ASTDT_DS^=. then AEFLAG="Y";
+  if nmiss(CHG,BASE)=0 and AVISITN^=99 then PCHG=CHG/BASE*100;
+  if .<PCHG<=-50 and PARAMCD="UPCR24H" then do;
+    CRIT1= ">=50% reduction in UPCR 24 hour collection";
+    CRIT1FL="Y";
+  end;
+  else call missing(CRIT1, CRIT1FL);
+run;
+
+*----------------------------------------------------------------------;
+*set the final dataset
+*do sorting;
+*select avariable and apply format from PDS;
+*----------------------------------------------------------------------;
+/*proc sort data=analysis.adupcr out=dev; by usubjid subjid paramcd AVISITN ADT ATM LBSEQ;run;*/
+/*proc sort data=adupcr_final; by usubjid subjid paramcd AVISITN ADT ATM LBSEQ;run;*/
+/**/
+/*PROC COMPARE BASE=dev COMPARE=adupcr_final LISTALL;*/
+/*RUN;*/
+
+%_std_varpadding_submission( calledby =
+,in_lib = work
+,out_lib = work
+,include_ds = adupcr_final
+,exclude_ds =
+);
+
+
+%opSetAttr(domain=adupcr, inData=adupcr_final, metaData  = RPRTDSM.study_adam_metadata);
+请仔细看然后修改我现在的adfacit/************************************************************************
+*  PROJECT       : CLNP023B1
+*  STUDY         : CLNP023B12301
+*  RA            : csr_4
+*  FILENAME      : adfacit.sas
+*  DESCRIPTION   : Create dataset ADFACIT (csr_4 PDS / VLM / METHOD compliant)
+*  PLATFORM      : AIX 7.1 (AIX 64) (see SAS log file)
+*  SAS VERSION   : 9.4 (see SAS log file)
+*  INPUT         : SDTM QS (with SUPPQS), ADaM ADSL, SDTM DS/FACM
+*  OUTPUT        : analysis.adfacit
+*  MODIFICATIONS : Reworked from csr_3 to match csr_4 changes
+*************************************************************************/
+
+proc datasets lib=work kill nolist; quit;
+
+/* GPS environment setup macro */
+data _null_;
+  if libref('analysis') then call execute('%nrstr(%autorun;)');
+run;
+
+/* ------------------------------- */
+/* Formats for planned visit names */
+/* ------------------------------- */
+proc format;
+  invalue avisitn
+    'Baseline' = 99
+    'Day 1'    = 201
+    'Day 14'   = 202
+    'Day 30'   = 203
+    /* NOTE: Day 90 intentionally not mapped per csr_4 PDS */
+    'Day 180'  = 205
+    'Day 210'  = 206
+    'Day 270'  = 207
+    'Day 360'  = 299
+  ;
+quit;
+
+/* 5-point verbal scale to numeric (fallback when QSSTRESN missing) */
+proc format;
+  invalue facit_val
+    "NOT AT ALL"   = 0
+    "A LITTLE BIT" = 1
+    "SOMEWHAT"     = 2
+    "QUITE A BIT"  = 3
+    "VERY MUCH"    = 4
+  ;
+quit;
+
+/* ------------------------------- */
+/* Read QS  SUPPQS and pre-derive */
+/* ------------------------------- */
+%opMergeSupp(inData=derived.qs,
+             outData=qs_raw,
+             inSuppData=derived.suppqs,
+             keepQnam=);
+
+proc sort data=qs_raw nodupkey;
+  by usubjid subjid qscat qstest qsscat visit qsdtc qsorres;
+run;
+
+/* Keep only FACIT-Fatigue 13 items */
+data qs_items;
+  set qs_raw(rename=(qstest=param qstestcd=paramcd lg=qslg QSEVAL   = qseval ));
+  where qscat = 'FACIT-FATIGUE 13-ITEM V4';
+
+  length avalc $100;
+  /* Prefer QSSTRESN; if missing, translate QSORRES text */
+  aval  = coalesce(qsstresn, input(upcase(qsorres), facit_val.));
+  avalc = strip(upcase(qsorres));
+
+  /* Datetime splits */
+  adt = input(scan(qsdtc,1,'T'), yymmdd10.);
+  atm = input(scan(qsdtc,2,'T'), time8.);
+  if length(qsdtc)=19 then adtm = input(qsdtc, e8601dt.);
+  format adt yymmdd10. atm time5.;
+run;
+
+/* Map PARAMN from Analysis Parameters (for item-level rows) */
+proc sql;
+  create table qs_items_m as
+  select a.*
+       , b.paramcd as paramcd_ 
+       , b.paramn
+  from qs_items as a
+  left join
+       (select param, paramcd, paramn
+          from rprtdsm.analysis_parameters
+         where not missing(paramn)) as b
+    on a.param = b.param
+  ;
+quit;
+
+proc sort data=qs_items_m;
+  by usubjid subjid visit adt paramn;
+run;
+
+/* ------------------------------- */
+/* Join ADSL and ADY/APERIOD base */
+/* ------------------------------- */
+data qs_items_j;
+  merge qs_items_m(in=a)
+        analysis.adsl(in=b drop=subjid);
+  by usubjid;
+  if a;
+
+  /* ADY relative to first dose */
+  if adt>=trtsdt> . then ady = adt - trtsdt + 1;
+  else if .<adt<trtsdt then ady = adt - trtsdt;
+
+  /* Standardize AVISIT for planned visits only; EOS to Day 360 */
+  length avisit $40;
+  if visit = 'End of Study' then visit = 'Day 360';
+  if visit in ('Day 1','Day 14','Day 30','Day 180','Day 210','Day 270','Day 360') then avisit = visit;
+  else avisit = ''; /* non-planned set to null */
+  avisitn = input(avisit, avisitn.);
+run;
+
+/* ------------------------------- */
+/* Derive FACIT/FACITEXP/FACITIMP */
+/* ------------------------------- */
+proc sort data=qs_items_j;
+  by studyid usubjid subjid visit visitnum adt atm adtm qslg qseval;
+run;
+
+
+proc transpose data=qs_items_j(where=(not missing(paramcd_)))
+               out=qs_wide(drop=_name_);
+  by studyid usubjid subjid visit visitnum adt atm adtm qslg qseval;
+  var aval;
+  id paramcd_;   
+run;
+
+
+/* Compute scores per METHOD:
+   - reverse-keyed items to 4 - score where applicable
+   - FAT_N = N(non-missing of 13 items)
+   - if FAT_N/13  0.5 then prorated totals
+   - derived rows: FACIT, FACITEXP, FACITIMP
+*/
+data facit_der;
+  length param $40 paramcd $8 paramtyp $7 avalc $100;
+  set qs_wide;
+
+  array ITEM  {13} FAC07001-FAC07013;
+  array HI    HI7 HI12;
+  array ANa   AN1-AN5;  /* AN1 AN2 AN3 AN4 AN5 */
+  array ANb   AN7 AN8 AN12 AN14-AN16;
+
+  do i=1 to 13;
+    if ITEM[i] in (8,9) then ITEM[i]=.;
+  end;
+
+  if not missing(FAC07001) then HI7  = 4 - FAC07001;
+  if not missing(FAC07002) then HI12 = 4 - FAC07002;
+  if not missing(FAC07003) then AN1  = 4 - FAC07003;
+  if not missing(FAC07004) then AN2  = 4 - FAC07004;
+  if not missing(FAC07005) then AN3  = 4 - FAC07005;
+  if not missing(FAC07006) then AN4  = 4 - FAC07006;
+  if not missing(FAC07007) then AN5  =      FAC07007; 
+  if not missing(FAC07008) then AN7  =      FAC07008; 
+  if not missing(FAC07009) then AN8  = 4 - FAC07009;
+  if not missing(FAC07010) then AN12 = 4 - FAC07010;
+  if not missing(FAC07011) then AN14 = 4 - FAC07011;
+  if not missing(FAC07012) then AN15 = 4 - FAC07012;
+  if not missing(FAC07013) then AN16 = 4 - FAC07013;
+
+  FAT_N = n(of HI7 HI12 AN1-AN5 AN7 AN8 AN12 AN14-AN16);
+
+  if FAT_N/13 > .50 then do;
+    aval  = sum(of HI7 HI12 AN1-AN5 AN7 AN8 AN12 AN14-AN16) * 13 / FAT_N;
+    avalc = strip(put(aval,best.));
+    param='FACIT Fatigue score'; paramcd='FACIT'; paramtyp='DERIVED'; output;
+
+    aval  = sum(of HI7 HI12 AN1 AN2 AN5);
+    avalc = strip(put(aval,best.));
+    param='FACIT Experience score'; paramcd='FACITEXP'; paramtyp='DERIVED'; output;
+
+    aval  = sum(of AN3 AN4 AN7 AN8 AN12 AN14-AN16);
+    avalc = strip(put(aval,best.));
+    param='FACIT Impact score'; paramcd='FACITIMP'; paramtyp='DERIVED'; output;
+  end;
+
+  keep studyid usubjid subjid visit visitnum adt atm adtm qslg qseval param paramcd paramtyp aval avalc;
+run;
+
+
+/* Map PARAMN for derived rows from Analysis Parameters */
+proc sql;
+  create table facit_der_m as
+  select a.*, b.paramn
+  from facit_der as a
+  left join
+       (select param, paramcd, paramn
+          from rprtdsm.analysis_parameters
+         where not missing(paramn)) as b
+    on a.param = b.param and a.paramcd = b.paramcd
+  ;
+quit;
+
+/* ------------------------------- */
+/* Union items  derived, join ADSL */
+/* ------------------------------- */
+data adfacit0;
+  set qs_items_j(in=i keep=studyid usubjid subjid siteid param paramcd paramn
+                        visit visitnum adt atm adtm qslg qseval aval avalc QSSEQ
+						   avisit avisitn)
+      facit_der_m;
+run;
+
+proc sort data=adfacit0; by usubjid paramcd adt atm adtm; run;
+
+data adfacit1;
+  merge adfacit0(in=a)
+        analysis.adsl(in=b drop=subjid rename=(siteid=siteid_adsl));
+  by usubjid;
+  if a;
+
+  /* Recompute ADY after union to be safe */
+  if adt>=trtsdt>. then ady = adt - trtsdt + 1;
+  else if .<adt<trtsdt then ady = adt - trtsdt;
+
+  /* APERIOD per PDS */
+  if aperiod = . then do;
+    if .< ap01sdt <= adt <= coalesce(ap02sdt, ap01edt) then aperiod = 1;
+    else if .< ap02sdt <  adt <= ap02edt                       then aperiod = 2;
+  end;
+  length aperiodc $30;
+  if aperiod=1 then aperiodc='Double-blind';
+  else if aperiod=2 then aperiodc='Open-label';
+
+  /* Clean derived vs item-level text */
+  if upcase(coalescec(paramtyp,'')) = 'DERIVED' then do;
+    qsstat = ''; qsreasnd = ''; qslg=''; qseval='';
+  end;
+
+  if missing(avisit) then do;
+    length _v $40;
+    _v = visit;
+    if _v = 'End of Study' then _v = 'Day 360';
+    if _v in ('Day 1','Day 14','Day 30','Day 180','Day 210','Day 270','Day 360') then do;
+      avisit  = _v;
+      avisitn = visitnum;
+    end;
+    else do;
+      avisit  = '';
+      avisitn = .;
+    end;
+    drop _v;
+  end;
+
+  if missing(siteid) then siteid = siteid_adsl;
+  drop siteid_adsl;
+
+  length anl01dsc anl03dsc $100 crit1 crit2 $50;
+run;
+
+/* ------------------------------- */
+/* Baseline (last non-missing AVAL before/at TRTSDT), duplicated by paramcd */
+/* ------------------------------- */
+proc sort data=adfacit1; by usubjid paramcd adt atm adtm; run;
+
+
+/* --- Baseline candidates: last non-missing AVAL with ADT <= TRTSDT --- */
+data base_cand;
+  set adfacit1;
+  where adt <= trtsdt and not missing(aval);
+  by usubjid paramcd adt atm adtm;
+run;
+
+data base_last;
+  set base_cand;
+  by usubjid paramcd adt atm adtm;
+  if last.paramcd;                 /* last before/at first dose */
+  keep usubjid paramcd adt aval;
+  rename adt = baseadt
+         aval= base;
+run;
+
+/* Merge BASE and BASEADT back */
+proc sql;
+  create table adfacit2 as
+  select a.*, b.base, b.baseadt
+  from adfacit1 as a
+  left join base_last as b
+    on a.usubjid=b.usubjid and a.paramcd=b.paramcd
+  ;
+quit;
+
+/* CHG only for derived params and post-baseline */
+data adfacit3;
+  set adfacit2;
+
+  /* Mark baseline row: last ADT <= TRTSDT, force AVISIT to Baseline */
+  length ablfl $1;
+  if not missing(baseadt) and adt = baseadt then do;
+    ablfl  = 'Y';
+    avisit = 'Baseline';
+    avisitn= 99;
+  end;
+
+  /* CHG only for derived params and post-baseline records */
+  if upcase(coalescec(paramtyp,''))='DERIVED' then do;
+    if ablfl ne 'Y' and nmiss(aval, base)=0 then chg = aval - base;
+  end;
+
+  /* Criteria flags */
+  if not missing(chg) then do;
+    if chg >= 5 then do; crit1fl='Y'; crit1='5-point improvement'; end;
+    if chg >= 3 then do; crit2fl='Y'; crit2='3-point improvement'; end;
+  end;
+
+  /* ANL01FL/ANL03FL for derived params only */
+  if upcase(coalescec(paramtyp,''))='DERIVED' and (ablfl='Y' or aval ne .) then do;
+    anl01fl='Y';
+    anl01dsc='Unique record for each visit';
+  end;
+  if ablfl='Y' or aperiod=1 then do;
+    anl03fl='Y';
+    anl03dsc='Record for treatment randomized period analysis';
+  end;
+run;
+
+/* Re-compute TRTA/TRTP after ABLFL is finalized (per PDS) */
+data adfacit3;
+  set adfacit3;  /* overwrite */
+  if aperiod=1 or ablfl='Y' then do; trta=trt01a; trtan=trt01an; trtp=trt01p; trtpn=trt01pn; end;
+  else if aperiod=2                then do; trta=trt02a; trtan=trt02an; trtp=trt02p; trtpn=trt02pn; end;
+run;
+
+
+/* ------------------------------- */
+/* ANL05/ANL06 from FACM; ANL07 from DS */
+/* ------------------------------- */
+
+/* ANL05: first ANTI-PROTEINURIC THERAPIES RELATED INTERCURRENT EVENTS (FAORRES='Y') on/after TRTSDT */
+data fa_ap;
+  merge data_a.facm(in=a) analysis.adsl(keep=usubjid trtsdt);
+  by usubjid;
+  if a and upcase(facat)='ANTI-PROTEINURIC THERAPIES RELATED INTERCURRENT EVENTS' and faorres='Y';
+  if length(fadtc)=10 then fadt = input(fadtc, yymmdd10.);
+  if fadt >= trtsdt;
+  format fadt yymmdd10.;
+run;
+proc sort data=fa_ap; by usubjid fadt; run;
+data fa_ap1; set fa_ap; by usubjid fadt; if first.usubjid; keep usubjid fadt; rename fadt=anl05dt; run;
+
+/* ANL06: first RENAL REPLACEMENT THERAPY RELATED INTERCURRENT EVENTS (FAORRES='Y') on/after TRTSDT */
+data fa_rr;
+  merge data_a.facm(in=a) analysis.adsl(keep=usubjid trtsdt);
+  by usubjid;
+  if a and upcase(facat)='RENAL REPLACEMENT THERAPY RELATED INTERCURRENT EVENTS' and faorres='Y';
+  if length(fadtc)=10 then fadt = input(fadtc, yymmdd10.);
+  if fadt >= trtsdt;
+  format fadt yymmdd10.;
+run;
+proc sort data=fa_rr; by usubjid fadt; run;
+data fa_rr1; set fa_rr; by usubjid fadt; if first.usubjid; keep usubjid fadt; rename fadt=anl06dt; run;
+
+/* ANL07: first treatment discontinuation for other reason (BLINDED only; exclude COMPLETED/ADVERSE), on/after TRTSDT */
+data ds_oth;
+  merge data_a.ds(in=a) analysis.adsl(keep=usubjid trtsdt);
+  by usubjid;
+  if a
+     and dsscat = 'BLINDED TREATMENT DISPOSITION'
+     and prxmatch('/COMPLETED|ADVERSE/i', dsdecod) = 0;
+  if length(dsstdtc)=10 then anl07dt = input(dsstdtc, yymmdd10.);
+  if anl07dt >= trtsdt;
+  format anl07dt yymmdd10.;
+run;
+proc sort data=ds_oth; by usubjid anl07dt; run;
+data ds_oth1; set ds_oth; by usubjid anl07dt; if first.usubjid; keep usubjid anl07dt; run;
+
+/* Attach ANL05/06/07 subject-level dates, then set record-level flags when ADT > date >= TRTSDT */
+proc sql;
+  create table adfacit4 as
+  select a.*,
+         b.anl05dt,
+         c.anl06dt,
+         d.anl07dt
+    from adfacit3 as a
+    left join fa_ap1 as b on a.usubjid=b.usubjid
+    left join fa_rr1 as c on a.usubjid=c.usubjid
+    left join ds_oth1 as d on a.usubjid=d.usubjid
+  ;
+quit;
+
+data adfacit5;
+  set adfacit4;
+  length anl05fl anl06fl anl07fl $1 anl05dsc anl06dsc anl07dsc $100;
+
+  if not missing(anl05dt) and anl05dt >= trtsdt and adt > anl05dt then do;
+    anl05fl='Y';
+    anl05dsc='Record after initiation or intensification of anti-proteinuric therapies';
+  end;
+
+  if not missing(anl06dt) and anl06dt >= trtsdt and adt > anl06dt then do;
+    anl06fl='Y';
+    anl06dsc='Record after initiation of RRT';
+  end;
+
+  if not missing(anl07dt) and anl07dt >= trtsdt and adt > anl07dt then do;
+    anl07fl='Y';
+    anl07dsc='Record after treatment discontinuation for any other reason';
+  end;
+run;
+
+/* ------------------------------- */
+/* AEFLAG/AEDCDT  */
+/* ------------------------------- */
+data ds_ae_p1;
+  merge data_a.ds(in=a) analysis.adsl(keep=usubjid ap01sdt ap01edt);
+  by usubjid;
+  if a and dsscat='STUDY DISPOSITION' and index(upcase(dsdecod),'ADVERSE')>0;
+  if length(dsstdtc)=10 then aedcdt = input(dsstdtc, yymmdd10.);
+  /* Period-1 window only */
+  if ap01sdt <= aedcdt <= ap01edt;
+  format aedcdt yymmdd10.;
+run;
+proc sort data=ds_ae_p1 nodupkey; by usubjid; run;
+
+proc sql;
+  create table adfacit6 as
+  select a.*, e.aedcdt,
+         case when not missing(e.aedcdt) then 'Y' else '' end as aeflag length=1
+  from adfacit5 as a
+  left join ds_ae_p1 as e
+    on a.usubjid=e.usubjid
+  ;
+quit;
+
+
+data final;
+  set adfacit6;
+  if missing(aval) and missing(avalc) then delete;
+run;
+
+proc sort data=final;
+  by studyid usubjid subjid param avisitn adt;
+run;
+
+
+/* Submission padding and attribute assignment */
+%_std_varpadding_submission(
+  calledby   =,
+  in_lib     = work,
+  out_lib    = work,
+  include_ds = final,
+  exclude_ds =
+);
+
+%opSetAttr(domain=adfacit, inData=final, metaData=RPRTDSM.study_adam_metadata);
+
+
+
+
+
+proc freq data=final;
+  tables paramtyp*avisit / list missing;
+  where upcase(coalescec(paramtyp,''))='DERIVED';
+run;
+
+
+
+proc print data=final(obs=10);
+  where upcase(coalescec(paramtyp,''))='DERIVED' and ablfl='Y';
+  var usubjid paramcd adt visit visitnum avisit avisitn ablfl;
+run;
+
+
+
+proc sql;
+  select
+    sum(case when not missing(avisit)  then 1 else 0 end) as n_avisit_derived,
+    sum(case when not missing(avisitn) then 1 else 0 end) as n_avisitn_derived
+  from final
+  where upcase(coalescec(paramtyp,''))='DERIVED';
+quit;
+
+
+/************************************************************************
+*  PROJECT       : CLNP023B1
+*  STUDY         : CLNP023B12301
+*  RA            : csr_4
+*  FILENAME      : adfacit.sas
+*  DESCRIPTION   : Create dataset ADFACIT (csr_4 PDS / VLM / METHOD compliant)
+*  PLATFORM      : AIX 7.1 (AIX 64) (see SAS log file)
+*  SAS VERSION   : 9.4 (see SAS log file)
+*  INPUT         : SDTM QS (with SUPPQS), ADaM ADSL, SDTM DS/FACM
+*  OUTPUT        : analysis.adfacit
+*************************************************************************/
+
+proc datasets lib=work kill nolist; quit;
+
+/* GPS environment setup macro */
+data _null_;
+  if libref('analysis') then call execute('%nrstr(%autorun;)');
+run;
+
+/* 5-point verbal scale to numeric (fallback when QSSTRESN missing) */
+proc format;
+  invalue facit_val
+    "NOT AT ALL"   = 0
+    "A LITTLE BIT" = 1
+    "SOMEWHAT"     = 2
+    "QUITE A BIT"  = 3
+    "VERY MUCH"    = 4
+  ;
+quit;
+
+/* ------------------------------- */
+/* Read QS  SUPPQS and pre-derive  */
+/* ------------------------------- */
+%opMergeSupp(
+  inData     = derived.qs,
+  outData    = qs_raw,
+  inSuppData = derived.suppqs,
+  keepQnam   =
+);
+
+proc sort data=qs_raw nodupkey;
+  by usubjid subjid qscat qstest qsscat visit qsdtc qsorres;
+run;
+
+/* Keep only FACIT-Fatigue 13 items */
+data qs_items;
+  set qs_raw(rename=(qstest=param qstestcd=paramcd lg=qslg qseval=qseval));
+  where qscat = 'FACIT-FATIGUE 13-ITEM V4';
+
+  length avalc $100;
+  aval  = coalesce(qsstresn, input(upcase(qsorres), facit_val.));
+  avalc = strip(upcase(qsorres));
+
+  /* Date/time */
+  adt = input(scan(qsdtc,1,'T'), yymmdd10.);
+  atm = input(scan(qsdtc,2,'T'), time8.);
+  if length(qsdtc)=19 then adtm = input(qsdtc, e8601dt.);
+  format adt yymmdd10. atm time5.;
+run;
+
+/* Map PARAMN from Analysis Parameters (item-level) */
+proc sql;
+  create table qs_items_m as
+  select a.*
+       , b.paramcd as paramcd_
+       , b.paramn
+  from qs_items as a
+  left join
+       (select param, paramcd, paramn
+          from rprtdsm.analysis_parameters
+         where not missing(paramn)) as b
+    on a.param = b.param
+  ;
+quit;
+
+proc sort data=qs_items_m;
+  by usubjid subjid visit adt paramn;
+run;
+
+/* ------------------------------- */
+/* Join ADSL and derive ADY/APERIOD */
+/* ------------------------------- */
+data qs_items_j;
+  merge qs_items_m(in=a)
+        analysis.adsl(in=b drop=subjid);
+  by usubjid;
+  if a;
+
+  /* ADY */
+  if adt>=trtsdt>. then ady = adt - trtsdt + 1;
+  else if .<adt<trtsdt then ady = adt - trtsdt;
+
+  /* APERIOD per PDS */
+  if aperiod = . then do;
+    if .< ap01sdt <= adt <= coalesce(ap02sdt, ap01edt) then aperiod = 1;
+    else if .< ap02sdt <  adt <= ap02edt              then aperiod = 2;
+  end;
+
+  length aperiodc $30;
+  if aperiod=1 then aperiodc='Double-blind';
+  else if aperiod=2 then aperiodc='Open-label';
+run;
+
+/* ------------------------------- */
+/* Derive FACIT/FACITEXP/FACITIMP */
+/* ------------------------------- */
+proc sort data=qs_items_j;
+  by studyid usubjid subjid visit visitnum adt atm adtm qslg qseval;
+run;
+
+proc transpose data=qs_items_j(where=(not missing(paramcd_)))
+               out=qs_wide(drop=_name_);
+  by studyid usubjid subjid visit visitnum adt atm adtm qslg qseval;
+  var aval;
+  id paramcd_;
+run;
+
+/* Compute scores per METHOD */
+data facit_der;
+  length param $40 paramcd $8 paramtyp $7 avalc $100;
+  set qs_wide;
+
+  array ITEM  {13} FAC07001-FAC07013;
+
+  do i=1 to 13;
+    if ITEM[i] in (8,9) then ITEM[i]=.;
+  end;
+
+  if not missing(FAC07001) then HI7  = 4 - FAC07001;
+  if not missing(FAC07002) then HI12 = 4 - FAC07002;
+  if not missing(FAC07003) then AN1  = 4 - FAC07003;
+  if not missing(FAC07004) then AN2  = 4 - FAC07004;
+  if not missing(FAC07005) then AN3  = 4 - FAC07005;
+  if not missing(FAC07006) then AN4  = 4 - FAC07006;
+  if not missing(FAC07007) then AN5  =      FAC07007;
+  if not missing(FAC07008) then AN7  =      FAC07008;
+  if not missing(FAC07009) then AN8  = 4 - FAC07009;
+  if not missing(FAC07010) then AN12 = 4 - FAC07010;
+  if not missing(FAC07011) then AN14 = 4 - FAC07011;
+  if not missing(FAC07012) then AN15 = 4 - FAC07012;
+  if not missing(FAC07013) then AN16 = 4 - FAC07013;
+
+  FAT_N = n(of HI7 HI12 AN1-AN5 AN7 AN8 AN12 AN14-AN16);
+
+  if FAT_N/13 > .50 then do;
+    aval  = sum(of HI7 HI12 AN1-AN5 AN7 AN8 AN12 AN14-AN16) * 13 / FAT_N;
+    avalc = strip(put(aval,best.));
+    param='FACIT Fatigue score'; paramcd='FACIT'; paramtyp='DERIVED'; output;
+
+    aval  = sum(of HI7 HI12 AN1 AN2 AN5);
+    avalc = strip(put(aval,best.));
+    param='FACIT Experience score'; paramcd='FACITEXP'; paramtyp='DERIVED'; output;
+
+    aval  = sum(of AN3 AN4 AN7 AN8 AN12 AN14-AN16);
+    avalc = strip(put(aval,best.));
+    param='FACIT Impact score'; paramcd='FACITIMP'; paramtyp='DERIVED'; output;
+  end;
+
+  keep studyid usubjid subjid visit visitnum adt atm adtm qslg qseval param paramcd paramtyp aval avalc;
+run;
+
+/* Map PARAMN for derived rows */
+proc sql;
+  create table facit_der_m as
+  select a.*, b.paramn
+  from facit_der as a
+  left join
+       (select param, paramcd, paramn
+          from rprtdsm.analysis_parameters
+         where not missing(paramn)) as b
+    on a.param = b.param and a.paramcd = b.paramcd
+  ;
+quit;
+
+/* ------------------------------- */
+/* Union items + derived, join ADSL */
+/* ------------------------------- */
+data adfacit0;
+  set qs_items_j(in=i keep=studyid usubjid subjid siteid param paramcd paramn
+                        visit visitnum adt atm adtm qslg qseval aval avalc qsseq
+                        ady aperiod aperiodc
+                )
+      facit_der_m(in=d);
+run;
+
+proc sort data=adfacit0; by usubjid; run;
+
+data adfacit1;
+  merge adfacit0(in=a)
+        analysis.adsl(in=b drop=subjid rename=(siteid=siteid_adsl));
+  by usubjid;
+  if a;
+
+  if missing(siteid) then siteid = siteid_adsl;
+  drop siteid_adsl;
+
+  /* Recompute ADY just in case */
+  if adt>=trtsdt>. then ady = adt - trtsdt + 1;
+  else if .<adt<trtsdt then ady = adt - trtsdt;
+
+  /* Clean QS vars for derived */
+  if upcase(coalescec(paramtyp,'')) = 'DERIVED' then do;
+    qsstat = ''; qsreasnd = ''; qslg=''; qseval='';
+  end;
+
+  /* AVISIT/AVISITN per csr_4 PDS:
+     - Baseline later after ABLFL
+     - planned visits: carry VISIT to AVISIT and VISITNUM to AVISITN
+     - non-planned: null
+     - will not be populated at pre-baseline records */
+  length avisit $40;
+  if visit = 'End of Study' then avisit = 'Day 360/EOS';
+  else if visit in ('Day 1','Day 14','Day 30','Day 90','Day 180','Day 210','Day 270','Day 360') then avisit = visit;
+  else avisit = '';
+
+  if avisit ne '' and adt>=trtsdt>. then avisitn = visitnum;
+  else if avisit ne '' and adt<trtsdt then call missing(avisitn);
+  else call missing(avisitn);
+
+run;
+
+/* ------------------------------- */
+/* Baseline: last non-missing AVAL before/at TRTSDT, by USUBJID+PARAMCD */
+/* ------------------------------- */
+proc sort data=adfacit1; by usubjid paramcd adt atm adtm; run;
+
+data base_cand;
+  set adfacit1;
+  where adt <= trtsdt and not missing(aval);
+run;
+
+proc sort data=base_cand;
+  by usubjid paramcd adt atm;
+run;
+
+data base_last;
+  set base_cand;
+  by usubjid paramcd adt atm;
+  if last.paramcd;
+  keep usubjid paramcd adt atm aval;
+  rename adt = baseadt
+         atm = basetm
+         aval= base;
+run;
+
+proc sql;
+  create table adfacit2 as
+  select a.*, b.base, b.baseadt, b.basetm
+  from adfacit1 as a
+  left join base_last as b
+    on a.usubjid=b.usubjid and a.paramcd=b.paramcd
+  ;
+quit;
+
+/* ABLFL, BASE, CHG, CRIT1/2, TRTA/TRTP, ANL01/03 */
+data adfacit3;
+  length ablfl $1 crit1 crit2 $50
+         anl01fl anl03fl $1 anl01dsc anl03dsc $100;
+  set adfacit2;
+
+  /* Identify baseline record: last non-missing before/at TRTSDT */
+  if not missing(baseadt) and adt = baseadt and (missing(basetm) or atm = basetm) then do;
+    ablfl  = 'Y';
+    avisit = 'Baseline';
+    avisitn= 99;
+  end;
+
+  /* BASE populate for baseline and all post-baseline records */
+  /* (BASE already merged; keep as-is) */
+
+  /* CHG only for derived params and post-baseline */
+  if upcase(coalescec(paramtyp,''))='DERIVED' then do;
+    if ablfl ne 'Y' and nmiss(aval, base)=0 then chg = aval - base;
+  end;
+
+  /* Criteria flags */
+  if not missing(chg) then do;
+    if chg >= 5 then do; crit1fl='Y'; crit1='5-point improvement'; end;
+    else call missing(crit1, crit1fl);
+
+    if chg >= 3 then do; crit2fl='Y'; crit2='3-point improvement'; end;
+    else call missing(crit2, crit2fl);
+  end;
+  else call missing(crit1,crit1fl,crit2,crit2fl);
+
+  /* TRTA/TRTP per PDS */
+  if aperiod=1 or ablfl='Y' then do; trta=trt01a; trtan=trt01an; trtp=trt01p; trtpn=trt01pn; end;
+  else if aperiod=2         then do; trta=trt02a; trtan=trt02an; trtp=trt02p; trtpn=trt02pn; end;
+
+  /* ANL03FL: baseline and all post-baseline assessment done in randomized period */
+  if (ablfl='Y' or aperiod=1) and not missing(aval) then do;
+    anl03fl='Y';
+    anl03dsc='Record for treatment randomized period analysis';
+  end;
+
+run;
+
+/* ANL01FL: unique record for each visit for derived params (baseline + unique non-missing per AVISITN) */
+proc sort data=adfacit3 out=der_cand;
+  by usubjid paramcd avisitn adt atm;
+  where upcase(coalescec(paramtyp,''))='DERIVED' and not missing(avisitn) and not missing(aval);
+run;
+
+data der_last;
+  set der_cand;
+  by usubjid paramcd avisitn adt atm;
+  if last.avisitn;
+  keep usubjid paramcd avisitn adt atm;
+run;
+
+proc sql;
+  create table adfacit3a as
+  select a.*,
+         case when b.usubjid is not null then 'Y' else '' end as anl01fl length=1,
+         case when b.usubjid is not null then 'Unique record for each visit' else '' end as anl01dsc length=100
+  from adfacit3 as a
+  left join der_last as b
+    on a.usubjid=b.usubjid and a.paramcd=b.paramcd and a.avisitn=b.avisitn and a.adt=b.adt and a.atm=b.atm
+  ;
+quit;
+
+/* ------------------------------- */
+/* ANL05DT/ANL06DT from FACM; ANL07DT from DS  (subject level earliest on/after TRTSDT) */
+/* ------------------------------- */
+
+/* ANL05DT: anti-proteinuric therapies */
+data fa_ap;
+  merge derived.facm(in=a) analysis.adsl(keep=usubjid subjid trtsdt);
+  by usubjid subjid;
+  if a and upcase(facat)='ANTI-PROTEINURIC THERAPIES RELATED INTERCURRENT EVENTS' and faorres='Y';
+  anl05dt = input(fadtc, ??yymmdd10.);
+  if anl05dt>=trtsdt>.;
+  format anl05dt date9.;
+  keep usubjid subjid anl05dt;
+run;
+proc sort data=fa_ap; by usubjid subjid anl05dt; run;
+data fa_ap1; set fa_ap; by usubjid subjid anl05dt; if first.subjid; run;
+
+/* ANL06DT: RRT */
+data fa_rr;
+  merge derived.facm(in=a) analysis.adsl(keep=usubjid subjid trtsdt);
+  by usubjid subjid;
+  if a and upcase(facat)='RENAL REPLACEMENT THERAPY RELATED INTERCURRENT EVENTS' and faorres='Y';
+  anl06dt = input(fadtc, ??yymmdd10.);
+  if anl06dt>=trtsdt>.;
+  format anl06dt date9.;
+  keep usubjid subjid anl06dt;
+run;
+proc sort data=fa_rr; by usubjid subjid anl06dt; run;
+data fa_rr1; set fa_rr; by usubjid subjid anl06dt; if first.subjid; run;
+
+/* ANL07DT: treatment discontinuation other reason */
+data ds_oth;
+  merge derived.ds(in=a) analysis.adsl(keep=usubjid subjid trtsdt);
+  by usubjid subjid;
+  if a and dsscat in ("BLINDED TREATMENT DISPOSITION","OPEN LABEL TREATMENT DISPOSITION")
+       and prxmatch('/COMPLETED|ADVERSE/i', dsdecod)=0;
+  anl07dt = input(dsstdtc, ??yymmdd10.);
+  if anl07dt>=trtsdt>.;
+  format anl07dt date9.;
+  keep usubjid subjid anl07dt;
+run;
+proc sort data=ds_oth; by usubjid subjid anl07dt; run;
+data ds_oth1; set ds_oth; by usubjid subjid anl07dt; if first.subjid; run;
+
+/* Attach ANL05/06/07 and set record-level flags */
+proc sql;
+  create table adfacit4 as
+  select a.*,
+         b.anl05dt,
+         c.anl06dt,
+         d.anl07dt
+  from adfacit3a as a
+  left join fa_ap1  as b on a.usubjid=b.usubjid and a.subjid=b.subjid
+  left join fa_rr1  as c on a.usubjid=c.usubjid and a.subjid=c.subjid
+  left join ds_oth1 as d on a.usubjid=d.usubjid and a.subjid=d.subjid
+  ;
+quit;
+
+data adfacit5;
+  length anl05fl anl06fl anl07fl $1 anl05dsc anl06dsc anl07dsc $100;
+  set adfacit4;
+
+  if not missing(anl05dt) and anl05dt>=trtsdt and not missing(adt) and adt>anl05dt then do;
+    anl05fl='Y';
+    anl05dsc='Record after initiation or intensification of anti-proteinuric therapies';
+  end;
+
+  if not missing(anl06dt) and anl06dt>=trtsdt and not missing(adt) and adt>anl06dt then do;
+    anl06fl='Y';
+    anl06dsc='Record after initiation of RRT';
+  end;
+
+  if not missing(anl07dt) and anl07dt>=trtsdt and not missing(adt) and adt>anl07dt then do;
+    anl07fl='Y';
+    anl07dsc='Record after treatment discontinuation for any other reason';
+  end;
+run;
+
+/* ------------------------------- */
+/* AEFLAG/AEDCDT: Study DC due to AE or renal death in period 1 */
+/* ------------------------------- */
+data ds_ae_p1;
+  merge derived.ds(in=a) analysis.adsl(keep=usubjid subjid ap01sdt ap01edt);
+  by usubjid subjid;
+  if a and dsscat="STUDY DISPOSITION" and dscat="DISPOSITION EVENT" and find(upcase(dsdecod),"ADVERSE");
+  aedcdt = input(dsstdtc, ??yymmdd10.);
+  if ap01sdt<=aedcdt<=ap01edt;
+  format aedcdt date9.;
+  keep usubjid subjid aedcdt;
+run;
+
+proc sort data=ds_ae_p1 nodupkey; by usubjid subjid; run;
+
+proc sql;
+  create table adfacit6 as
+  select a.*,
+         e.aedcdt,
+         case when not missing(e.aedcdt) then 'Y' else '' end as aeflag length=1
+  from adfacit5 as a
+  left join ds_ae_p1 as e
+    on a.usubjid=e.usubjid and a.subjid=e.subjid
+  ;
+quit;
+
+/* ------------------------------- */
+/* New csr_4 vars: EST01STP/ICE01F/IMPREA01, EST02STP/ICE02F/IMPREA02 */
+/* Only for PARAMCD='FACIT' per PDS text you provided */
+/* ------------------------------- */
+data final;
+  length est01stp est02stp $200 ice01f ice02f $1 imprea01 imprea02 $200;
+  set adfacit6;
+
+  if paramcd='FACIT' then do;
+    /* Default */
+    ice01f='N'; ice02f='N';
+    call missing(est01stp, est02stp, imprea01, imprea02);
+
+    /* Estimand 01:
+       - Anti-proteinuric therapies or RRT -> Hypothetical strategy
+       - Treatment discontinuation other reason -> Treatment policy
+       ICE01F=Y if record after any relevant I/C
+    */
+    if not missing(adt) then do;
+      if (not missing(anl05dt) and adt>anl05dt) or (not missing(anl06dt) and adt>anl06dt) then do;
+        est01stp='Hypothetical strategy'; ice01f='Y'; imprea01='Post ICE';
+      end;
+      else if (not missing(anl07dt) and adt>anl07dt) then do;
+        est01stp='Treatment policy'; ice01f='Y'; imprea01='Post ICE';
+      end;
+      else if missing(aval) then imprea01='Missing data';
+    end;
+    else do;
+      /* If ADT missing, we can only tag Missing data (no visit date to evaluate ICE) */
+      if missing(aval) then imprea01='Missing data';
+    end;
+
+    /* Estimand 02:
+       - RRT -> Hypothetical strategy
+       - Anti-proteinuric therapies or Treatment discontinuation other reason -> Treatment policy
+       ICE02F=Y if record after any relevant I/C
+    */
+    if not missing(adt) then do;
+      if (not missing(anl06dt) and adt>anl06dt) then do;
+        est02stp='Hypothetical strategy'; ice02f='Y'; imprea02='Post ICE';
+      end;
+      else if ( (not missing(anl05dt) and adt>anl05dt) or (not missing(anl07dt) and adt>anl07dt) ) then do;
+        est02stp='Treatment policy'; ice02f='Y'; imprea02='Post ICE';
+      end;
+      else if missing(aval) then imprea02='Missing data';
+    end;
+    else do;
+      if missing(aval) then imprea02='Missing data';
+    end;
+
+  end;
+
+run;
+
+proc sort data=final;
+  by studyid usubjid subjid param avisitn adt;
+run;
+
+/* Submission padding and attribute assignment */
+%_std_varpadding_submission(
+  calledby   =,
+  in_lib     = work,
+  out_lib    = work,
+  include_ds = final,
+  exclude_ds =
+);
+
+%opSetAttr(domain=adfacit, inData=final, metaData=RPRTDSM.study_adam_metadata);
+
+/* Quick checks */
+proc freq data=final;
+  tables paramcd*ice01f*ice02f / list missing;
+  where paramcd='FACIT';
+run;
+
+proc print data=final(obs=20);
+  where paramcd='FACIT' and (ice01f='Y' or ice02f='Y' or missing(aval));
+  var usubjid paramcd avisit avisitn adt anl05dt anl06dt anl07dt est01stp ice01f imprea01 est02stp ice02f imprea02 aval;
+run;
+
+
+/************************************************************************
+*  PROJECT       : CLNP023B1
+*  STUDY         : CLNP023B12301
+*  RA            : csr_4
+*  FILENAME      : adegfr.sas
+*
+*  DATE CREATED  : 07Jul2023
+*  AUTHOR        : Dylan Hu
+*
+*  DESCRIPTION   : Create dataset ADEGFR
+*  PLATFORM      : AIX 7.2 (AIX 64)
+*  SAS VERSION   : 9.4
+*
+*  INPUT         : SDTM LB/SUPPLB, VS/SUPPVS, ADSL, ADLB
+*  OUTPUT        : analysis.adegfr
+*
+*  MODIFICATIONS :
+*    2025-04-02  : Add EST01STP, ICE01F, IMPREA01, EST02STP, ICE02F, IMPREA02,
+*                 EST03STP, ICE03F, IMPREA03; move planned visit dummy to base dataset
+************************************************************************/
+
+/* Clean work library */
+proc datasets lib=work kill;
+run;
+
+/* GPS environment setup macro */
+data _null_;
+  if libref('analysis') then call execute('%nrstr(%autorun;)');
+run;
+
+/* Visit remapping formats (existing) */
+proc format;
+  value $cbvisitn
+    'Day 180'=99
+    'Day 210'=203
+    'Day 270'=204
+    'Day 360'=205
+    other = .
+  ;
+quit;
+
+proc format;
+  value cbvisit
+    99='LNP023 Baseline'
+    201='LNP023 Day 1'
+    202='LNP023 Day 14'
+    203='LNP023 Day 30'
+    204='LNP023 Day 90'
+    205='LNP023 Day 180'
+    206='LNP023 Day 210'
+    207='LNP023 Day 270'
+    299='LNP023 Day 360'
+    other=' '
+  ;
+quit;
+
+/*---------------------------------------------------------------------*
+ * Pull EGFRDER from ADLB excluding historical CRF pages
+ *---------------------------------------------------------------------*/
+data adegfr1;
+  set analysis.adlb;
+  where paramcd="EGFRDER"
+    and fasfl="Y"
+    and visit not in ("Lab results at the time of diagnosis for C3G Medical History",
+                      "Renal Complement Pathway Hx");
+run;
+
+data adegfr2;
+  merge adegfr1(in=a) analysis.adsl(drop=subjid);
+  by usubjid;
+  if a;
+  obs=_n_;
+run;
+
+/*---------------------------------------------------------------------*
+ * Historical eGFR from SDTM LB (Diagnosis history pages)
+ *---------------------------------------------------------------------*/
+%opMergeSupp(indata=derived.lb, outdata=dlb, insuppdata=derived.supplb);
+
+data dlb1;
+  set dlb;
+  where not missing(usubjid)
+    and lbparm in ("EGFR","CREAT")
+    and upcase(lbstresc) not in ("","NOT DONE","ND","NA","NE","UNK","UNKNOWN")
+    and lbstat=""
+    and visit in ("Renal Complement Pathway Hx",
+                  "Lab results at the time of diagnosis for C3G Medical History");
+run;
+
+/* Attach subject-level dates and treatment/period variables */
+data egfrhis;
+  merge dlb1(in=a) analysis.adsl(drop=subjid);
+  by usubjid;
+  if a;
+
+  length dtype $10 aperiodc $100;
+  format adt date9. atm time5. adtm datetime19.;
+
+  if missing(lbdtc) then put "WARNING: " usubjid= visit= lbparm= "has missing LBDTC";
+
+  if prxmatch("/\d{4}\-\d{2}\-\d{2}/", scan(lbdtc,1,"T")) then adt = input(scan(lbdtc,1,"T"), ?? yymmdd10.);
+  else if prxmatch("/\d{4}\-\d{2}/", scan(lbdtc,1,"T")) then adt = input(cats(scan(lbdtc,1,"T"),"-15"), ?? yymmdd10.);
+  else if prxmatch("/\d{4}/", scan(lbdtc,1,"T")) then adt = input(cats(scan(lbdtc,1,"T"),"-07-01"), ?? yymmdd10.);
+
+  atm  = input(scan(lbdtc,2,"T"), ?? time5.);
+  adtm = input(lbdtc, ?? e8601dt16.);
+
+  if . < adt < trtsdt then ady = adt - trtsdt;
+  else if trtsdt > . then ady = adt - trtsdt + 1;
+
+  /* Keep SDTM ranges */
+  anrlo = cats(lbstnrlo); anrlon = lbstnrlo;
+  anrhi = cats(lbstnrhi); anrhin = lbstnrhi;
+  anrind = lbnrind;
+  parcat1 = lbcat; parcat2 = lbscat;
+
+  /* Period assignment */
+  if . < ap01sdt <= adt <= coalesce(ap02sdt, ap01edt) then do;
+    aperiod = 1; aperiodc = "Double-blind";
+    trta = trt01a; trtp = trt01p; trtan = trt01an; trtpn = trt01pn;
+  end;
+  else if . < ap02sdt <= adt <= ap02edt then do;
+    aperiod = 2; aperiodc = "Open-label";
+    trta = trt02a; trtp = trt02p; trtan = trt02an; trtpn = trt02pn;
+  end;
+run;
+
+/* Historic creatinine (Scr) */
+data creat_hist;
+  set egfrhis;
+  where upcase(lbparm)="CREAT" and not missing(lbstresn);
+
+  length scr_mgdl 8;
+  if upcase(strip(lbstresu)) in ("UMOL/L","UMO/L","UMOL/L ") then scr_mgdl = lbstresn / 88.4;
+  else scr_mgdl = lbstresn;
+run;
+
+/* Historic measured eGFR */
+data egfr_meas_hist;
+  set egfrhis;
+  where upcase(lbparm)="EGFR" and not missing(lbstresn);
+
+  length aval_egfr_raw 8;
+  aval_egfr_raw = lbstresn;
+run;
+
+/*---------------------------------------------------------------------*
+ * Height extraction and matching (nearest within +/-90 days)
+ *---------------------------------------------------------------------*/
+%opMergeSupp(indata=derived.vs, outdata=dvs, insuppdata=derived.suppvs);
+
+proc sql;
+  create table vs_ht as
+  select distinct
+         usubjid,
+         subjid,
+         inputn(scan(vsdtc,1,'T'),'yymmdd10.') as vsdt format=date9.,
+         coalesce(
+           case
+             when upcase(vsorresu) in ('CM','CENTIMETER','CENTIMETRE') then input(vsorres, best.)
+             when upcase(vsorresu) in ('IN','INCH','INCHES') then input(vsorres, best.) * 2.54
+             else .
+           end,
+           vsstresn
+         ) as height_cm
+  from dvs
+  where upcase(vstestcd) in ('HEIGHT','HT')
+    and not missing(vsdtc)
+    and (not missing(vsorres) or not missing(vsstresn));
+quit;
+
+data creat_dt;
+  set creat_hist;
+  adt_dt = coalesce(adt, input(scan(lbdtc,1,'T'), ?? yymmdd10.));
+  format adt_dt date9.;
+run;
+
+/* Exclude undated creatinine records from height matching */
+data creat_dt_ok creat_dt_undated;
+  set creat_dt;
+  if missing(adt_dt) then do;
+    output creat_dt_undated;
+    put "WARNING: Drop undated historic CREAT record from height matching: " usubjid= subjid= visit= lbdtc=;
+  end;
+  else output creat_dt_ok;
+run;
+
+proc sort data=creat_dt_ok; by usubjid subjid adt_dt; run;
+proc sort data=vs_ht;       by usubjid subjid vsdt;   run;
+
+proc sql;
+  create table ht_pairs as
+  select
+         c.usubjid, c.subjid, c.adt_dt,
+         v.vsdt, v.height_cm,
+         abs(v.vsdt - c.adt_dt) as delta,
+         (v.vsdt <= c.adt_dt)   as before
+  from creat_dt_ok as c
+  left join vs_ht as v
+    on  c.usubjid = v.usubjid
+    and c.subjid  = v.subjid
+    and abs(v.vsdt - c.adt_dt) <= 90
+  ;
+quit;
+
+proc sort data=ht_pairs;
+  where not missing(vsdt) and not missing(height_cm);
+  by usubjid subjid adt_dt delta descending before vsdt;
+run;
+
+data ht_pick;
+  set ht_pairs;
+  by usubjid subjid adt_dt;
+  if first.adt_dt;
+  keep usubjid subjid adt_dt height_cm;
+run;
+
+proc sql;
+  create table scr_ht as
+  select a.*,
+         p.height_cm
+  from creat_dt_ok as a
+  left join ht_pick as p
+    on a.usubjid = p.usubjid
+   and a.subjid  = p.subjid
+   and a.adt_dt  = p.adt_dt
+  ;
+quit;
+
+/* Schwartz derived EGFR from Scr + Height */
+data lb_egfr_sch;
+  set scr_ht;
+  length paramcd $8 param $200;
+  if not missing(scr_mgdl) and scr_mgdl>0 and not missing(height_cm) then do;
+    aval    = 0.413 * height_cm / scr_mgdl;
+    paramcd = "EGFRDER";
+    param   = "Glomerular filtration rate (mL/min/1.73m2), Serum, Derived";
+  end;
+  else call missing(aval, paramcd, param);
+run;
+
+/* Measured eGFR per day (avoid duplicates) */
+proc sql;
+  create table egfr_meas_by_adt as
+  select usubjid, subjid, adt,
+         max(aval_egfr_raw) as aval_egfr_raw
+  from egfr_meas_hist
+  group by usubjid, subjid, adt;
+quit;
+
+/* Combine derived (Scr) first, fallback to measured */
+proc sql;
+  create table lb_egfr_final as
+  select a.*,
+         coalesce(a.aval, b.aval_egfr_raw) as aval_final
+  from lb_egfr_sch as a
+  left join egfr_meas_by_adt as b
+    on a.usubjid=b.usubjid
+   and a.subjid =b.subjid
+   and a.adt    =b.adt
+  ;
+quit;
+
+/* Build ADLB-like historical EGFRDER records */
+data adlb_egfrder_hist;
+  set lb_egfr_final;
+  where not missing(aval_final);
+  aval    = aval_final;
+  lbparm  = "EGFR";
+  paramcd = "EGFRDER";
+  param   = "Glomerular filtration rate (mL/min/1.73m2), Serum, Derived";
+  drop aval_final aval_egfr_raw;
+run;
+
+/* Bring EGFRCYC from ADLB */
+data adlb_egfrcyc;
+  set analysis.adlb;
+  where paramcd="EGFRCYC";
+run;
+
+/* Combine base + historical + cystatin C */
+data adegfr3;
+  length crit1 crit2 race param $200 aperiodc $100 visit $60 subjid $50 dtype $10;
+  set adegfr2
+      adlb_egfrder_hist
+      adlb_egfrcyc;
+run;
+
+/*---------------------------------------------------------------------*
+ * Planned visit dummy moved to base dataset (for MI usage)
+ *---------------------------------------------------------------------*/
+
+/* Baseline templates per subject/parameter */
+proc sort data=adegfr3 out=_base_egfr nodupkey;
+  by usubjid paramcd;
+  where paramcd in ("EGFRDER","EGFRCYC") and avisit="Baseline";
+run;
+
+/* Dummy planned visits */
+data dummy_egfr;
+  set _base_egfr(keep=usubjid param paramcd base);
+  length avisit $20;
+  do avisit="Baseline","Day 1","Day 14","Day 30","Day 90","Day 180","Day 210","Day 270","Day 360";
+    output;
+  end;
+run;
+
+/* Visit order for dummy */
+proc format;
+  invalue avisit_egfr
+    "Baseline"=99
+    "Day 1"   =201
+    "Day 14"  =202
+    "Day 30"  =203
+    "Day 90"  =204
+    "Day 180" =205
+    "Day 210" =206
+    "Day 270" =207
+    "Day 360" =299
+  ;
+run;
+
+data dummy_egfr;
+  set dummy_egfr;
+  avisitn = input(avisit, avisit_egfr.);
+run;
+
+/* Merge SV date, TV day, and TRTSDT to derive PADT */
+proc sql;
+  create table dummy_visit as
+  select a.*,
+         input(b.SVSTDTC,yymmdd10.) as SVSTDT format=date9.,
+         c.VISITDY,
+         d.*
+  from dummy_egfr as a
+  left join derived.sv as b
+    on a.USUBJID=b.USUBJID and a.AVISIT=b.VISIT
+  left join derived.tv as c
+    on a.AVISIT=c.VISIT
+  left join analysis.adsl as d
+    on a.USUBJID=d.USUBJID
+  ;
+quit;
+
+data dummy_final;
+  format plandt padt date9.;
+  set dummy_visit;
+  if nmiss(trtsdt, visitdy)=0 then plandt = trtsdt + visitdy - 1;
+  padt = coalesce(svstdt, plandt);
+run;
+
+proc sort data=dummy_final; by usubjid paramcd avisitn; run;
+proc sort data=adegfr3;     by usubjid paramcd avisitn; run;
+
+/* Merge dummy with observed data; observed overrides dummy on same keys */
+data adegfr3;
+  merge dummy_final(in=b) adegfr3;
+  by usubjid paramcd avisitn;
+run;
+
+/* Ensure PADT exists for observed rows */
+data adegfr3;
+  set adegfr3;
+  format padt date9.;
+  if missing(padt) then padt = adt;
+run;
+
+/*---------------------------------------------------------------------*
+ * Intercurrent events (subject-level dates)
+ *---------------------------------------------------------------------*/
+
+/* Anti-proteinuric therapies */
+data ant_cm;
+  merge derived.facm(where=(facat="ANTI-PROTEINURIC THERAPIES RELATED INTERCURRENT EVENTS" and faorres="Y"))
+        analysis.adsl(keep=usubjid trtsdt fasfl);
+  by usubjid;
+  astdt = input(fadtc, ?? yymmdd10.);
+  if astdt >= trtsdt > .;
+  keep usubjid astdt;
+run;
+
+proc sql;
+  create table cmdt as
+  select distinct usubjid, astdt
+  from ant_cm
+  group by usubjid
+  having astdt=min(astdt);
+
+  create table adegfr4 as
+  select a.*, b.astdt as astdt_cm
+  from adegfr3 as a
+  left join cmdt as b
+    on a.usubjid=b.usubjid
+  ;
+quit;
+
+/* RRT initiation */
+data rrt;
+  merge derived.facm(where=(facat="RENAL REPLACEMENT THERAPY RELATED INTERCURRENT EVENTS" and faorres="Y"))
+        analysis.adsl(keep=usubjid trtsdt fasfl);
+  by usubjid;
+  astdt = input(fadtc, ?? yymmdd10.);
+  if astdt >= trtsdt > .;
+  keep usubjid astdt;
+run;
+
+proc sql;
+  create table prdt as
+  select distinct usubjid, astdt
+  from rrt
+  group by usubjid
+  having astdt=min(astdt);
+
+  create table adegfr5 as
+  select a.*, b.astdt as astdt_pr
+  from adegfr4 as a
+  left join prdt as b
+    on a.usubjid=b.usubjid
+  ;
+quit;
+
+/* Treatment discontinuation for other reason (exclude COMPLETED/ADVERSE) */
+data eot;
+  merge derived.ds(where=(dsscat="BLINDED TREATMENT DISPOSITION"
+                          and prxmatch("/COMPLETED|ADVERSE/", dsdecod)=0))
+        analysis.adsl(keep=usubjid trtsdt fasfl);
+  by usubjid;
+  astdt = input(dsstdtc, ?? yymmdd10.);
+  if astdt >= trtsdt > .;
+  keep usubjid astdt;
+run;
+
+proc sql;
+  create table eotdt as
+  select distinct usubjid, astdt
+  from eot
+  group by usubjid
+  having astdt=min(astdt);
+
+  create table adegfr6 as
+  select a.*, b.astdt as astdt_eot
+  from adegfr5 as a
+  left join eotdt as b
+    on a.usubjid=b.usubjid
+  ;
+quit;
+
+/* Study discontinuation due to AE or renal death (Period 1) */
+data dsae;
+  merge derived.ds(where=(dsscat="STUDY DISPOSITION" and find(dsdecod,"ADVERSE")))
+        analysis.adsl(keep=usubjid ap01sdt ap01edt);
+  by usubjid;
+  astdt = input(dsstdtc, ?? yymmdd10.);
+  if ap01sdt <= astdt <= ap01edt;
+  keep usubjid astdt dsdecod;
+run;
+
+proc sql;
+  create table adegfr7 as
+  select a.*, b.astdt as astdt_ds
+  from adegfr6 as a
+  left join dsae as b
+    on a.usubjid=b.usubjid
+  ;
+quit;
+
+/*---------------------------------------------------------------------*
+ * Final derivations: ICE flags/dates + estimand variables + criteria
+ *---------------------------------------------------------------------*/
+data adegfr_final;
+  length crit1 crit2 $200 aperiodc $100 visit $60;
+  length est01stp est02stp est03stp $50
+         imprea01 imprea02 imprea03 $200
+         ice01f ice02f ice03f $1;
+  set adegfr7;
+
+  /* Intercurrent event dates */
+  anl05dt = astdt_cm;
+  anl06dt = astdt_pr;
+  anl07dt = astdt_eot;
+  if not missing(astdt_ds) then aedcdt = astdt_ds;
+
+  /* Analysis flags and descriptions (based on ADT only) */
+  if adt > astdt_cm > . then do;
+    anl05fl="Y";
+    anl05dsc="Record after initiation or intensification of anti-proteinuric therapies";
+  end;
+
+  if adt > astdt_pr > . then do;
+    anl06fl="Y";
+    anl06dsc="Record after initiation of RRT";
+  end;
+
+  if adt > astdt_eot > . then do;
+    anl07fl="Y";
+    anl07dsc="Record after treatment discontinuation for any other reason";
+  end;
+
+  if not missing(astdt_ds) then aeflag="Y";
+
+  /* Estimand handling / ICE flags / Imputation reason (PDS 20250402) */
+  refdt = coalesce(adt, padt);
+
+  ice01f="N"; ice02f="N"; ice03f="N";
+  call missing(est01stp, est02stp, est03stp, imprea01, imprea02, imprea03);
+
+  if paramcd="EGFRDER" then do;
+
+    if refdt > astdt_cm > . then do;
+      est01stp='Hypothetical strategy'; ice01f='Y'; imprea01='Post ICE';
+      est02stp='Treatment policy'     ; ice02f='Y'; imprea02='Post ICE';
+    end;
+    else if refdt > astdt_pr > . then do;
+      est01stp='Hypothetical strategy'; ice01f='Y'; imprea01='Post ICE';
+      est02stp='Hypothetical strategy'; ice02f='Y'; imprea02='Post ICE';
+    end;
+    else if refdt > astdt_eot > . then do;
+      est01stp='Treatment policy'; ice01f='Y'; imprea01='Post ICE';
+      est02stp='Treatment policy'; ice02f='Y'; imprea02='Post ICE';
+    end;
+
+    if missing(aval) then do;
+      if imprea01 ne 'Post ICE' then imprea01='Missing data';
+      if imprea02 ne 'Post ICE' then imprea02='Missing data';
+    end;
+
+  end;
+
+  if paramcd="EGFRCYC" then do;
+
+    if refdt > astdt_cm > . then do;
+      est03stp='Hypothetical strategy'; ice03f='Y'; imprea03='Post ICE';
+    end;
+    else if refdt > astdt_pr > . then do;
+      est03stp='Hypothetical strategy'; ice03f='Y'; imprea03='Post ICE';
+    end;
+    else if refdt > astdt_eot > . then do;
+      est03stp='Treatment policy'; ice03f='Y'; imprea03='Post ICE';
+    end;
+
+    if missing(aval) and imprea03 ne 'Post ICE' then imprea03='Missing data';
+
+  end;
+
+  drop refdt;
+
+  /* Percent change */
+  if nmiss(chg, base)=0 then pchg = chg/base*100;
+
+  /* Criteria flags (existing) */
+  if pchg >= -15 and avisitn > 99 then do;
+    crit1   = "<= 15% reduction to baseline in eGFR";
+    crit1fl = "Y";
+  end;
+  else call missing(crit1, crit1fl);
+
+  if pchg >= -10 and avisitn > 99 then do;
+    crit2   = "<= 10% reduction to baseline in eGFR";
+    crit2fl = "Y";
+  end;
+  else call missing(crit2, crit2fl);
+run;
+
+proc sort data=adegfr_final;
+  by studyid usubjid subjid adt;
+run;
+
+/* Standard var padding and set attributes */
+%_std_varpadding_submission(
+  calledby=
+ ,in_lib=work
+ ,out_lib=work
+ ,include_ds=adegfr_final
+ ,exclude_ds=
+);
+
+%opSetAttr(domain=adegfr, inData=adegfr_final, metaData=RPRTDSM.study_adam_metadata);
+
+
+/************************************************************************
+*  PROJECT       : CLNP023B1
+*  STUDY         : CLNP023B12301
+*  RA            : csr_1
+*  FILENAME      : aduarmi.sas
+
+*  DATE CREATED  : 07Jul2023
+*  AUTHOR        : Dylan Hu
+
+*  DESCRIPTION   : Create dataset aduarmi
+*  PLATFORM      : AIX 7.2 (AIX 64) (see SAS log file)
+*  SAS VERSION   : 9.4 (see SAS log file)
+
+*  MACROS CALLED : None
+*  INPUT         : SDTM datasets upcr, SUPPupcr, ADSL
+*  OUTPUT        : analysis.aduarmi
+
+*  MODIFICATIONS : [x.xx] dd-mmm-yy, 5-2-1 id, brief description  
+	* 09Apr2024, huangy2e: update for ANL01FL logic
+*************************************************************************/
+/* GPS environment setup macro */;
+/*Clean work library*/
+proc datasets lib=work kill;
+run;
+
+data _null_;
+    if libref('analysis') then call execute('%nrstr(%autorun;)');
+run;
+
+*----------------------------------------------------------------------;
+				*read in adsl, upcr amd suppupcr dataset;
+*----------------------------------------------------------------------;
+
+proc format;
+    invalue avisitn 
+    "Baseline"  = 99
+    "Day 14"    = 202
+    "Day 30"   = 203
+    "Day 90"    = 204
+    "Day 180"   = 205
+    ;
+  run;
+
+%macro uacrimpute(TPT=24H , visitlst=%str("Baseline","Day 90","Day 180") );
+  /****1.1 Import dataset****/
+  data dat_uacr_&tpt.;
+        set analysis.adlb;
+        where (paramcd in ("UACR&tpt.", "UPCR&tpt.") and avisit in (&visitlst)) and ANL01FL='Y';
+        if dtype in ('AVERAGE','GEOMEAN') then prior=1;
+        else prior=2;
+        keep  USUBJID lbtpt avisit avisitn paramcd param aval lbstresc ablfl prior ANL01FL ADT; 
+  run;
+  
+  /*Re-derive ANL01FL, regardless of missing baseline*/
+/*  proc sort data=dat_uacrpre_&tpt.;*/
+/*    by USUBJID PARAMCD AVISITN prior descending ABLFL descending ADT;*/
+/*  run;*/
+/*  */
+/*  data dat_uacr_&tpt.;*/
+/*    set dat_uacrpre_&tpt.;*/
+/*    by USUBJID PARAMCD AVISITN prior descending ABLFL descending ADT;*/
+/*    if first.AVISITN and (ABLFL="Y" or prxmatch("/Day/i",AVISIT)) */
+/*      and ^missing(AVAL) then do;*/
+/*      ANL01FL="Y";*/
+/*    end;*/
+/*    else do;*/
+/*      ANL01FL="";*/
+/*    end;*/
+/*    if ANL01FL="Y";*/
+/*  run;*/
+  
+  /*Use transpose to list all missing data*/
+  proc sort data=dat_uacr_&tpt.;
+  by USUBJID avisit;
+  run;
+  
+  proc transpose data = dat_uacr_&tpt. out=dat_aval_wide_&tpt. prefix=aval;
+    by USUBJID avisit;
+    id paramcd;
+    var aval;
+  run;
+  
+  /*identify ALB values with >4400*/
+  data dat_alb_&tpt.;
+        set analysis.adlb;
+        where paramcd in ("UMALB&tpt.") and (avisit in ("Day 1", &visitlst.) or VISIT="Run-In day (-15)") and lbstresc = ">4400";
+        if AVISIT="Day 1" or visit= "Run-In day (-15)"  then avisit="Baseline";
+        keep  USUBJID avisit paramcd param lbstresc; 
+  run;
+  
+  proc sort data=dat_alb_&tpt. nodupkey;
+  by USUBJID avisit;
+  run; 
+  
+  /*merge to flag corresponding ALB > 4400*/
+  proc sql; 
+  create table dat_wide_&tpt. as
+  select x.*, y.LBSTRESC from dat_aval_wide_&tpt. as x left join dat_alb_&tpt. as y
+  on x.avisit = y.avisit and x.USUBJID=y.USUBJID; 
+  quit;
+  
+  /*adding flags for missing values that needs imputation: those with corresponding ALB>4400*/
+  data dat_imp_&tpt.;
+  set dat_wide_&tpt.;
+  resUMALB&tpt. = LBSTRESC;
+  if resUMALB&tpt. = ">4400" and avalUACR&tpt. = . then flag = "Y"; 
+  keep USUBJID avisit flag avalUACR&tpt. avalUPCR&tpt. resUMALB&tpt.;
+  run;
+  
+  /*merge dataset to include covariate*/
+  data dat_egfr_&tpt.;
+        set analysis.adegfr;
+        where ANL01FL="Y" and AVISIT in ("Baseline") and paramcd="EGFRDER";
+        keep  USUBJID trt01p trt01pn base chg aval age; 
+  run;
+  
+  data dat_str_&tpt.;
+    set analysis.adbs;
+    where fasfl="Y";
+    keep USUBJID systrcrf;
+  run;
+  
+  proc sql; 
+  create table dat_imp2_&tpt. as
+  select x.*, y.aval, z.systrcrf from dat_imp_&tpt. as x 
+  left join dat_egfr_&tpt. as y
+  on x.USUBJID = y.USUBJID
+  left join dat_str_&tpt. as z
+  on x.USUBJID = z.USUBJID;
+  quit;
+  
+  %let selected_variables = USUBJID avisit avalUACR&tpt. avalUPCR&tpt. flag avalegfrbase SYSTRCRF;
+  
+  data mydata_&tpt.;
+    set dat_imp2_&tpt.;
+    avalegfrbase=aval; 
+  run;
+  
+  data dat_imp3_&tpt.;
+    set mydata_&tpt. (keep=&selected_variables.);
+  run;
+  
+  
+  /**Mark the imputation methods according to SAP**/
+  data uacr_mi_&tpt.;
+    set dat_imp3_&tpt.;
+    if systrcrf="" then systrcrf="N";
+    if avalUACR&tpt.=. then do imp_method="ALMCF"; end;
+    if flag = "Y" then do imp_method="MAR"; end;
+    avisitn=input(avisit,avisitn.);
+  run;
+
+  proc sort data=uacr_mi_&tpt.;
+    by USUBJID avisitn;
+  run;
+  
+  /***2.2Imputation step***/
+  /**imputation model: UACR=visit+UPCR+egfr_base**/
+  proc mi data=uacr_mi_&tpt. seed=999 nimpute=200 out=uacr_out_&tpt.;
+  class avisit;
+  fcs nbiter=20 reg (avalUACR&tpt.=avalUPCR&tpt. avalegfrbase avisit /details);;
+  var avalUACR&tpt. avalUPCR&tpt. avalegfrbase avisit;
+  run;
+  
+  proc sort data=uacr_out_&tpt.;
+    by USUBJID;
+  run;
+  
+  /*recover missing due to administrative reasons as missing status*/
+  data uacr_imped_&tpt.;
+     merge uacr_out_&tpt.(in=a) analysis.adsl(in=b);
+     by USUBJID;
+     if a;
+     if imp_method="ALMCF" then do avalUACR&tpt.=.; imp_method=''; end;
+     aval = avalUACR&tpt.;
+     IMPNUM = _Imputation_;
+     DTYPE=imp_method;
+     length PARAM $200. PARAMCD $8.;
+     %if &tpt=24H %then %do;
+     PARAM="UACR 24 hour collection (g/g)";
+     PARAMCD="UACR24H";
+     %end;
+     %else %if &tpt=FMV %then %do;
+     PARAM="UACR FMV collection (g/g)";
+     PARAMCD="UACRFMV";
+     %end;
+
+  run;
+  
+  /*Derive UACR log*/
+  data uacr_log_&tpt.;
+    set uacr_imped_&tpt.;
+     %if &tpt=24H %then %do;
+     PARAM="Log-transformed UACR 24 hour collection (g/g)";
+     PARAMCD="LGUACR24";
+     %end;
+     %else %if &tpt=FMV %then %do;
+     PARAM="Log-transformed UACR FMV collection (g/g)";
+     PARAMCD="LGUACRFV";
+     %end;
+     if ^missing(AVAL) then AVAL=log(AVAL);
+   run;
+  
+   /*Combination and baseline*/
+  
+   data aduarmi1_&tpt.;
+    set uacr_imped_&tpt. uacr_log_&tpt.;
+    AVISITN=input(AVISIT,avisitn.);
+    if AVISIT="Baseline" then ABLFL="Y";
+  proc sort;
+    by USUBJID PARAMCD AVISITN IMPNUM;
+  run;
+  
+  proc sql;
+    create table aduarmi2_&tpt. as 
+    select a.*, b.AVAL as BASE, case when a.ABLFL="" then a.AVAL-b.AVAL else . end as chg
+    from aduarmi1_&tpt. as a 
+    left join aduarmi1_&tpt.(where=(ABLFL="Y")) as b 
+    on a.USUBJID=b.USUBJID and a.PARAMCD=b.PARAMCD and a.IMPNUM=b.IMPNUM
+    ;
+  quit;
+
+%mend;
+
+
+%uacrimpute(TPT=24H , visitlst=%str("Baseline","Day 90","Day 180") );
+%uacrimpute(TPT=FMV , visitlst=%str("Baseline","Day 14","Day 30","Day 90","Day 180") );
+
+data aduarmi_final;
+  set aduarmi2_24h aduarmi2_fmv;
+run;
+
+*----------------------------------------------------------------------;
+*set the final dataset
+*do sorting;
+*select avariable and apply format from PDS;
+*----------------------------------------------------------------------;
+
+
+%_std_varpadding_submission( calledby =
+,in_lib = work
+,out_lib = work
+,include_ds = aduarmi_final
+,exclude_ds =
+);
+
+
+%opSetAttr(domain=aduarmi, inData=aduarmi_final, metaData  = RPRTDSM.study_adam_metadata);
+
+
+
+
+/******************************************************************************* 
+*            FILENAME : adfacmi.sas
+*   PROGRAM DEVELOPER : Yijie Huang (huangy2e)                          
+*                DATE : 2023-08-02                                                                                 
+*  PROJECT/TRIAL CODE : CLNP023B1/CLNP023B12301
+*  REPORTING ACTIVITY : CSR_1                                          
+*         DESCRIPTION : To create adfacmi dataset                        
+*            PLATFORM : GPSII and SAS 9.4                          
+*          MACRO USED : N/A                         
+*               INPUT : analysis.adsl, analysis.adfacit                       
+*              OUTPUT : N/A                         
+*               NOTES : N/A                         
+*                                                                                                            
+*  PROGRAMMING MODIFICATIONS HISTORY                                   
+*  DATE        PROGRAMMER           DESCRIPTION                                                         
+*  ---------   ----------------     ----------------------------------    
+*  04Mar2024	huangy2e			modify data filtering for ANL01FL logic change
+*******************************************************************************/
+
+
+/************************************* Preparation section *************************************/
+%macro check_autorun;
+	%if %sysfunc(libref(data_a)) ne 0 %then %do; %autorun; %end;
+%mend check_autorun;
+%check_autorun;
+
+proc datasets lib=work kill memtype=data;
+run;
+
+
+%let Path =/vob/CLNP023B1/CLNP023B12301/csr_1/pgm/stats;
+%let Macro=/vob/CLNP023B1/CLNP023B12301/csr_1/pgm/stats;
+%let MacroPath=/vob/CLNP023B1/CLNP023B12301/csr_1/pgm/stats;
+/* 5macro to impute data based on continuous outcome and MMRM model*/
+%include "&MacroPath/5macro_part1A_33.sas";
+%include "&MacroPath/5macro_part1B_47.sas";
+%include "&MacroPath/5macro_part2A_40.sas";
+%include "&MacroPath/5macro_part2B_31.sas";
+%include "&MacroPath/5macro_part3_55.sas";
+
+/************************************* Section 2 facit scenario with MI *************************************/
+/***2.1 Preparation step***/
+/*Import the analysis dataset*/
+/*libname  analysis '/vob/CLNP023B1/CLNP023B12301/csr_1/analysis_data';*/
+data dat_part;
+      set analysis.adfacit;
+      where ANL01FL="Y" and ^missing(base) and paramcd="FACIT" and AVISIT in ("Baseline","Day 14","Day 30","Day 90","Day 180");
+      keep  usubjid trt01p trt01pn avisit _avisit avisitn paramcd param base chg aval 
+		anl05fl anl05dsc anl05dt anl06fl anl06dsc anl06dt anl07fl anl07dsc anl07dt aeflag aedcdt adt ady; /*Keeping only variables which are needed*/
+	  _avisit = tranwrd(cats(avisit)," ","_");
+run;
+
+/* Add the stratification variable */
+data dat_str;
+	set analysis.adbs;
+	where fasfl="Y";
+	keep usubjid systrcrf;
+run;
+proc sort data=dat_part;
+	by usubjid;
+run;
+proc sort data=dat_str;
+	by usubjid;
+run;
+data dat; 
+	merge dat_part dat_str;
+	by usubjid;
+run; 
+
+/* in case merge the stratification bring unlabeled data*/
+data dat_ana;
+	set dat;
+	where trt01p NE ''; 
+	nomisfl='Y';
+	proc sort;
+		by usubjid avisitn;
+run;
+
+/**************** As per SAP 5.2.1, impute the missing scheduled visits and visit date*****************/
+proc sql;	
+	create table usubjid as select distinct usubjid from dat_ana order by usubjid;
+quit;
+
+data full_visit;
+	set usubjid;
+	length avisit $50.;
+	AVISIT='Baseline';output;
+	AVISIT='Day 14';output;
+	AVISIT='Day 30';output;
+	AVISIT='Day 90';output;
+	AVISIT='Day 180';output;
+run;
+
+proc sql;
+	create table dat_ana1 as
+	select b.* from dat_ana a right join full_visit b on a.usubjid=b.usubjid and a.avisit=b.avisit;
+
+	* remerge common variables;
+	create table dat_ana1_1 as
+	select a.*, b.trt01p,b.trt01pn,b.paramcd,b.param,b.base,b.systrcrf from dat_ana1 a left join (
+	select * from dat_ana(rename=(usubjid=usubjid_ avisit=avisit_)) where avisit_='Baseline') b
+	on a.usubjid=b.usubjid_;
+
+	create table dat_ana1_2 as
+	select a.*, b.* from dat_ana1_1 a left join dat_ana(rename=(usubjid=usubjid_ avisit=avisit_) drop=trt01p trt01pn paramcd param base systrcrf) b on
+	a.usubjid=b.usubjid_ and a.avisit=b.avisit_;
+	* merge TR01SDT from adsl;
+
+	create table dat_ana1_3 as
+	select a.*,b.TR01SDT from dat_ana1_2 a left join analysis.adsl b on a.usubjid=b.usubjid;
+
+quit;
+
+* merge planned visit from SV;
+data sv;
+	set data_a.sv;
+	format svdt date9.;
+	svdt=input(svstdtc,yymmdd10.);
+run;
+
+proc sql;
+	create table dat_ana1_4 as
+	select a.*,b.svdt,b.svstdy from dat_ana1_3 a left join sv b on a.usubjid=b.usubjid and a.avisit=b.visit;
+quit;
+
+data dat_ana1_5;
+	set dat_ana1_4;
+	if missing(nomisfl) and missing(adt) and avisit ^= 'Baseline' then do;
+		* impute date;
+		if ^missing(svdt) then do;ady=svstdy;adt=svdt;end;
+		if missing(svdt) then do; ady=input(scan(avisit,2),best.);adt=tr01sdt+ady;end;
+
+		* impute flag;
+		ANL05FL='';
+		ANL05DSC='';
+		ANL06FL='';
+		ANL06DSC='';
+		ANL07FL='';
+		ANL07DSC='';
+
+		if ^missing(ANL05DT) and ADT>ANL05DT then do; 
+			ANL05FL='Y';
+			ANL05DSC='Record after initiation or intensification of anti-proteinuric therapies';
+		end;
+		if ^missing(ANL06DT) and ADT>ANL06DT then do; 
+			ANL06FL='Y';
+			ANL06DSC='Record after initiation of RRT';
+		end;
+		if ^missing(ANL07DT) and ADT>ANL07DT then do; 
+			ANL07FL='Y';
+			ANL07DSC='Record after treatment discontinuation for any other reason';
+		end;
+	end;
+run;
+
+
+/*set the order of visit*/
+proc format;
+ invalue avisit
+ "Day 14"=202
+ "Day 30"=203
+ "Day 90"=204
+ "Day 180"=205;
+
+ value  avisitc 
+ 202= "Day 14"
+ 203= "Day 30"
+ 204= "Day 90"
+ 205= "Day 180";
+run;
+
+/*remove baseline records*/
+data dat_ana4;
+	set dat_ana1_5;
+	where avisit ^= "Baseline"; 
+		AVISITN=input(AVISIT,avisit.);
+run;
+
+
+
+/**Mark the imputation methods according to SAP**/
+/*anl05fl, RECORD LEVEL, IAT
+anl06fl, RECORD LEVEL,RRT
+aeflag, PATIENT LEVEL,DC due to AE/Death*/
+/*secondary analysis*/
+data dat_ana_mi_sec;
+	set dat_ana4;
+	length ACAT1 $50.;
+	ACAT1="Secondary analysis 24";
+	ACAT1N=1;
+	ana_flag = "sec";
+	if systrcrf="" then systrcrf="N";
+	if aval=. then do imp_method="ALMCF"; end;
+	/* the reason why doing this: 5macro will impute all missing data, otherwise error*/
+	/* we will use one method for those no need for imputation, then set it to missing manually later*/
+	if trt01p = "LNP023 200mg b.i.d." and (anl05fl="Y" OR anl06fl="Y")  then do aval=.; imp_method="J2R"; end;
+	if trt01p = "LNP023 200mg b.i.d."  and aeflag="Y" and aval=. then do imp_method="J2R";end;
+ 	if trt01p = "Placebo" and  (anl05fl="Y" OR anl06fl="Y") then do aval=.; imp_method="MAR";end;
+ 	if trt01p = "Placebo" and aeflag="Y" and aval=. then do imp_method="MAR";end;
+run;
+
+
+/*supplementary analysis*/
+data dat_ana_mi_supp;
+	set dat_ana4;
+	length ACAT1 $50.;
+	ACAT1="Supplementary analysis 24.1";
+	ACAT1N=2;
+	ana_flag = "supp";
+	if systrcrf="" then systrcrf="N";
+	if aval=. then do imp_method="ALMCF"; end;/*we don't use it, but just for missing*/
+	if trt01p = "LNP023 200mg b.i.d." and (anl06fl="Y")  then do aval=.; imp_method="J2R"; end;
+	if trt01p = "LNP023 200mg b.i.d."  and aeflag="Y" and aval=. then do imp_method="J2R";end;
+ 	if trt01p = "Placebo" and  (anl06fl="Y") then do aval=.; imp_method="MAR";end;
+ 	if trt01p = "Placebo" and aeflag="Y" and aval=. then do imp_method="MAR";end;
+run;
+
+/***2.2Imputation step***/
+/**imputation model: aval=trt*time+base+strfactor**/
+/*secondary analysis*/
+
+%macro facit_mi(endpoint=);
+	%part1A(Jobname=facit_mi
+	,Data=dat_ana_mi_&endpoint.
+	,Subject=USUBJID
+	,Response=AVAL
+	,Time=AVISITN
+	,Treat=TRT01PN
+	,Catcov=SYSTRCRF
+	,Cov = BASE
+	/*,Covgroup=TRT01P corresponding to seperate variance-covaraince matrix for different arms*/
+	);
+
+	/*Ndraws=200 repsents the number of draws from the posterior distribution with a thining of 100 iterations;*/
+	%part1B(Jobname=facit_mi
+	,Ndraws=200 /*usually 200*/
+	,thin=100
+	,seed=999
+	);
+		
+	%part2A(Jobname=facit_mi_&endpoint., INName= facit_mi, MethodV= imp_method, Ref= 2)
+	%part2B(Jobname=facit_mi_&endpoint., seed=999)
+
+	data dat_ana_info;
+	   set dat_ana_mi_&endpoint.;
+	   keep acat1 acat1n usubjid avisitn ana_flag imp_method;
+	run;
+	proc sort data=dat_ana_info;
+	   by ACAT1 ACAT1N USUBJID AVISITN;
+	run;
+
+	proc sql; 
+	create table facit_mi_&endpoint._full as
+	select x.*, y.ACAT1, y.ACAT1N, y.ana_flag, y.imp_method 
+	from facit_mi_&endpoint._DataFull as x left join dat_ana_info as y
+	on x.usubjid = y.usubjid & x.avisitn=y.avisitn;
+	quit;
+
+	/*recover missing due to administrative reasons as missing status*/
+	data facit_mi_&endpoint.;
+	   set facit_mi_&endpoint._full;
+	   chg=aval-base;
+	   if imp_method="ALMCF" then do chg=.; aval=.; imp_method=''; end;
+	run;
+
+	
+	proc sort data=facit_mi_&endpoint.;
+		by USUBJID TRT01PN AVISITN draw;
+	run;
+
+	proc sort data=analysis.adfacit out=adfacit1;
+      where ANL01FL="Y" and paramcd="FACIT" and AVISIT in ("Baseline","Day 14","Day 30","Day 90","Day 180");
+		by USUBJID TRT01PN AVISITN;
+	run;
+	
+	data adfacmi_&endpoint.;
+		
+		merge facit_mi_&endpoint.(in=a) adfacit1(in=b drop=AVAL CHG BASE);
+		by USUBJID TRT01PN AVISITN;
+		if a;
+		length DTYPE $20.;
+		DTYPE=imp_method;
+		* truncate the values larger than maximum and smaller than minimum;
+		if ^missing(aval) and ^missing(DTYPE) then do;
+			if aval>52 then aval=52;
+			if aval<0 then aval=0;
+		end;
+		if nmiss(AVAL,BASE)=0 then CHG=AVAL-BASE;
+		IMPNUM=draw;
+
+		avisit=put(avisitn,avisitc.);
+	run;
+%mend;
+
+
+%facit_mi(endpoint=sec);
+%facit_mi(endpoint=supp);
+
+data adfacmi_comb1;
+	length ana_flag $10.;
+	set adfacmi_sec adfacmi_supp 
+	analysis.adfacit(where=(AVISIT="Baseline" and paramcd='FACIT'));
+	by USUBJID;	
+
+run;
+
+
+/*Remerge ANL05/ANL06/AEFLAG*/
+/*proc sql;*/
+/*	create table adfacmi_comb1 as */
+/*	select distinct a.*, b.ANL05FL, c.ANL06FL, d.AEFLAG*/
+/*	from adfacmi_comb as a*/
+/*	left join dat_ana1(where=(^missing(ANL05FL))) as b */
+/*	on a.USUBJID=b.USUBJID and a.AVISIT=b.AVISIT*/
+/*	left join dat_ana1(where=(^missing(ANL06FL))) as c */
+/*	on a.USUBJID=c.USUBJID and a.AVISIT=c.AVISIT*/
+/*	left join dat_ana1(where=(^missing(AEFLAG))) as d */
+/*	on a.USUBJID=d.USUBJID*/
+/*	order by a.USUBJID*/
+/*	;*/
+/*quit;*/
+
+proc sql noprint;
+	select distinct name into: dropvar separated by " "
+	from sashelp.vcolumn where find(libname,"WORK") and memname="ADFACMI_COMB1"
+	and (name^="USUBJID" and name in 
+		(select distinct name from sashelp.vcolumn where find(libname,"ANALYSIS") and memname="ADSL"))
+	;
+quit;
+
+data adfacmi_final;
+	length PROEVFL $1.;
+	merge adfacmi_comb1(in=a drop=&dropvar SYSTRCRF) analysis.ADSL analysis.adbs(keep=USUBJID SYSTRCRF);
+	by USUBJID;
+	if a;
+	if missing(param) and missing(paramcd) then do;
+		param='FACIT Fatigue score';
+		paramcd='FACIT';
+	end;
+	if ^missing(BASE) and FASFL='Y' then PROEVFL='Y'; else PROEVFL='N';
+	if paramcd='FACIT';
+run;
+
+*----------------------------------------------------------------------;
+*set the final dataset
+*do sorting;
+*select avariable and apply format from PDS;
+*----------------------------------------------------------------------;
+
+
+%_std_varpadding_submission( calledby =
+,in_lib = work
+,out_lib = work
+,include_ds = adfacmi_final
+,exclude_ds =
+);
+
+
+%opSetAttr(domain=adfacmi, inData=adfacmi_final, metaData  = RPRTDSM.study_adam_metadata);
+
+
+ 请参考 /************************************************************************
+*  PROJECT       : CLNP023B1
+*  STUDY         : CLNP023B12301
+*  RA            : csr_4
+*  FILENAME      : aduprmi.sas
+
+*  DATE CREATED  : 16Mar2026
+*  AUTHOR        : Huiyu Luo
+
+*  DESCRIPTION   : Create dataset aduprmi
+*  PLATFORM      : AIX 7.2 (AIX 64) (see SAS log file)
+*  SAS VERSION   : 9.4 (see SAS log file)
+
+*  MACROS CALLED : None
+*  INPUT         : ADUPCR, ADSL, ADBS
+*  OUTPUT        : analysis.aduprmi
+
+*  MODIFICATIONS : [x.xx] dd-mmm-yy, 5-2-1 id, brief description  
+20231023 hudy1 to include handling I/C for missing assessment based on visit date or scheduled visit date
+*************************************************************************/
+/*Clean work library*/
+proc datasets lib=work kill;
+run;
+
+/* GPS environment setup macro */;
+data _null_;
+    if libref('analysis') then call execute('%nrstr(%autorun;)');
+run;
+
+
+%let Path =/vob/CLNP023B1/CLNP023B12301/csr_1/pgm/stats;
+%let Macro=/vob/CLNP023B1/CLNP023B12301/csr_1/pgm/stats;
+%let MacroPath=/vob/CLNP023B1/CLNP023B12301/csr_1/pgm/stats;
+/* 5macro to impute data based on continuous outcome and MMRM model*/
+%include "&MacroPath/5macro_part1A_33.sas";
+%include "&MacroPath/5macro_part1B_47.sas";
+%include "&MacroPath/5macro_part2A_40.sas";
+%include "&MacroPath/5macro_part2B_31.sas";
+%include "&MacroPath/5macro_part3_55.sas";
+
+/** Import the analysis dataset **/
+data dat_part;
+      set analysis.adupcr;
+      where (PARAMCD="LGUPCR24" and AVISIT in ("Baseline","Day 90","Day 180") and (ANL01FL="Y" or aval=.))
+      or (PARAMCD="LGUPCRFV" and AVISIT in ("Baseline","Day 14","Day 30","Day 90","Day 180") and (ANL01FL="Y" or aval=.));
+      keep  USUBJID trt01pn avisit AVISITN _avisit PARAMCD PARAM base chg aval EST0: ICE0: IMPREA0: ANL05DT ANL06DT ANL07DT AEDCDT anl05fl anl06fl anl07fl aeflag; /*Keeping only variables which are needed*/
+	  _avisit = tranwrd(cats(avisit)," ","_");
+run;
+
+data dat_str;
+	set analysis.adbs;
+	where fasfl="Y";
+	keep USUBJID systrcrf;
+run;
+proc sort data=dat_part;
+	by USUBJID;
+run;
+proc sort data=dat_str;
+	by USUBJID;
+run;
+data dat; 
+	merge dat_part dat_str;
+	by USUBJID;
+run; 
+
+data dat_ana;
+	set dat;
+	where trt01pn NE .; /* in case merge the stratification bring unlabeled data*/
+	proc sort;
+		by paramcd PARAM USUBJID;
+run;
+
+/**************** simulation: create simulated dataset with the need for imputation *****************/
+data dat_ana1;
+	set dat_ana;
+	where avisit ^= "Baseline"; /*remove baseline records*/
+run;
+data dat_ana_base;
+	set dat_ana;
+	where avisit = "Baseline"; 
+run;
+proc sort data=dat_ana_base;by usubjid;run;
+proc sort data=dat_ana1;by usubjid;run;
+
+data dat_ana2;
+  merge dat_ana1 dat_ana_base(in=b keep=usubjid);
+  by usubjid;
+  if b;
+run;
+
+
+/**************** simulation: create simulated dataset with the need for imputation *****************/
+
+/*set the order of visit*/
+proc format;
+ invalue avisit
+ "Baseline"=99
+ "Day 14"=202
+ "Day 30"=203
+ "Day 90"=204
+ "Day 180"=205;
+ value visit
+ 99="Baseline"
+ 202="Day 14"
+ 203="Day 30"
+ 204="Day 90"
+ 205="Day 180";
+run;
+
+proc sort data=dat_ana2;
+	by USUBJID AVISITN;
+run;
+
+
+/* Mark the imputation methods according to SAP*/
+/*primary analysis*/
+data dat_ana_mi_pri;
+	set dat_ana2;
+	where PARAMCD="LGUPCR24";
+	length ACAT1 $50.;
+	ACAT1="Primary analysis";
+	ACAT1N=1;
+	ana_flag = "pri";
+	IMPREAS=IMPREA01;
+	if systrcrf="" then systrcrf="N";
+	if imprea01='Missing data' or (EST01STP='Treatment policy' and aval=.) then imp_method='ALMCF';
+	if trt01pn = 1 and EST01STP='Hypothetical strategy' then do;aval=.;chg=.; imp_method="J2R"; end;
+	if trt01pn = 1 and AEDCDT NE . and imprea01='Missing data' then do;imp_method="J2R";end;
+ 	if trt01pn = 2 and EST01STP='Hypothetical strategy'  then do;aval=.;chg=.;  imp_method="MAR";end;
+ 	if trt01pn = 2 and AEDCDT NE . and imprea01='Missing data' then do;imp_method="MAR";end;
+/*	if aval=. then do;imp_method="ALMCF"; end;*/
+	/*we don't use it, but just for missing due to administrative reasons*/
+/*	if trt01pn = 1 and (anl05fl="Y" OR anl06fl="Y")  then do;aval=.;aval=.; chg=.; imp_method="J2R"; end;*/
+/*	if trt01pn = 1  and aeflag="Y" and aval=. then do;imp_method="J2R";end;*/
+/* 	if trt01pn = 2 and  (anl05fl="Y" OR anl06fl="Y") then do;aval=.;aval=.;  chg=.;  imp_method="MAR";end;*/
+/* 	if trt01pn = 2 and aeflag="Y" and aval=. then do;imp_method="MAR";end;*/
+run;
+
+/*Sensitivity analysis 1 */
+/*data dat_ana_mi_sens1;*/
+/*	set dat_ana4;*/
+/*	where PARAMCD="LGUPCR24";*/
+/*	length ACAT1 $50.;*/
+/*	ACAT1="Sensitivity analysis 1";*/
+/*	ACAT1N=2;*/
+/*	ana_flag = "sec1";*/
+/*	if systrcrf="" then systrcrf="N";*/
+/*	if aval=. then do;imp_method="ALMCF"; end;*/
+	/*we don't use it, but just for missing due to administrative reasons*/
+/*	if trt01pn = 1 and anl05fl="Y" then do;aval=.;aval=.; chg=.; imp_method="MAR"; end;*/
+/*	if trt01pn = 1 and anl06fl="Y" then do;aval=.;aval=.; chg=.; imp_method="J2R"; end;*/
+/*	if trt01pn = 1  and aeflag="Y" and aval=. then do;imp_method="J2R";end;*/
+/* 	if trt01pn = 2 and anl05fl="Y" then do;aval=.;aval=.;  chg=.;  imp_method="MAR";end;*/
+/* 	if trt01pn = 2 and anl06fl="Y" then do;aval=.;aval=.;  chg=.;  imp_method="MAR";end;*/
+/* 	if trt01pn = 2 and aeflag="Y" and aval=. then do;imp_method="MAR";end;*/
+/*run;*/
+
+/*Sensitivity analysis 2 */
+/*data dat_ana_mi_sens2;*/
+/*	set dat_ana4;*/
+/*	where PARAMCD="LGUPCR24";*/
+/*	length ACAT1 $50.;*/
+/*	ACAT1="Sensitivity analysis 2";*/
+/*	ACAT1N=3;*/
+/*	ana_flag = "sec2";*/
+/*	if systrcrf="" then systrcrf="N";*/
+/*	if aval=. then do;imp_method="ALMCF"; end;*/
+	/*we don't use it, but just for missing due to administrative reasons*/
+/*	if trt01pn = 1 and anl05fl="Y" then do;aval=.;aval=.; chg=.; imp_method="CR"; end;*/
+/*	if trt01pn = 1 and anl06fl="Y" then do;aval=.;aval=.; chg=.; imp_method="J2R"; end;*/
+/*	if trt01pn = 1  and aeflag="Y" and aval=. then do;imp_method="J2R";end;*/
+/* 	if trt01pn = 2 and anl05fl="Y" then do;aval=.;aval=.;  chg=.;  imp_method="MAR";end;*/
+/* 	if trt01pn = 2 and anl06fl="Y" then do;aval=.;aval=.;  chg=.;  imp_method="MAR";end;*/
+/* 	if trt01pn = 2 and aeflag="Y" and aval=. then do;imp_method="MAR";end;*/
+/*run;*/
+
+/*supplementary analysis 1*/
+data dat_ana_mi_supp1;
+	set dat_ana2;
+	where PARAMCD="LGUPCR24";
+	length ACAT1 $50.;
+	ACAT1="Supplementary analysis 1";
+	ACAT1N=2;
+	ana_flag = "supp1";
+	IMPREAS=IMPREA02;
+	if systrcrf="" then systrcrf="N";
+	if imprea02='Missing data' or (EST02STP='Treatment policy' and aval=.) then imp_method='ALMCF';
+	if trt01pn = 1 and EST02STP='Hypothetical strategy' then do;aval=.;chg=.; imp_method="J2R"; end;
+	if trt01pn = 1  and AEDCDT NE . and imprea02='Missing data' then do;imp_method="J2R";end;
+ 	if trt01pn = 2 and EST02STP='Hypothetical strategy' then do;aval=.;chg=.; imp_method="MAR"; end;
+ 	if trt01pn = 2 and AEDCDT NE . and imprea02='Missing data' then do;imp_method="MAR";end;
+/*	if aval=. then do;imp_method="ALMCF"; end;*/
+	/*we don't use it, but just for missing*/
+/*	if trt01pn = 1 and (anl06fl="Y")  then do;aval=.;aval=.; chg=.; imp_method="J2R"; end;*/
+/*	if trt01pn = 1  and aeflag="Y" and aval=. then do;imp_method="J2R";end;*/
+/* 	if trt01pn = 2 and  (anl06fl="Y") then do;aval=.;aval=.;  chg=.; imp_method="MAR"; end;*/
+/* 	if trt01pn = 2 and aeflag="Y" and aval=. then do;imp_method="MAR";end;*/
+run;
+
+/*Supplementary  analysis 2*/
+data dat_ana_mi_supp2;
+	set dat_ana2;
+	where PARAMCD="LGUPCRFV";
+	length ACAT1 $50.;
+	ACAT1="Supplementary analysis 2";
+	ACAT1N=3;
+	ana_flag = "supp2";
+	IMPREAS=IMPREA03;
+	if systrcrf="" then systrcrf="N";
+	if imprea03='Missing data' or (EST03STP='Treatment policy' and aval=.) then imp_method='ALMCF';
+	if trt01pn = 1 and EST03STP='Hypothetical strategy' then do;aval=.;chg=.; imp_method="J2R"; end;
+	if trt01pn = 1 and AEDCDT NE . and imprea03='Missing data' then do;imp_method="J2R";end;
+ 	if trt01pn = 2 and EST03STP='Hypothetical strategy'  then do;aval=.;chg=.;  imp_method="MAR";end;
+ 	if trt01pn = 2 and AEDCDT NE . and imprea03='Missing data' then do;imp_method="MAR";end;
+/*	if aval=. then do;imp_method="ALMCF"; end;*/
+	/*we don't use it, but just for missing due to administrative reasons*/
+/*	if trt01pn = 1 and (anl05fl="Y" OR anl06fl="Y")  then do;aval=.;aval=.; chg=.; imp_method="J2R"; end;*/
+/*	if trt01pn = 1  and aeflag="Y" and aval=. then do;imp_method="J2R";end;*/
+/* 	if trt01pn = 2 and  (anl05fl="Y" OR anl06fl="Y") then do;aval=.;aval=.;  chg=.;  imp_method="MAR";end;*/
+/* 	if trt01pn = 2 and aeflag="Y" and aval=. then do;imp_method="MAR";end;*/
+run;
+
+/************************************* Imputation section *************************************/
+/**imputation model: log(UPCR)=trt*time+log(base)+stratification factor(not crossing with time)**/
+/*secondary analysis*/
+
+%macro upcr_mi(endpoint= );
+	%part1A(Jobname=upcr_mi
+	,Data=dat_ana_mi_&endpoint.
+	,Subject=USUBJID
+	,Response=AVAL
+	,Time=AVISITN
+	,Treat=TRT01PN
+	,Catcov=SYSTRCRF
+	,Cov = BASE
+	/*,Covgroup=TRT01P corresponding to seperate variance-covaraince matrix for different arms*/
+	);
+	
+	/*Ndraws repsents the number of draws from the posterior distribution with a thining of 100 iterations;*/
+	%part1B(Jobname=upcr_mi
+	,Ndraws=200 /*usually 200, for simple test run, 20 is used here*/
+	,thin=100
+	,seed=999
+	);
+		
+	%part2A(Jobname=upcr_mi_&endpoint., INName= upcr_mi, MethodV= imp_method, Ref= 2)
+	%part2B(Jobname=upcr_mi_&endpoint., seed=999)
+	
+	data dat_ana_info;
+	   set dat_ana_mi_&endpoint.;
+	   keep ACAT1 ACAT1N PARAMCD PARAM USUBJID avisit ana_flag imp_method /* ANL05FL ANL06FL AEFLAG */;
+	run;
+	proc sort data=dat_ana_info;
+	   by ACAT1 ACAT1N PARAMCD PARAM USUBJID AVISIT;
+	run;
+
+	data upcr_mi_&endpoint._DataFull;
+		set upcr_mi_&endpoint._DataFull;
+		length AVISIT $60.;
+		AVISIT=put(AVISITN, visit.);
+	run;
+
+	proc sql; 
+	create table upcr_mi_&endpoint._full as
+	select x.*, y.ACAT1, y.ACAT1N, y.PARAMCD, y. PARAM, y.ana_flag, y.imp_method/* , y.ANL05FL, y.ANL06FL, y.AEFLAG */
+	from upcr_mi_&endpoint._DataFull as x left join dat_ana_info as y
+	on x.USUBJID = y.USUBJID & x.avisit=y.avisit;
+	quit;
+	
+	data upcr_mi_&endpoint.;
+	   set upcr_mi_&endpoint._full;
+	   CHG=AVAL-BASE;
+	   if imp_method="ALMCF" then do;CHG=.;AVAL=.; imp_method=''; end;/*recover missing due to administrative reasons as missing status*/
+	run;
+	
+	proc sort data=upcr_mi_&endpoint.;
+		by USUBJID TRT01PN AVISIT;
+	run;
+	
+	%if &endpoint^=supp2 %then %do;
+	proc sort data=analysis.adupcr out=adupcr1;
+      where PARAMCD="LGUPCR24" and ANL01FL="Y" and AVISIT in ("Baseline","Day 90","Day 180");
+		by USUBJID TRT01PN AVISIT;
+	run;
+	%end;
+	%else %do;
+	proc sort data=analysis.adupcr out=adupcr1;
+      where PARAMCD="LGUPCRFV" and ANL01FL="Y" and AVISIT in ("Baseline","Day 14","Day 30","Day 90","Day 180");
+		by USUBJID TRT01PN AVISIT;
+	run;
+	%end;
+	
+	data aduprmi_&endpoint.;
+		length AVISIT $60.;
+		merge upcr_mi_&endpoint.(in=a) adupcr1(in=b drop=AVAL CHG BASE);
+		by USUBJID TRT01PN AVISIT;
+		if a;
+		if nmiss(AVAL,BASE)=0 then CHG=AVAL-BASE;
+		IMPNUM=draw;
+		length DTYPE $20.;
+		DTYPE=imp_method;
+		AVISITN=input(AVISIT,avisit.);
+	run;
+	
+%mend;
+
+%upcr_mi(endpoint=pri);
+/*%upcr_mi(endpoint=sens1);*/
+/*%upcr_mi(endpoint=sens2);*/
+%upcr_mi(endpoint=supp1);
+%upcr_mi(endpoint=supp2);
+
+/*Remerge ANL05/ANL06/AEFLAG*/
+/*proc sql;*/
+/*	create table aduprmi_comb1 as */
+/*	select distinct a.*, b.ANL05FL,  c.ANL06FL,  e.ANL07FL,  d.AEFLAG */
+/*	from aduprmi_comb as a*/
+/*	left join dat_ana4(where=(^missing(ANL05FL))) as b */
+/*	on a.USUBJID=b.USUBJID and a.AVISIT=b.AVISIT and a.PARAMCD=b.PARAMCD*/
+/*	left join dat_ana4(where=(^missing(ANL06FL))) as c */
+/*	on a.USUBJID=c.USUBJID and a.AVISIT=c.AVISIT and a.PARAMCD=c.PARAMCD*/
+/*	left join dat_ana4(where=(^missing(ANL07FL))) as e */
+/*	on a.USUBJID=e.USUBJID and a.AVISIT=e.AVISIT and a.PARAMCD=e.PARAMCD*/
+/*	left join dat_ana4(where=(^missing(AEFLAG))) as d */
+/*	on a.USUBJID=d.USUBJID and a.PARAMCD=d.PARAMCD*/
+/*	order by a.USUBJID*/
+/*	;*/
+/*quit;*/
+proc sql;
+	create table aduprmi_pri1 as 
+	select distinct a.*, b.EST01STP, b.ICE01F, b.IMPREA01
+	from aduprmi_pri(DROP=EST01STP ICE01F IMPREA01) as a
+	left join dat_ana2(where=(^missing(EST01STP))) as b 
+	on a.USUBJID=b.USUBJID and a.AVISIT=b.AVISIT and a.PARAMCD=b.PARAMCD
+	order by a.USUBJID
+	;
+quit;
+
+proc sql;
+	create table aduprmi_supp11 as 
+	select distinct a.*, b.EST02STP, b.ICE02F, b.IMPREA02
+	from aduprmi_supp1(DROP=EST02STP ICE02F IMPREA02)  as a
+	left join dat_ana2(where=(^missing(EST02STP))) as b 
+	on a.USUBJID=b.USUBJID and a.AVISIT=b.AVISIT and a.PARAMCD=b.PARAMCD
+	order by a.USUBJID
+	;
+quit;
+
+proc sql;
+	create table aduprmi_supp21 as 
+	select distinct a.*, b.EST03STP, b.ICE03F, b.IMPREA03
+	from aduprmi_supp2(DROP=EST03STP ICE03F IMPREA03)  as a
+	left join dat_ana2(where=(^missing(EST03STP))) as b 
+	on a.USUBJID=b.USUBJID and a.AVISIT=b.AVISIT and a.PARAMCD=b.PARAMCD
+	order by a.USUBJID
+	;
+quit;
+
+data aduprmi_comb;
+	length ana_flag $10.;
+	set aduprmi_pri1 /*aduprmi_sens1 aduprmi_sens2*/ aduprmi_supp11 aduprmi_supp21 
+	analysis.adupcr(where=(PARAMCD in ("LGUPCR24","LGUPCRFV") and AVISIT="Baseline"));
+	by USUBJID;	
+	drop ANL05FL ANL06FL ANL07FL AEFLAG;
+run;
+
+/*proc sql;*/
+/*	create table aduprmi_comb1 as */
+/*	select distinct a.*, b.ANL05FL,  c.ANL06FL,  e.ANL07FL,  d.AEFLAG */
+/*	from aduprmi_comb as a*/
+/*	left join dat_ana2(where=(^missing(ANL05FL))) as b */
+/*	on a.USUBJID=b.USUBJID and a.AVISIT=b.AVISIT and a.PARAMCD=b.PARAMCD*/
+/*	left join dat_ana2(where=(^missing(ANL06FL))) as c */
+/*	on a.USUBJID=c.USUBJID and a.AVISIT=c.AVISIT and a.PARAMCD=c.PARAMCD*/
+/*	left join dat_ana2(where=(^missing(ANL07FL))) as e */
+/*	on a.USUBJID=e.USUBJID and a.AVISIT=e.AVISIT and a.PARAMCD=e.PARAMCD*/
+/*	left join dat_ana2(where=(^missing(AEFLAG))) as d */
+/*	on a.USUBJID=d.USUBJID and a.PARAMCD=d.PARAMCD*/
+/*	order by a.USUBJID*/
+/*	;*/
+/*quit;*/
+proc sql noprint;
+	select distinct name into: dropvar separated by " "
+	from sashelp.vcolumn where find(libname,"WORK") and memname="ADUPRMI_COMB1"
+	and (name^="USUBJID" and name in 
+		(select distinct name from sashelp.vcolumn where find(libname,"ANALYSIS") and memname="ADSL"))
+	;
+quit;
+
+data aduprmi_final;
+	merge aduprmi_comb(in=a drop=&dropvar SYSTRCRF) analysis.ADSL analysis.adbs(keep=USUBJID SYSTRCRF);
+	by USUBJID;
+	if a;
+    if (EST01STP='Hypothetical strategy' or EST02STP='Hypothetical strategy' or EST03STP='Hypothetical strategy') and ANL05DT ne . then do;
+      ANL05FL="Y";
+      ANL05DSC="Record after initiation or intensification of anti-proteinuric therapies";
+	end;
+    if (EST01STP='Hypothetical strategy' or EST02STP='Treatment policy' or EST03STP='Hypothetical strategy') and ANL06DT ne .  then do;
+      ANL06FL="Y";
+      ANL06DSC="Record after initiation of RRT";
+	end;
+    if EST01STP='Treatment policy' or EST02STP='Treatment policy' or EST03STP='Treatment policy' then do;
+	  ANL07FL="Y";
+      ANL07DSC="Record after treatment discontinuation for any other reason";
+	end;
+	if AEDCDT NE . then do;AEFLAG='Y';end;
+	if dtype ne '' then do;
+	  if ana_flag='pri' then IMPREAS=IMPREA01;
+	  if ana_flag='supp1' then IMPREAS=IMPREA02;
+	  if ana_flag='supp2' then IMPREAS=IMPREA03;
+    end;
+/*    if ANL05FL="Y" then ANL05DSC="Record after initiation or intensification of anti-proteinuric therapies";*/
+/*    if ANL06FL="Y" then ANL06DSC="Record after initiation of RRT";*/
+/*    if ANL07FL="Y" then ANL07DSC="Record after treatment discontinuation for any other reason";*/
+run;
+
+*----------------------------------------------------------------------;
+*set the final dataset
+*do sorting;
+*select avariable and apply format from PDS;
+*----------------------------------------------------------------------;
+/*proc sort data=analysis.aduprmi out=dev; by USUBJID SUBJID ACAT1N  PARAMCD AVISITN IMPNUM;run;*/
+/*proc sort data=aduprmi_final; by USUBJID SUBJID ACAT1N  PARAMCD AVISITN IMPNUM;run;*/
+/**/
+/*PROC COMPARE BASE=dev COMPARE=aduprmi_final LISTALL;*/
+/*RUN;*/
+
+%_std_varpadding_submission( calledby =
+,in_lib = work
+,out_lib = work
+,include_ds = aduprmi_final
+,exclude_ds =
+);
+
+
+%opSetAttr(domain=aduprmi, inData=aduprmi_final, metaData  = RPRTDSM.study_adam_metadata);
+PDS更新了，然后ADUPCR， ADUPRMI也先出了一版，你可以参考，大概的逻辑就是我们之前是在MI里面dummy了planed的visit，现在给换成在原始的数据集里给先dummy好，这样MI里就可以直接用 然后53	20250402	Huiyu Luo	ADEGRMI	IMPREAS	Add variable IMPREAS	
+ADEGRMI	IMPREAS	Imputation Rason	C					15				Predecessor		Set to IMPREA01, IMPREA02, IMPREA03 based on  ACAT1																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																							
+请仔细思考 提供修改补丁
