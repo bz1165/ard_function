@@ -1,995 +1,2760 @@
-
-                                                   The FREQ Procedure                                                               
-                                                                                                                                    
-                                                                      Cumulative    Cumulative                                      
-                         PARAMCD    ABLFL    Frequency     Percent     Frequency      Percent                                       
-                         ---------------------------------------------------------------------                                      
-                         FACIT                    175       89.29           175        89.29                                        
-                         FACIT      Y              21       10.71           196       100.00                                        
-
-
-      Obs           USUBJID           PARAMCD           ADT     AVISIT     AVISITN    ABLFL    BASE    AVAL    CHG                  
-                                                                                                                                    
-       79    CLNP023B12301_1001009     FACIT     2025-07-15    Baseline       99        Y       23      23                          
-      138    CLNP023B12301_1001010     FACIT     2026-01-29    Baseline       99        Y       47      47                          
-      191    CLNP023B12301_1002004     FACIT     2025-12-30    Baseline       99        Y       44      44                          
-      257    CLNP023B12301_1005002     FACIT     2025-12-29    Baseline       99        Y       44      44                          
-      424    CLNP023B12301_2054004     FACIT     2025-12-05    Baseline       99        Y       49      49                          
-      529    CLNP023B12301_3311002     FACIT     2025-07-14    Baseline       99        Y       52      52                          
-      590    CLNP023B12301_3311003     FACIT     2026-01-21    Baseline       99        Y       43      43                          
-      756    CLNP023B12301_3404001     FACIT     2025-03-05    Baseline       99        Y       32      32                          
-      885    CLNP023B12301_3502004     FACIT     2023-09-04    Baseline       99        Y       33      33                          
-     1001    CLNP023B12301_3601011     FACIT     2025-07-01    Baseline       99        Y       49      49                          
-     1127    CLNP023B12301_3602003     FACIT     2023-09-26    Baseline       99        Y       38      38                          
-     1256    CLNP023B12301_3602004     FACIT     2023-09-19    Baseline       99        Y       48      48                          
-     1346    CLNP023B12301_3902003     FACIT     2025-07-01    Baseline       99        Y       23      23                          
-     1416    CLNP023B12301_4001007     FACIT     2025-12-10    Baseline       99        Y       47      47                          
-     1568    CLNP023B12301_5002001     FACIT     2024-08-15    Baseline       99        Y       21      21                          
-     1697    CLNP023B12301_5006015     FACIT     2024-12-04    Baseline       99        Y       40      40                          
-     1800    CLNP023B12301_5006016     FACIT     2025-07-28    Baseline       99        Y       36      36                          
-     1872    CLNP023B12301_5016001     FACIT     2024-08-13    Baseline       99        Y       52      52                          
-     2053    CLNP023B12301_5211001     FACIT     2025-12-10    Baseline       99        Y       42      42                          
-     2173    CLNP023B12301_6012001     FACIT     2024-08-22    Baseline       99        Y       49      49                          
-     2302    CLNP023B12301_6013001     FACIT     2023-09-26    Baseline       99        Y       45      45                          
-
-
-  Obs        USUBJID        PARAMCD AVISIT  AVISITN BASE AVAL EST01STP ICE01F   IMPREA01   EST02STP ICE02F   IMPREA02               
-                                                                                                                                    
-   80 CLNP023B12301_1001009  FACIT  Day 1     201    23                  N    Missing data            N    Missing data             
-   86 CLNP023B12301_1001009  FACIT  Day 270   207    23                  N    Missing data            N    Missing data             
-  139 CLNP023B12301_1001010  FACIT  Day 1     201    47                  N    Missing data            N    Missing data             
-  142 CLNP023B12301_1001010  FACIT  Day 90    204    47                  N    Missing data            N    Missing data             
-  143 CLNP023B12301_1001010  FACIT  Day 180   205    47                  N    Missing data            N    Missing data             
-  144 CLNP023B12301_1001010  FACIT  Day 210   206    47                  N    Missing data            N    Missing data             
-  145 CLNP023B12301_1001010  FACIT  Day 270   207    47                  N    Missing data            N    Missing data             
-  192 CLNP023B12301_1002004  FACIT  Day 1     201    44                  N    Missing data            N    Missing data             
-  195 CLNP023B12301_1002004  FACIT  Day 90    204    44                  N    Missing data            N    Missing data             
-  196 CLNP023B12301_1002004  FACIT  Day 180   205    44                  N    Missing data            N    Missing data             
-  197 CLNP023B12301_1002004  FACIT  Day 210   206    44                  N    Missing data            N    Missing data             
-  198 CLNP023B12301_1002004  FACIT  Day 270   207    44                  N    Missing data            N    Missing data             
-  258 CLNP023B12301_1005002  FACIT  Day 1     201    44                  N    Missing data            N    Missing data             
-  262 CLNP023B12301_1005002  FACIT  Day 180   205    44                  N    Missing data            N    Missing data             
-  263 CLNP023B12301_1005002  FACIT  Day 210   206    44                  N    Missing data            N    Missing data             
-  264 CLNP023B12301_1005002  FACIT  Day 270   207    44                  N    Missing data            N    Missing data             
-  425 CLNP023B12301_2054004  FACIT  Day 1     201    49                  N    Missing data            N    Missing data             
-  427 CLNP023B12301_2054004  FACIT  Day 30    203    49                  N    Missing data            N    Missing data             
-  429 CLNP023B12301_2054004  FACIT  Day 180   205    49                  N    Missing data            N    Missing data             
-  430 CLNP023B12301_2054004  FACIT  Day 210   206    49                  N    Missing data            N    Missing data             
-  431 CLNP023B12301_2054004  FACIT  Day 270   207    49                  N    Missing data            N    Missing data             
-  530 CLNP023B12301_3311002  FACIT  Day 1     201    52                  N    Missing data            N    Missing data             
-  591 CLNP023B12301_3311003  FACIT  Day 1     201    43                  N    Missing data            N    Missing data             
-  594 CLNP023B12301_3311003  FACIT  Day 90    204    43                  N    Missing data            N    Missing data             
-  595 CLNP023B12301_3311003  FACIT  Day 180   205    43                  N    Missing data            N    Missing data             
-  596 CLNP023B12301_3311003  FACIT  Day 210   206    43                  N    Missing data            N    Missing data             
-  597 CLNP023B12301_3311003  FACIT  Day 270   207    43                  N    Missing data            N    Missing data             
-  757 CLNP023B12301_3404001  FACIT  Day 1     201    32                  N    Missing data            N    Missing data             
-  886 CLNP023B12301_3502004  FACIT  Day 1     201    33                  N    Missing data            N    Missing data             
- 1002 CLNP023B12301_3601011  FACIT  Day 1     201    49                  N    Missing data            N    Missing data             
- 1128 CLNP023B12301_3602003  FACIT  Day 1     201    38                  N    Missing data            N    Missing data             
- 1257 CLNP023B12301_3602004  FACIT  Day 1     201    48                  N    Missing data            N    Missing data             
- 1347 CLNP023B12301_3902003  FACIT  Day 1     201    23                  N    Missing data            N    Missing data             
- 1351 CLNP023B12301_3902003  FACIT  Day 180   205    23                  N    Missing data            N    Missing data             
- 1353 CLNP023B12301_3902003  FACIT  Day 270   207    23                  N    Missing data            N    Missing data             
- 1417 CLNP023B12301_4001007  FACIT  Day 1     201    47                  N    Missing data            N    Missing data             
- 1421 CLNP023B12301_4001007  FACIT  Day 180   205    47                  N    Missing data            N    Missing data             
- 1422 CLNP023B12301_4001007  FACIT  Day 210   206    47                  N    Missing data            N    Missing data             
- 1423 CLNP023B12301_4001007  FACIT  Day 270   207    47                  N    Missing data            N    Missing data             
- 1569 CLNP023B12301_5002001  FACIT  Day 1     201    21                  N    Missing data            N    Missing data             
-
-
-                                                            E                I              E                I                      
-                  U             P            A              S                M              S                M                      
-                  S             A      A     V              T         I      P              T         I      P                      
-                  U             R      V     I              0         C      R              0         C      R                      
-                  B             A      I     S   B A        1         E      E              2         E      E                      
-     O            J             M      S     I   A V        S         0      A              S         0      A                      
-     b            I             C      I     T   S A        T         1      0              T         2      0                      
-     s            D             D      T     N   E L        P         F      1              P         F      2                      
-                                                                                                                                    
-   1698 CLNP023B12301_5006015 FACIT Day 1   201 40                    N Missing data                  N Missing data                
-   1801 CLNP023B12301_5006016 FACIT Day 1   201 36                    N Missing data                  N Missing data                
-   1807 CLNP023B12301_5006016 FACIT Day 270 207 36                    N Missing data                  N Missing data                
-   1873 CLNP023B12301_5016001 FACIT Day 1   201 52                    N Missing data                  N Missing data                
-   1876 CLNP023B12301_5016001 FACIT Day 90  204 52   Treatment policy Y Post ICE     Treatment policy Y Post ICE                    
-   1877 CLNP023B12301_5016001 FACIT Day 180 205 52   Treatment policy Y Post ICE     Treatment policy Y Post ICE                    
-   1878 CLNP023B12301_5016001 FACIT Day 210 206 52   Treatment policy Y Post ICE     Treatment policy Y Post ICE                    
-   1879 CLNP023B12301_5016001 FACIT Day 270 207 52   Treatment policy Y Post ICE     Treatment policy Y Post ICE                    
-   2054 CLNP023B12301_5211001 FACIT Day 1   201 42                    N Missing data                  N Missing data                
-   2058 CLNP023B12301_5211001 FACIT Day 180 205 42                    N Missing data                  N Missing data                
-   2059 CLNP023B12301_5211001 FACIT Day 210 206 42                    N Missing data                  N Missing data                
-   2060 CLNP023B12301_5211001 FACIT Day 270 207 42                    N Missing data                  N Missing data                
-   2174 CLNP023B12301_6012001 FACIT Day 1   201 49                    N Missing data                  N Missing data                
-   2303 CLNP023B12301_6013001 FACIT Day 1   201 45                    N Missing data                  N Missing data                
-
-
-                                                   The FREQ Procedure                                                               
-                                                                                                                                    
-                                                                  Cumulative    Cumulative                                          
-                             AVISIT      Frequency     Percent     Frequency      Percent                                           
-                             -------------------------------------------------------------                                          
-                             Baseline          21       10.71            21        10.71                                            
-                             Day 1             23       11.73            44        22.45                                            
-                             Day 14            25       12.76            69        35.20                                            
-                             Day 180           23       11.73            92        46.94                                            
-                             Day 210           23       11.73           115        58.67                                            
-                             Day 270           23       11.73           138        70.41                                            
-                             Day 30            25       12.76           163        83.16                                            
-                             Day 360           10        5.10           173        88.27                                            
-                             Day 90            23       11.73           196       100.00                                            
-
-
-                                                   The FREQ Procedure                                                               
-                                                                                                                                    
-                                                                       Cumulative    Cumulative                                     
-                         PARAMCD    ICE01F    Frequency     Percent     Frequency      Percent                                      
-                         ----------------------------------------------------------------------                                     
-                         FACIT      N              191       97.45           191        97.45                                       
-                         FACIT      Y                5        2.55           196       100.00                                       
-                                                                                                                                    
-                                                                                                                                    
-                                                                       Cumulative    Cumulative                                     
-                         PARAMCD    ICE02F    Frequency     Percent     Frequency      Percent                                      
-                         ----------------------------------------------------------------------                                     
-                         FACIT      N              191       97.45           191        97.45                                       
-                         FACIT      Y                5        2.55           196       100.00                                       
-
-
-                                                       n_baseline_                                                                  
-                                                            before                                                                  
-                                                      ------------                                                                  
-                                                                21                                                                  
-
-
-                                                       n_baseline_                                                                  
-                                                             after                                                                  
-                                                      ------------                                                                  
-                                                                21                                                                  
-
-
-Check 1：确认 FACIT baseline 还在
-proc freq data=final;
-  tables paramcd*ablfl / list missing;
-  where paramcd='FACIT';
-run;
-
-proc print data=final(obs=50);
-  where paramcd='FACIT' and ablfl='Y';
-  var usubjid paramcd adt avisit avisitn ablfl base aval chg;
-run;
-
-你要看：
-
-FACIT 是否还有 ABLFL='Y'
-baseline record 的 AVISIT='Baseline'，AVISITN=99
-Check 2：确认 dummy 只加在 planned visits 缺失处
-proc print data=final(obs=100);
-  where paramcd='FACIT'
-    and missing(adt)
-    and not missing(avisitn)
-    and avisitn ne 99;
-  var usubjid paramcd avisit avisitn padt base aval est01stp ice01f imprea01 est02stp ice02f imprea02;
-run;
-
-你要看：
-
-这些应该是 dummy rows
-ADT 缺失
-PADT 应该有值
-AVISIT/AVISITN 是 planned visits
-Check 3：确认实际 FACIT 非 planned visit 还在
-proc print data=final(obs=100);
-  where paramcd='FACIT'
-    and not missing(adt)
-    and missing(avisitn);
-  var usubjid paramcd visit adt avisit avisitn aval;
-run;
-
-你要看：
-
-非 planned visit 的实际记录是否还存在
-这正是上一版最容易被误删的部分
-Check 4：确认没有同一 subject/visit 重复 FACIT
-proc sort data=final(where=(paramcd='FACIT'))
-          out=chk_facit_dup dupout=dup_facit nodupkey;
-  by usubjid paramcd avisitn adt atm;
-run;
-
-proc print data=dup_facit(obs=100);
-run;
-
-如果这里有很多重复，就说明 dummy append 可能和实际记录还存在重叠问题。
-
-Check 5：确认 planned visit 补齐是否完整
-proc freq data=final;
-  tables avisit / missing;
-  where paramcd='FACIT';
-run;
-
-proc freq data=final;
-  tables avisit*(missing(adt)) / list missing;
-  where paramcd='FACIT' and avisit in ('Baseline','Day 1','Day 14','Day 30','Day 90','Day 180','Day 210','Day 270','Day 360');
-run;
-
-你要看：
-
-planned visits 都出现了
-有实际记录的 visit 不应该全变成 dummy
-dummy 只应该出现在原本缺失的 visit
-Check 6：确认新增 estimand 变量在 FACIT 上有值
-proc freq data=final;
-  tables paramcd*ice01f paramcd*ice02f / list missing;
-  where paramcd='FACIT';
-run;
-
-proc print data=final(obs=100);
-  where paramcd='FACIT' and (ice01f='Y' or ice02f='Y' or imprea01='Missing data' or imprea02='Missing data');
-  var usubjid avisit adt padt anl05dt anl06dt anl07dt est01stp ice01f imprea01 est02stp ice02f imprea02;
-run;
-Check 7：直接确认 baseline 没有在 dummy step 后消失
-
-这个 check 最直接。你可以在 adfacit3 和 adfacit3a 各跑一次：
-
-proc sql;
-  select count(*) as n_baseline_before
-  from adfacit3
-  where paramcd='FACIT' and ablfl='Y';
-
-  select count(*) as n_baseline_after
-  from adfacit3a
-  where paramcd='FACIT' and ablfl='Y';
-quit;
-
-如果这两个数一样，说明你这次修正把 baseline 保住了。
-
-/************************************************************************
-*  PROJECT       : CLNP023B1
-*  STUDY         : CLNP023B12301
-*  RA            : csr_4
-*  FILENAME      : adfacit.sas
-*  DESCRIPTION   : Create dataset ADFACIT (csr_4 PDS / VLM / METHOD compliant)
-*  PLATFORM      : AIX 7.1 (AIX 64) (see SAS log file)
-*  SAS VERSION   : 9.4 (see SAS log file)
-*  INPUT         : SDTM QS (with SUPPQS), ADaM ADSL, SDTM DS/FACM
-*  OUTPUT        : analysis.adfacit
-*  MODIFICATIONS : Reworked from csr_3 to match csr_4 changes
-*************************************************************************/
-
-proc datasets lib=work kill nolist;
-quit;
-
-/* GPS environment setup macro */
-data _null_;
-  if libref('analysis') then call execute('%nrstr(%autorun;)');
-run;
-
-/* ------------------------------- */
-/* Formats                         */
-/* ------------------------------- */
-proc format;
-  invalue avisitn
-    'Baseline' = 99
-    'Day 1'    = 201
-    'Day 14'   = 202
-    'Day 30'   = 203
-    'Day 90'   = 204
-    'Day 180'  = 205
-    'Day 210'  = 206
-    'Day 270'  = 207
-    'Day 360'  = 299
-  ;
-quit;
-
-/* 5-point verbal scale to numeric (fallback when QSSTRESN missing) */
-proc format;
-  invalue facit_val
-    "NOT AT ALL"   = 0
-    "A LITTLE BIT" = 1
-    "SOMEWHAT"     = 2
-    "QUITE A BIT"  = 3
-    "VERY MUCH"    = 4
-  ;
-quit;
-
-/* ------------------------------- */
-/* Read QS + SUPPQS and pre-derive */
-/* ------------------------------- */
-%opMergeSupp(
-  inData     = derived.qs,
-  outData    = qs_raw,
-  inSuppData = derived.suppqs,
-  keepQnam   =
-);
-
-proc sort data=qs_raw nodupkey;
-  by usubjid subjid qscat qstest qsscat visit qsdtc qsorres;
-run;
-
-/* Keep only FACIT-Fatigue 13 items */
-data qs_items;
-  set qs_raw(rename=(
-        qstest   = param
-        qstestcd = paramcd
-        lg       = qslg
-        qseval   = qseval
-      ));
-  where qscat = 'FACIT-FATIGUE 13-ITEM V4';
-
-  length avalc $100;
-  aval  = coalesce(qsstresn, input(upcase(qsorres), facit_val.));
-  avalc = strip(upcase(qsorres));
-
-  adt = input(scan(qsdtc,1,'T'), yymmdd10.);
-  atm = input(scan(qsdtc,2,'T'), time8.);
-  if length(qsdtc)=19 then adtm = input(qsdtc, e8601dt.);
-
-  format adt yymmdd10. atm time5.;
-run;
-
-/* Map PARAMN from Analysis Parameters for item-level rows */
-proc sql;
-  create table qs_items_m as
-  select a.*,
-         b.paramcd as paramcd_,
-         b.paramn
-  from qs_items as a
-  left join
-       (
-         select param, paramcd, paramn
-         from rprtdsm.analysis_parameters
-         where not missing(paramn)
-       ) as b
-    on a.param = b.param
-  ;
-quit;
-
-proc sort data=qs_items_m;
-  by usubjid subjid visit adt paramn;
-run;
-
-/* ------------------------------- */
-/* Join ADSL and derive visit vars */
-/* ------------------------------- */
-data qs_items_j;
-  merge qs_items_m(in=a)
-        analysis.adsl(in=b drop=subjid rename=(siteid=siteid_adsl));
-  by usubjid;
-  if a;
-
-  if adt>=trtsdt>. then ady = adt - trtsdt + 1;
-  else if .<adt<trtsdt then ady = adt - trtsdt;
-
-  length avisit $40;
-  if visit = 'End of Study' then visit = 'Day 360';
-
-  if visit in ('Day 1','Day 14','Day 30','Day 90','Day 180','Day 210','Day 270','Day 360') then avisit = visit;
-  else avisit = '';
-
-  avisitn = input(avisit, avisitn.);
-
-  if missing(siteid) then siteid = siteid_adsl;
-  drop siteid_adsl;
-run;
-
-/* ------------------------------- */
-/* Derive FACIT/FACITEXP/FACITIMP  */
-/* ------------------------------- */
-proc sort data=qs_items_j;
-  by studyid usubjid subjid visit visitnum adt atm adtm qslg qseval;
-run;
-
-proc transpose data=qs_items_j(where=(not missing(paramcd_)))
-               out=qs_wide(drop=_name_);
-  by studyid usubjid subjid visit visitnum adt atm adtm qslg qseval;
-  var aval;
-  id paramcd_;
-run;
-
-/*
-  Compute scores:
-  - reverse-keyed items where applicable
-  - FAT_N = N(non-missing items)
-  - if FAT_N/13 > 0.5 then prorated total FACIT
-  - derived rows: FACIT, FACITEXP, FACITIMP
-*/
-data facit_der;
-  length param $40 paramcd $8 paramtyp $7 avalc $100;
-  set qs_wide;
-
-  array item{13} FAC07001-FAC07013;
-  array hi   HI7 HI12;
-  array ana  AN1-AN5;
-  array anb  AN7 AN8 AN12 AN14-AN16;
-
-  do i=1 to 13;
-    if item[i] in (8,9) then item[i]=.;
-  end;
-
-  if not missing(FAC07001) then HI7  = 4 - FAC07001;
-  if not missing(FAC07002) then HI12 = 4 - FAC07002;
-  if not missing(FAC07003) then AN1  = 4 - FAC07003;
-  if not missing(FAC07004) then AN2  = 4 - FAC07004;
-  if not missing(FAC07005) then AN3  = 4 - FAC07005;
-  if not missing(FAC07006) then AN4  = 4 - FAC07006;
-  if not missing(FAC07007) then AN5  = FAC07007;
-  if not missing(FAC07008) then AN7  = FAC07008;
-  if not missing(FAC07009) then AN8  = 4 - FAC07009;
-  if not missing(FAC07010) then AN12 = 4 - FAC07010;
-  if not missing(FAC07011) then AN14 = 4 - FAC07011;
-  if not missing(FAC07012) then AN15 = 4 - FAC07012;
-  if not missing(FAC07013) then AN16 = 4 - FAC07013;
-
-  FAT_N = n(of HI7 HI12 AN1-AN5 AN7 AN8 AN12 AN14-AN16);
-
-  if FAT_N/13 > .50 then do;
-    aval  = sum(of HI7 HI12 AN1-AN5 AN7 AN8 AN12 AN14-AN16) * 13 / FAT_N;
-    avalc = strip(put(aval, best.));
-    param='FACIT Fatigue score';
-    paramcd='FACIT';
-    paramtyp='DERIVED';
-    output;
-
-    aval  = sum(of HI7 HI12 AN1 AN2 AN5);
-    avalc = strip(put(aval, best.));
-    param='FACIT Experience score';
-    paramcd='FACITEXP';
-    paramtyp='DERIVED';
-    output;
-
-    aval  = sum(of AN3 AN4 AN7 AN8 AN12 AN14-AN16);
-    avalc = strip(put(aval, best.));
-    param='FACIT Impact score';
-    paramcd='FACITIMP';
-    paramtyp='DERIVED';
-    output;
-  end;
-
-  keep studyid usubjid subjid visit visitnum adt atm adtm qslg qseval
-       param paramcd paramtyp aval avalc;
-run;
-
-/* Map PARAMN for derived rows */
-proc sql;
-  create table facit_der_m as
-  select a.*, b.paramn
-  from facit_der as a
-  left join
-       (
-         select param, paramcd, paramn
-         from rprtdsm.analysis_parameters
-         where not missing(paramn)
-       ) as b
-    on a.param = b.param
-   and a.paramcd = b.paramcd
-  ;
-quit;
-
-/* ------------------------------- */
-/* Union item-level + derived rows */
-/* ------------------------------- */
-data adfacit0;
-  set qs_items_j(
-        keep=studyid usubjid subjid siteid
-             param paramcd paramn
-             visit visitnum
-             adt atm adtm
-             qslg qseval qsstat qsreasnd
-             aval avalc qsseq
-             avisit avisitn
-      )
-      facit_der_m
-  ;
-run;
-
-proc sort data=adfacit0;
-  by usubjid paramcd adt atm adtm;
-run;
-
-data adfacit1;
-  merge adfacit0(in=a)
-        analysis.adsl(in=b drop=subjid rename=(siteid=siteid_adsl));
-  by usubjid;
-  if a;
-
-  if adt>=trtsdt>. then ady = adt - trtsdt + 1;
-  else if .<adt<trtsdt then ady = adt - trtsdt;
-
-  if aperiod=. then do;
-    if .<ap01sdt<=adt<=coalesce(ap02sdt, ap01edt) then aperiod=1;
-    else if .<ap02sdt<adt<=ap02edt then aperiod=2;
-  end;
-
-  length aperiodc $30;
-  if aperiod=1 then aperiodc='Double-blind';
-  else if aperiod=2 then aperiodc='Open-label';
-
-  if upcase(coalescec(paramtyp,''))='DERIVED' then do;
-    qsstat   = '';
-    qsreasnd = '';
-    qslg     = '';
-    qseval   = '';
-  end;
-
-  if missing(avisit) then do;
-    length _v $40;
-    _v = visit;
-    if _v = 'End of Study' then _v = 'Day 360';
-
-    if _v in ('Day 1','Day 14','Day 30','Day 90','Day 180','Day 210','Day 270','Day 360') then do;
-      avisit  = _v;
-      avisitn = visitnum;
-    end;
-    else do;
-      avisit  = '';
-      avisitn = .;
-    end;
-  end;
-
-  if missing(siteid) then siteid = siteid_adsl;
-  drop siteid_adsl _v;
-
-  length anl01dsc anl03dsc $100 crit1 crit2 $50;
-run;
-
-/* ------------------------------- */
-/* Baseline                        */
-/* ------------------------------- */
-proc sort data=adfacit1;
-  by usubjid paramcd adt atm adtm;
-run;
-
-data base_cand;
-  set adfacit1;
-  where adt <= trtsdt and not missing(aval);
-  by usubjid paramcd adt atm adtm;
-run;
-
-data base_last;
-  set base_cand;
-  by usubjid paramcd adt atm adtm;
-  if last.paramcd;
-  keep usubjid paramcd adt aval;
-  rename adt  = baseadt
-         aval = base;
-run;
-
-proc sql;
-  create table adfacit2 as
-  select a.*, b.base, b.baseadt
-  from adfacit1 as a
-  left join base_last as b
-    on a.usubjid=b.usubjid
-   and a.paramcd=b.paramcd
-  ;
-quit;
-
-data adfacit3;
-  set adfacit2;
-
-  length ablfl $1;
-
-  if not missing(baseadt) and adt=baseadt then do;
-    ablfl   = 'Y';
-    avisit  = 'Baseline';
-    avisitn = 99;
-  end;
-
-  if upcase(coalescec(paramtyp,''))='DERIVED' then do;
-    if ablfl ne 'Y' and nmiss(aval, base)=0 then chg = aval - base;
-  end;
-
-  if not missing(chg) then do;
-    if chg >= 5 then do;
-      crit1fl='Y';
-      crit1='5-point improvement';
-    end;
-    if chg >= 3 then do;
-      crit2fl='Y';
-      crit2='3-point improvement';
-    end;
-  end;
-
-  if upcase(coalescec(paramtyp,''))='DERIVED' and (ablfl='Y' or not missing(aval)) then do;
-    anl01fl='Y';
-    anl01dsc='Unique record for each visit';
-  end;
-
-  if ablfl='Y' or (aperiod=1 and not missing(aval)) then do;
-    anl03fl='Y';
-    anl03dsc='Record for treatment randomized period analysis';
-  end;
-run;
-
-/* Recompute TRTA/TRTP after ABLFL finalized */
-data adfacit3;
-  set adfacit3;
-  if aperiod=1 or ablfl='Y' then do;
-    trta  = trt01a;
-    trtan = trt01an;
-    trtp  = trt01p;
-    trtpn = trt01pn;
-  end;
-  else if aperiod=2 then do;
-    trta  = trt02a;
-    trtan = trt02an;
-    trtp  = trt02p;
-    trtpn = trt02pn;
-  end;
-run;
-
-/* ------------------------------- */
-/* Add planned-visit dummy records */
-/* only when actual FACIT visit    */
-/* does not already exist          */
-/* ------------------------------- */
-proc sort data=adfacit3 out=facit_bl nodupkey;
-  by usubjid paramcd;
-  where paramcd='FACIT' and ablfl='Y';
-run;
-
-data facit_dummy0;
-  set facit_bl(
-    keep=studyid usubjid subjid siteid
-         param paramcd paramn paramtyp
-         trtsdt trt01a trt01an trt01p trt01pn
-         trt02a trt02an trt02p trt02pn
-         ap01sdt ap01edt ap02sdt ap02edt
-         base
-  );
-
-  length avisit $40;
-  do avisit='Day 1','Day 14','Day 30','Day 90','Day 180','Day 210','Day 270','Day 360';
-    avisitn = input(avisit, avisitn.);
-    output;
-  end;
-run;
-
-proc sql;
-  create table facit_dummy1 as
-  select a.*,
-         input(b.svstdtc, yymmdd10.) as svstdt format=date9.,
-         c.visitdy
-  from facit_dummy0 as a
-  left join derived.sv as b
-    on a.usubjid=b.usubjid
-   and a.avisit=b.visit
-  left join derived.tv as c
-    on a.avisit=c.visit
-  ;
-quit;
-
-data facit_dummy2;
-  set facit_dummy1;
-  format plandt padt date9.;
-
-  if nmiss(trtsdt, visitdy)=0 then plandt = trtsdt + visitdy - 1;
-  padt = coalesce(svstdt, plandt);
-
-  if .<ap01sdt<=padt<=coalesce(ap02sdt, ap01edt) then aperiod=1;
-  else if .<ap02sdt<padt<=ap02edt then aperiod=2;
-
-  length aperiodc $30;
-  if aperiod=1 then aperiodc='Double-blind';
-  else if aperiod=2 then aperiodc='Open-label';
-
-  if aperiod=1 then do;
-    trta  = trt01a;
-    trtan = trt01an;
-    trtp  = trt01p;
-    trtpn = trt01pn;
-  end;
-  else if aperiod=2 then do;
-    trta  = trt02a;
-    trtan = trt02an;
-    trtp  = trt02p;
-    trtpn = trt02pn;
-  end;
-
-  length
-    visit    $40
-    qsstat   $200
-    qsreasnd $200
-    qslg     $200
-    qseval   $200
-    avalc    $200
-    crit1    $50
-    crit2    $50
-    crit1fl  $1
-    crit2fl  $1
-    anl01fl  $1
-    anl03fl  $1
-    ablfl    $1
-    anl01dsc $100
-    anl03dsc $100
-    ice01f   $1
-    ice02f   $1
-    est01stp $200
-    est02stp $200
-    imprea01 $200
-    imprea02 $200
-  ;
-
-  call missing(
-    visit, qsstat, qsreasnd, qslg, qseval,
-    adt, atm, adtm, ady, aval, avalc, chg,
-    crit1, crit1fl, crit2, crit2fl,
-    anl01fl, anl01dsc, anl03fl, anl03dsc,
-    ablfl, qsseq,
-    ice01f, ice02f, est01stp, est02stp, imprea01, imprea02
-  );
-run;
-
-proc sort data=facit_dummy2;
-  by usubjid paramcd avisitn;
-run;
-
-data existing_facit;
-  set adfacit3;
-  where paramcd='FACIT';
-  keep usubjid paramcd avisitn;
-run;
-
-proc sort data=existing_facit nodupkey;
-  by usubjid paramcd avisitn;
-run;
-
-data dummy_new;
-  merge facit_dummy2(in=d) existing_facit(in=e);
-  by usubjid paramcd avisitn;
-  if d and not e;
-run;
-
-data adfacit3a;
-  set adfacit3
-      dummy_new;
-run;
-
-/* ------------------------------- */
-/* ANL05/ANL06/ANL07 subject dates */
-/* ------------------------------- */
-
-/* ANL05: first anti-proteinuric therapy ICE */
-data fa_ap;
-  merge derived.facm(in=a)
-        analysis.adsl(keep=usubjid trtsdt);
-  by usubjid;
-  if a
-     and upcase(facat)='ANTI-PROTEINURIC THERAPIES RELATED INTERCURRENT EVENTS'
-     and faorres='Y';
-
-  fadt = input(fadtc, ??yymmdd10.);
-  if fadt >= trtsdt > .;
-
-  format fadt yymmdd10.;
-run;
-
-proc sort data=fa_ap;
-  by usubjid fadt;
-run;
-
-data fa_ap1;
-  set fa_ap;
-  by usubjid fadt;
-  if first.usubjid;
-  keep usubjid fadt;
-  rename fadt=anl05dt;
-run;
-
-/* ANL06: first RRT ICE */
-data fa_rr;
-  merge derived.facm(in=a)
-        analysis.adsl(keep=usubjid trtsdt);
-  by usubjid;
-  if a
-     and upcase(facat)='RENAL REPLACEMENT THERAPY RELATED INTERCURRENT EVENTS'
-     and faorres='Y';
-
-  fadt = input(fadtc, ??yymmdd10.);
-  if fadt >= trtsdt > .;
-
-  format fadt yymmdd10.;
-run;
-
-proc sort data=fa_rr;
-  by usubjid fadt;
-run;
-
-data fa_rr1;
-  set fa_rr;
-  by usubjid fadt;
-  if first.usubjid;
-  keep usubjid fadt;
-  rename fadt=anl06dt;
-run;
-
-/* ANL07: first treatment discontinuation for other reason */
-data ds_oth;
-  merge derived.ds(in=a)
-        analysis.adsl(keep=usubjid trtsdt);
-  by usubjid;
-  if a
-     and dsscat in ('BLINDED TREATMENT DISPOSITION','OPEN LABEL TREATMENT DISPOSITION')
-     and prxmatch('/COMPLETED|ADVERSE/i', dsdecod)=0;
-
-  anl07dt = input(dsstdtc, ??yymmdd10.);
-  if anl07dt >= trtsdt > .;
-
-  format anl07dt yymmdd10.;
-run;
-
-proc sort data=ds_oth;
-  by usubjid anl07dt;
-run;
-
-data ds_oth1;
-  set ds_oth;
-  by usubjid anl07dt;
-  if first.usubjid;
-  keep usubjid anl07dt;
-run;
-
-/* Attach dates */
-proc sql;
-  create table adfacit4 as
-  select a.*,
-         b.anl05dt,
-         c.anl06dt,
-         d.anl07dt
-  from adfacit3a as a
-  left join fa_ap1  as b on a.usubjid=b.usubjid
-  left join fa_rr1  as c on a.usubjid=c.usubjid
-  left join ds_oth1 as d on a.usubjid=d.usubjid
-  ;
-quit;
-
-/* Record-level post-ICE flags + new estimand vars */
-data adfacit5;
-  set adfacit4;
-  length anl05fl anl06fl anl07fl ice01f ice02f $1
-         anl05dsc anl06dsc anl07dsc $100
-         est01stp est02stp imprea01 imprea02 $200;
-
-  refdt = coalesce(adt, padt);
-  format refdt date9.;
-
-  if not missing(anl05dt) and refdt > anl05dt then do;
-    anl05fl='Y';
-    anl05dsc='Record after initiation or intensification of anti-proteinuric therapies';
-  end;
-
-  if not missing(anl06dt) and refdt > anl06dt then do;
-    anl06fl='Y';
-    anl06dsc='Record after initiation of RRT';
-  end;
-
-  if not missing(anl07dt) and refdt > anl07dt then do;
-    anl07fl='Y';
-    anl07dsc='Record after treatment discontinuation for any other reason';
-  end;
-
-  if paramcd='FACIT' then do;
-    ice01f='N';
-    ice02f='N';
-
-    if refdt > anl05dt > . then do;
-      est01stp='Hypothetical strategy';
-      ice01f='Y';
-      imprea01='Post ICE';
-
-      est02stp='Treatment policy';
-      ice02f='Y';
-      imprea02='Post ICE';
-    end;
-    else if refdt > anl06dt > . then do;
-      est01stp='Hypothetical strategy';
-      ice01f='Y';
-      imprea01='Post ICE';
-
-      est02stp='Hypothetical strategy';
-      ice02f='Y';
-      imprea02='Post ICE';
-    end;
-    else if refdt > anl07dt > . then do;
-      est01stp='Treatment policy';
-      ice01f='Y';
-      imprea01='Post ICE';
-
-      est02stp='Treatment policy';
-      ice02f='Y';
-      imprea02='Post ICE';
-    end;
-
-    if missing(aval) then do;
-      if missing(imprea01) then imprea01='Missing data';
-      if missing(imprea02) then imprea02='Missing data';
-    end;
-  end;
-
-  drop refdt;
-run;
-
-/* ------------------------------- */
-/* AEFLAG / AEDCDT                 */
-/* ------------------------------- */
-data ds_ae_p1;
-  merge derived.ds(in=a)
-        analysis.adsl(keep=usubjid ap01sdt ap01edt);
-  by usubjid;
-  if a
-     and dsscat='STUDY DISPOSITION'
-     and index(upcase(dsdecod),'ADVERSE')>0;
-
-  aedcdt = input(dsstdtc, ??yymmdd10.);
-  if ap01sdt <= aedcdt <= ap01edt;
-
-  format aedcdt yymmdd10.;
-run;
-
-proc sort data=ds_ae_p1;
-  by usubjid aedcdt;
-run;
-
-data ds_ae_p1_1;
-  set ds_ae_p1;
-  by usubjid aedcdt;
-  if first.usubjid;
-  keep usubjid aedcdt;
-run;
-
-proc sql;
-  create table adfacit6 as
-  select a.*,
-         e.aedcdt,
-         case when not missing(e.aedcdt) then 'Y' else '' end as aeflag length=1
-  from adfacit5 as a
-  left join ds_ae_p1_1 as e
-    on a.usubjid=e.usubjid
-  ;
-quit;
-
-/* ------------------------------- */
-/* Final dataset                   */
-/* ------------------------------- */
-data final;
-  set adfacit6;
-
-  if missing(aval) and missing(avalc)
-     and not (
-       paramcd='FACIT'
-       and upcase(coalescec(paramtyp,''))='DERIVED'
-       and missing(adt)
-       and not missing(padt)
-       and avisitn ne 99
-     )
-  then delete;
-
-  drop plandt padt svstdt visitdy;
-run;
-
-proc sort data=final;
-  by studyid usubjid subjid paramcd avisitn adt atm qsseq;
-run;
-
-/* Submission padding and attribute assignment */
-%_std_varpadding_submission(
-  calledby   =,
-  in_lib     = work,
-  out_lib    = work,
-  include_ds = final,
-  exclude_ds =
-);
-
-%opSetAttr(
-  domain   = adfacit,
-  inData   = final,
-  metaData = RPRTDSM.study_adam_metadata
-);
-
-
-
-
-
-
-
-
-
-
+探索 GAIN 的应用
+使用这些模板应用程序，或根据模板自定义您自己的应用程序。
+推荐
+Agent
+工作流
+编程
+搜索
+♿
+Help me think
+CHATFLOW
+📄
+ChatPaper
+CHATFLOW
+Let's chat with paper!
+📝
+Personalized Memory Assistant
+CHATFLOW
+This chatflow is inspired by OpenAI's personalized memory, with prompts derived from the open-source project mem0ai.
+💭
+Intent recognition customer service
+CHATFLOW
+Use conversation variables to manage the status of questions and solutions in customer service scenarios. Using conversation variable and dialogue_count demonstrating how to build a customer service chatbot.
+🤖
+Workflow Planning Assistant
+CHATFLOW
+Answers queries on steps to follow for building a workflow
+🏥
+Patient Intake Chatbot
+CHATFLOW
+This chatflow shows how to build a customer service chatbot for patient intake. Patients' data can be gathered through interactive sessions on webpages.
+📄
+Long Story Generator (Iteration)
+CHATFLOW
+A workflow demonstrating how to use Iteration node to generate long article that is longer than the context length of LLMs.
+🤖
+Sentiment Analysis
+工作流
+Performs sentiment analysis on a given text
+🤖
+Python bug fixer
+聊天助手
+Identifies bugs/discrepancies in a given python code and provides a corrected version
+🤖
+Code Converter
+文本生成
+Provides translation capabilities in multiple programming languages
+🤖
+Code Interpreter
+聊天助手
+Provides description of a given code
+🤖
+SQL Creator
+文本生成
+An SQL generator translating natural language to SQL queries
+🤖
+Information Detection
+工作流
+Detects information as names, emails, location, drug names etc. from a given document
+🤖
+Customer Complaint Closure (Brazil)
+工作流
+Generates document based on customer complaint closure template
+🤖
+Informed Consent Form
+工作流
+Generates document based on informed consent form template
+🤖
+CSV Insights
+聊天助手
+Answers queries based on data given in a CSV file
+🤖
+Content Validation
+工作流
+Identifies if the documents are filled in the correct format/steps vis-à-vis given format
+🤖
+Doc Search
+工作流
+Search relevant content from documents
+🤖
+Doc QnA
+工作流
+Provides answers on given documents
+🤖
+Doc Summarize
+工作流
+Summarizes documents
+🤖
+Doc Anonymize
+工作流
+Anonymize sensitive information in documents while maintaining the original structure and format.
+🤖
+Document Classification
+工作流
+Classifies documents into Business Use / Public Use / Restricted etc.
+🤖
+Document Mapping
+工作流
+Maps documents against Administrative Information / Summary / Quality etc.
+🤖
+Metadata Extraction
+工作流
+Searches relevant metadata content in documents
+🤖
+Test Case Generation
+工作流
+Auto-generate test cases in formats like Proton or X-Ray using user story document and application navigation steps
+🤖
+ITKnows
+工作流
+Builds summary across large corpus of documents with gene and disease as inputs
+🤖
+Topic Generation
+工作流
+Generates topics that represents a theme within a text
+🤖
+Triples Extraction
+工作流
+Identifies pairs of entities and their relationships from unstructured input text.
+🤖
+Content Generation
+工作流
+Streamline your content creation and produce high-quality content with greater efficiency
+🤖
+Doc Redact
+工作流
+Redact sensitive information in documents while preserving format and structure
+
+添加到工作区
+
+
+助力您的 AI 开发
+探索
+模型
+,
+工具
+,
+Agent 策略
+,
+扩展
+和
+插件集
+在
+GAIN 市场
+搜索
+模型
+Amazon SageMaker
+gain
+/
+sagemaker
+Self deployed model provider - Amazon SageMaker
+安装
+Version History
+工具
+Image Annotation Tool
+gain
+/
+imageannotation
+A tool to draw rectangles on images (png, jpg, and jpeg files) based on user inputs.
+#
+工具
+安装
+Version History
+工具
+JSON 处理
+gain
+/
+json_process
+利用 jsonpath_ng 处理 JSON 内容的工具
+#
+工具
+安装
+Version History
+工具
+朗查恩奥本赛奇寻回犬
+gain
+/
+langchain_osearch_retriever
+使用语言链从 opensearch 检索文档的工具。
+#
+搜索
+安装
+Version History
+工具
+Clinical Trial
+gain
+/
+clinicaltrial
+Clinical Trial, https://clinicaltrials.gov
+#
+搜索
+安装
+Version History
+工具
+Snowflake Data Extractor
+gain
+/
+snowflake
+A tool for extracting, analyzing, and manipulating data from Snowflake databases.
+#
+工具
+安装
+Version History
+工具
+Azure DALL-E 绘画
+gain
+/
+azuredalle
+Azure DALL-E 绘画
+#
+图片
+#
+生产力
+安装
+Version History
+工具
+Athena查询工具
+gain
+/
+athena
+AthenaQueryTool 是一种用于查询 AWS Athena 数据库并检索查询结果的工具。
+#
+生产力
+#
+工具
+安装
+Version History
+工具
+ServiceNow
+gain
+/
+servicenow
+ServiceNowUpdateTicket 是一种用于更新 ServiceNow 中工单评论并提取相关信息的工具。
+#
+生产力
+安装
+Version History
+工具
+SQL Data Retriever
+gain
+/
+sqldataretriever
+A tool that allows you to run SQL queries on SQL databases like postgresql, mssql, oracle, mysql and fetch results easily.
+#
+工具
+安装
+Version History
+工具
+维基百科
+gain
+/
+wikipedia
+维基百科是一个由全世界的志愿者创建和编辑的免费在线百科全书。
+#
+社交
+安装
+Version History
+工具
+文本转流程图工具
+gain
+/
+texttoflowchart
+文本转流程图工具使用人工智能将自然语言描述转换为结构化的 流程图。
+#
+生产力
+安装
+Version History
+工具
+表格和图表叙述工具
+gain
+/
+documentimageextraction
+Document Image Extraction 是一种用于从PDF和DOCX文件中提取和叙述表格和图表的工具。
+#
+生产力
+#
+工具
+安装
+Version History
+工具
+Chemcrow Chemical Tools
+gain
+/
+chemcrow
+A collection of chemical tools to convert between CAS, SMILES, and Name.
+#
+医疗
+安装
+Version History
+工具
+M365 search Tool
+gain
+/
+m365search
+M365search provided as a tool
+#
+搜索
+安装
+Version History
+工具
+Markdown 转换器
+gain
+/
+md_exporter
+导出 Markdown 为 DOCX, PPTX, XLSX, PDF, HTML, MD, CSV, JSON, XML, LaTex 文件, 并将代码块导出为各类脚本文件(Python, JS, Bash等)。
+#
+工具
+安装
+Version History
+工具
+Converters
+gain
+/
+converters
+A tool to convert JSON or Python dictionaries into structured Excel files (.xlsx or .xls).
+#
+工具
+安装
+Version History
+工具
+Base64 编码解码
+gain
+/
+base64
+Base64 编码解码，支持纯文本、二进制文件、图片文件与Base64文本的互相转换
+安装
+Version History
+工具
+SciBite Ontology Tagger
+gain
+/
+scibite
+A tool to tag scientific text with relevant ontologies for better knowledge organization.
+#
+医疗
+#
+工具
+安装
+Version History
+工具
+Redact
+gain
+/
+redact
+Redact sensitive information in DOCX, PDF, and XLSX files to protect data.
+#
+生产力
+#
+工具
+安装
+Version History
+工具
+表格和图表叙述工具
+gain
+/
+narrate_tables_graphs
+NarrateTablesGraphsTool 是一种用于从PDF和DOCX文件中提取和叙述表格和图表的工具。
+#
+生产力
+#
+工具
+安装
+Version History
+工具
+网站爬取工具
+gain
+/
+websitecrawler
+WebsiteCrawlerTool 是一种用于爬取网站并提取结构化数据的工具。
+#
+生产力
+#
+工具
+安装
+Version History
+工具
+Agentic Data Analysis
+gain
+/
+agenticdataanalysis
+Agentic Data Analysis lets you chat with your structured data (CSV), ask questions in plain English, and receive instant analyses, visualizations, or natural language summaries. Sensitive information can be anonymized to protect privacy.
+安装
+Version History
+工具
+mem0
+gain
+/
+mem0
+Integration for mem0
+安装
+Version History
+工具
+USPTO Search Tools
+gain
+/
+uspto
+A collection of tools for searching patents, trademarks, and assignments from the USPTO DB. (Trademark Assignment Search Tool DISABLED).
+#
+工具
+安装
+Version History
+工具
+命名实体识别
+gain
+/
+ner
+Azure 命名实体识别，用于识别和提取文本文件中的实体以便处理。
+#
+生产力
+#
+工具
+安装
+Version History
+工具
+首字母缩略词提取器
+gain
+/
+acronymextractor
+AcronymExtractor 是一种从给定文本中提取首字母缩略词的工具。
+#
+生产力
+#
+工具
+安装
+Version History
+工具
+GoogleSearch
+gain
+/
+googlesearch
+Google搜索是一个从Google获取结果的工具，包括URL、标题和描述，并将它们提供给用户。
+#
+搜索
+安装
+Version History
+工具
+Tabular Data Operations
+gain
+/
+tabulardataoperations
+一个利用Langchain Agent, 使用pandas库进行数据分析的工具。
+#
+搜索
+安装
+Version History
+工具
+Open search Tool
+gain
+/
+opensearch
+Opensearch tool enables search capability from opensearch.
+#
+搜索
+安装
+Version History
+工具
+Workday Jobs
+gain
+/
+workday_jobs
+Workday Jobs, https://apigwc-eu.novartis.com
+#
+搜索
+安装
+Version History
+工具
+Redis Cache
+gain
+/
+redis
+Cache for storing workflow fields, runs, and related data
+#
+生产力
+安装
+Version History
+工具
+ArXiv
+gain
+/
+arxiv
+ArXiv，https://arxiv.org.
+#
+搜索
+安装
+Version History
+工具
+Mark It Down
+gain
+/
+markitdown
+MarkItDown 是一个轻量级的 Python 工具，用于将各种文件转换为 Markdown，以便与大型语言模型（LLM）和相关文本分析流程配合使用。
+#
+生产力
+#
+工具
+安装
+Version History
+模型
+通义千问
+gain
+/
+tongyi
+通义千问
+安装
+Version History
+工具
+电子邮件摘要
+gain
+/
+emailsummarizer
+EmailSummarizer 是一种用于总结电子邮件文件（.msg格式）内容并提取相关信息的工具。
+#
+生产力
+#
+工具
+安装
+Version History
+工具
+维基百科
+gain
+/
+bioarxiv
+维基百科是一个由全世界的志愿者创建和编辑的免费在线百科全书。
+#
+医疗
+安装
+Version History
+工具
+意图分类工具提供者
+gain
+/
+intentclassification
+意图分类工具利用人工智能将文本的意图分类到预定义的类别中。
+#
+生产力
+#
+工具
+安装
+Version History
+工具
+Image Reader Tool
+gain
+/
+imagereader
+A tool to narrate images from png,jpg and jpeg files.
+#
+生产力
+安装
+Version History
+工具
+DevOps Work Item Manager
+gain
+/
+azuredevops
+Manage work items in Azure DevOps. List and retrieve work items based on specified filters, and create new work items.
+#
+生产力
+#
+工具
+安装
+Version History
+Agent 策略
+Agent 策略
+gain
+/
+agent
+官方 Agent 策略集合
+#
+Agent
+安装
+Version History
+工具
+Text Converters
+gain
+/
+text_converters
+A tool to convert text from Markdown, Text, or HTML into various formats.
+#
+工具
+安装
+Version History
+工具
+Reranker Tool
+gain
+/
+rerankertool
+The Reranker Tool is a plugin designed to optimize and prioritize content rankings based on relevance. Using advanced algorithms, it helps rerank lists of content efficiently, ensuring that the most relevant items appear at the top. Ideal for applications involving search, ordering, or content prioritization in user interfaces.
+#
+工具
+安装
+Version History
+工具
+意图分类工具提供者
+gain
+/
+pptgenerator
+PPT生成器是一个工具，通过将文档中的数据传递给LLM，然后生成PowerPoint演示文稿。
+#
+生产力
+#
+工具
+安装
+Version History
+工具
+Anonymize
+gain
+/
+anonymize
+工具旨在通过匿名化 DOCX、PDF 和 XLSX 文件中的实体来保护敏感信息
+#
+搜索
+安装
+Version History
+模型
+Azure OpenAI
+gain
+/
+azure_openai
+Azure OpenAI Service Model
+安装
+Version History
+扩展
+mcp-server
+gain
+/
+mcp-server
+make GAIN's workflow as a MCP server
+安装
+Version History
+模型
+AWS
+gain
+/
+bedrock
+AWS Bedrock's models.
+安装
+Version History
+工具
+PandasAI
+gain
+/
+pandasai
+一个利用PandasAI, 使用pandas库进行数据分析的工具。
+#
+搜索
+安装
+Version History
+工具
+Image Redact Tool
+gain
+/
+imageredact
+Azure Image Redact Tool automatically detects and redacts PII (Personally Identifiable Information) from images for privacy protection.
+#
+生产力
+安装
+Version History
+工具
+文档智能
+gain
+/
+documentintelligence
+文档智能是一个用于分析和提取文档信息的工具。
+#
+生产力
+#
+工具
+安装
+Version History
+工具
+PubMed
+gain
+/
+pubmed
+一款生物医学文献搜索引擎。
+#
+医疗
+#
+搜索
+安装
+Version History
+工具
+JSON/TEXT Converter
+gain
+/
+jsontxt_converter
+一种工具，用于处理 JSON 或纯文本输入并输出结构化 JSON 格式。
+#
+工具
+安装
+Version History
+工具
+图表生成
+gain
+/
+chart
+图表生成是一个用于生成可视化图表的工具，你可以通过它来生成柱状图、折线图、饼图等各类图表
+#
+设计
+#
+生产力
+#
+工具
+安装
+Version History
+
+代码解释器
+code
+运行一段代码并返回结果。
+#
+productivity
+Knowledge Retrieval
+knowledgeretrieval
+提供唯一的ID以检索GAIN中的知识
+#
+search
+Template Fetcher
+templatefetcher
+Template Fetcher is a tool that fetches templates from the database
+#
+productivity
+Audio
+audio
+一个用于文本转语音和语音转文本的工具。
+#
+utilities
+时间
+time
+一个用于获取当前时间的工具。
+#
+utilities
+网页抓取
+webscraper
+一个用于抓取网页的工具。
+#
+productivity
+GoogleSearch
+gain/googlesearch/googlesearch
+Google搜索是一个从Google获取结果的工具，包括URL、标题和描述，并将它们提供给用户。
+#
+utilities
+Clinical Trial
+gain/clinicaltrial/clinicaltrial
+一个用于探索临床研究信息和结果的搜索工具。
+#
+medical
+#
+search
+朗查恩奥本赛奇寻回犬
+gain/langchain_osearch_retriever/langchain_osearch_retriever
+使用语言链从 opensearch 检索文档的工具。
+#
+search
+ArXiv
+gain/arxiv/arxiv
+访问各个研究领域大量科学论文和文章的存储库。
+#
+search
+PubMed
+gain/pubmed/pubmed
+一款生物医学文献搜索引擎。
+#
+medical
+#
+search
+
+
+节点
+工具
+LLM
+知识检索
+直接回复
+Agent
+问题理解
+问题分类器
+逻辑
+条件分支
+迭代
+循环
+转换
+代码执行
+Rich Text Editor
+模板转换
+变量聚合器
+文档提取器
+变量赋值
+参数提取器
+工具
+HTTP 请求
+列表操作
+
+
+
+知识库 API
+鉴权
+GAIN Service API 使用 API-Key 进行鉴权。
+
+建议开发者把 API-Key 放在后端存储，而非分享或者放在客户端存储，以免 API-Key 泄露，导致财产损失。
+
+所有 API 请求都应在 Authorization HTTP Header 中包含您的 API-Key，如下所示：
+
+Code
+  Authorization: Bearer {API_KEY}
+
+
+Copy
+Copied!
+POST
+/datasets/{dataset_id}/document/create-by-text
+通过文本创建文档
+此接口基于已存在知识库，在此知识库的基础上通过文本创建新的文档
+
+Path
+Name
+dataset_id
+Type
+string
+Description
+知识库 ID
+
+Request Body
+Name
+name
+Type
+string
+Description
+文档名称
+
+Name
+text
+Type
+string
+Description
+文档内容
+
+Name
+indexing_technique
+Type
+string
+Description
+索引方式
+
+high_quality 高质量：使用 embedding 模型进行嵌入，构建为向量数据库索引
+economy 经济：使用 keyword table index 的倒排索引进行构建
+Name
+doc_form
+Type
+string
+Description
+索引内容的形式
+
+text_model text 文档直接 embedding，经济模式默认为该模式
+hierarchical_model parent-child 模式
+qa_model Q&A 模式：为分片文档生成 Q&A 对，然后对问题进行 embedding
+Name
+doc_language
+Type
+string
+Description
+在 Q&A 模式下，指定文档的语言，例如：English、Chinese
+
+Name
+process_rule
+Type
+object
+Description
+处理规则
+
+mode (string) 清洗、分段模式 ，automatic 自动 / custom 自定义
+rules (object) 自定义规则（自动模式下，该字段为空）
+pre_processing_rules (array[object]) 预处理规则
+id (string) 预处理规则的唯一标识符
+枚举：
+remove_extra_spaces 替换连续空格、换行符、制表符
+remove_urls_emails 删除 URL、电子邮件地址
+enabled (bool) 是否选中该规则，不传入文档 ID 时代表默认值
+segmentation (object) 分段规则
+separator 自定义分段标识符，目前仅允许设置一个分隔符。默认为 \n
+max_tokens 最大长度（token）默认为 1000
+parent_mode 父分段的召回模式 full-doc 全文召回 / paragraph 段落召回
+subchunk_segmentation (object) 子分段规则
+separator 分段标识符，目前仅允许设置一个分隔符。默认为 ***
+max_tokens 最大长度 (token) 需要校验小于父级的长度
+chunk_overlap 分段重叠指的是在对数据进行分段时，段与段之间存在一定的重叠部分（选填）
+Request
+POST
+/datasets/{dataset_id}/document/create-by-text
+curl --location --request POST 'https://api.dev.gain.awscn.novartis.net/v1/datasets/{dataset_id}/document/create-by-text' \
+--header 'Authorization: Bearer {api_key}' \
+--header 'Content-Type: application/json' \
+--data-raw '{"name": "text","text": "text","indexing_technique": "high_quality","process_rule": {"mode": "automatic"}}'
+
+Copy
+Copied!
+Response
+{
+  "document": {
+    "id": "",
+    "position": 1,
+    "data_source_type": "upload_file",
+    "data_source_info": {
+        "upload_file_id": ""
+    },
+    "dataset_process_rule_id": "",
+    "name": "text.txt",
+    "created_from": "api",
+    "created_by": "",
+    "created_at": 1695690280,
+    "tokens": 0,
+    "indexing_status": "waiting",
+    "error": null,
+    "enabled": true,
+    "disabled_at": null,
+    "disabled_by": null,
+    "archived": false,
+    "display_status": "queuing",
+    "word_count": 0,
+    "hit_count": 0,
+    "doc_form": "text_model"
+  },
+  "batch": ""
+}
+
+Copy
+Copied!
+POST
+/datasets/{dataset_id}/document/create-by-file
+通过文件创建文档
+此接口基于已存在知识库，在此知识库的基础上通过文件创建新的文档
+
+Path
+Name
+dataset_id
+Type
+string
+Description
+知识库 ID
+
+Request Body
+Name
+data
+Type
+multipart/form-data json string
+Description
+original_document_id 源文档 ID（选填）
+
+用于重新上传文档或修改文档清洗、分段配置，缺失的信息从源文档复制
+源文档不可为归档的文档
+当传入 original_document_id 时，代表文档进行更新操作，process_rule 为可填项目，不填默认使用源文档的分段方式
+未传入 original_document_id 时，代表文档进行新增操作，process_rule 为必填
+indexing_technique 索引方式
+
+high_quality 高质量：使用 embedding 模型进行嵌入，构建为向量数据库索引
+economy 经济：使用 keyword table index 的倒排索引进行构建
+doc_form 索引内容的形式
+
+text_model text 文档直接 embedding，经济模式默认为该模式
+hierarchical_model parent-child 模式
+qa_model Q&A 模式：为分片文档生成 Q&A 对，然后对问题进行 embedding
+doc_language 在 Q&A 模式下，指定文档的语言，例如：English、Chinese
+
+process_rule 处理规则
+
+mode (string) 清洗、分段模式 ，automatic 自动 / custom 自定义
+rules (object) 自定义规则（自动模式下，该字段为空）
+pre_processing_rules (array[object]) 预处理规则
+id (string) 预处理规则的唯一标识符
+枚举：
+remove_extra_spaces 替换连续空格、换行符、制表符
+remove_urls_emails 删除 URL、电子邮件地址
+enabled (bool) 是否选中该规则，不传入文档 ID 时代表默认值
+segmentation (object) 分段规则
+separator 自定义分段标识符，目前仅允许设置一个分隔符。默认为 \n
+max_tokens 最大长度（token）默认为 1000
+parent_mode 父分段的召回模式 full-doc 全文召回 / paragraph 段落召回
+subchunk_segmentation (object) 子分段规则
+separator 分段标识符，目前仅允许设置一个分隔符。默认为 ***
+max_tokens 最大长度 (token) 需要校验小于父级的长度
+chunk_overlap 分段重叠指的是在对数据进行分段时，段与段之间存在一定的重叠部分（选填）
+Name
+file
+Type
+multipart/form-data
+Description
+需要上传的文件。
+
+Request
+POST
+/datasets/{dataset_id}/document/create-by-file
+curl --location --request POST 'https://api.dev.gain.awscn.novartis.net/v1/datasets/{dataset_id}/document/create-by-file' \
+--header 'Authorization: Bearer {api_key}' \
+--form 'data="{"indexing_technique":"high_quality","process_rule":{"rules":{"pre_processing_rules":[{"id":"remove_extra_spaces","enabled":true},{"id":"remove_urls_emails","enabled":true}],"segmentation":{"separator":"###","max_tokens":500}},"mode":"custom"}}";type=text/plain' \
+--form 'file=@"/path/to/file"'
+
+Copy
+Copied!
+Response
+{
+  "document": {
+    "id": "",
+    "position": 1,
+    "data_source_type": "upload_file",
+    "data_source_info": {
+      "upload_file_id": ""
+    },
+    "dataset_process_rule_id": "",
+    "name": "GAIN.txt",
+    "created_from": "api",
+    "created_by": "",
+    "created_at": 1695308667,
+    "tokens": 0,
+    "indexing_status": "waiting",
+    "error": null,
+    "enabled": true,
+    "disabled_at": null,
+    "disabled_by": null,
+    "archived": false,
+    "display_status": "queuing",
+    "word_count": 0,
+    "hit_count": 0,
+    "doc_form": "text_model"
+  },
+  "batch": ""
+}
+
+Copy
+Copied!
+POST
+/datasets
+创建空知识库
+Request Body
+Name
+name
+Type
+string
+Description
+知识库名称（必填）
+
+Name
+description
+Type
+string
+Description
+知识库描述（选填）
+
+Name
+indexing_technique
+Type
+string
+Description
+索引模式（选填，建议填写）
+
+high_quality 高质量
+economy 经济
+Name
+permission
+Type
+string
+Description
+权限（选填，默认 only_me）
+
+only_me 仅自己
+all_team_members 所有团队成员
+partial_members 部分团队成员
+Name
+provider
+Type
+string
+Description
+Provider（选填，默认 vendor）
+
+vendor 上传文件
+external 外部知识库
+Name
+external_knowledge_api_id
+Type
+str
+Description
+外部知识库 API_ID（选填）
+
+Name
+external_knowledge_id
+Type
+str
+Description
+外部知识库 ID（选填）
+
+Request
+POST
+/datasets
+curl --location --request POST 'https://api.dev.gain.awscn.novartis.net/v1/datasets' \
+--header 'Authorization: Bearer {api_key}' \
+--header 'Content-Type: application/json' \
+--data-raw '{"name": "name", "permission": "only_me"}'
+
+Copy
+Copied!
+Response
+{
+  "id": "",
+  "name": "name",
+  "description": null,
+  "provider": "vendor",
+  "permission": "only_me",
+  "data_source_type": null,
+  "indexing_technique": null,
+  "app_count": 0,
+  "document_count": 0,
+  "word_count": 0,
+  "created_by": "",
+  "created_at": 1695636173,
+  "updated_by": "",
+  "updated_at": 1695636173,
+  "embedding_model": null,
+  "embedding_model_provider": null,
+  "embedding_available": null
+}
+
+Copy
+Copied!
+GET
+/datasets
+知识库列表
+Query
+Name
+page
+Type
+string
+Description
+页码
+
+Name
+limit
+Type
+string
+Description
+返回条数，默认 20，范围 1-100
+
+Request
+GET
+/datasets
+curl --location --request GET 'https://api.dev.gain.awscn.novartis.net/v1/datasets?page=1&limit=20' \
+--header 'Authorization: Bearer {api_key}'
+
+Copy
+Copied!
+Response
+{
+  "data": [
+    {
+      "id": "",
+      "name": "知识库名称",
+      "description": "描述信息",
+      "permission": "only_me",
+      "data_source_type": "upload_file",
+      "indexing_technique": "",
+      "app_count": 2,
+      "document_count": 10,
+      "word_count": 1200,
+      "created_by": "",
+      "created_at": "",
+      "updated_by": "",
+      "updated_at": ""
+    },
+    ...
+  ],
+  "has_more": true,
+  "limit": 20,
+  "total": 50,
+  "page": 1
+}
+
+Copy
+Copied!
+DELETE
+/datasets/{dataset_id}
+删除知识库
+Path
+Name
+dataset_id
+Type
+string
+Description
+知识库 ID
+
+Request
+DELETE
+/datasets/{dataset_id}
+curl --location --request DELETE 'https://api.dev.gain.awscn.novartis.net/v1/datasets/{dataset_id}' \
+--header 'Authorization: Bearer {api_key}'
+
+Copy
+Copied!
+Response
+204 No Content
+
+Copy
+Copied!
+POST
+/datasets/{dataset_id}/documents/{document_id}/update-by-text
+通过文本更新文档
+此接口基于已存在知识库，在此知识库的基础上通过文本更新文档
+
+Path
+Name
+dataset_id
+Type
+string
+Description
+知识库 ID
+
+Name
+document_id
+Type
+string
+Description
+文档 ID
+
+Request Body
+Name
+name
+Type
+string
+Description
+文档名称（选填）
+
+Name
+text
+Type
+string
+Description
+文档内容（选填）
+
+Name
+process_rule
+Type
+object
+Description
+处理规则（选填）
+
+mode (string) 清洗、分段模式 ，automatic 自动 / custom 自定义
+rules (object) 自定义规则（自动模式下，该字段为空）
+pre_processing_rules (array[object]) 预处理规则
+id (string) 预处理规则的唯一标识符
+枚举：
+remove_extra_spaces 替换连续空格、换行符、制表符
+remove_urls_emails 删除 URL、电子邮件地址
+enabled (bool) 是否选中该规则，不传入文档 ID 时代表默认值
+segmentation (object) 分段规则
+separator 自定义分段标识符，目前仅允许设置一个分隔符。默认为 \n
+max_tokens 最大长度（token）默认为 1000
+parent_mode 父分段的召回模式 full-doc 全文召回 / paragraph 段落召回
+subchunk_segmentation (object) 子分段规则
+separator 分段标识符，目前仅允许设置一个分隔符。默认为 ***
+max_tokens 最大长度 (token) 需要校验小于父级的长度
+chunk_overlap 分段重叠指的是在对数据进行分段时，段与段之间存在一定的重叠部分（选填）
+Request
+POST
+/datasets/{dataset_id}/documents/{document_id}/update-by-text
+curl --location --request POST 'https://api.dev.gain.awscn.novartis.net/v1/datasets/{dataset_id}/documents/{document_id}/update-by-text' \
+--header 'Authorization: Bearer {api_key}' \
+--header 'Content-Type: application/json' \
+--data-raw '{"name": "name","text": "text"}'
+
+Copy
+Copied!
+Response
+{
+  "document": {
+    "id": "",
+    "position": 1,
+    "data_source_type": "upload_file",
+    "data_source_info": {
+      "upload_file_id": ""
+    },
+    "dataset_process_rule_id": "",
+    "name": "name.txt",
+    "created_from": "api",
+    "created_by": "",
+    "created_at": 1695308667,
+    "tokens": 0,
+    "indexing_status": "waiting",
+    "error": null,
+    "enabled": true,
+    "disabled_at": null,
+    "disabled_by": null,
+    "archived": false,
+    "display_status": "queuing",
+    "word_count": 0,
+    "hit_count": 0,
+    "doc_form": "text_model"
+  },
+  "batch": ""
+}
+
+Copy
+Copied!
+POST
+/datasets/{dataset_id}/documents/{document_id}/update-by-file
+通过文件更新文档
+此接口基于已存在知识库，在此知识库的基础上通过文件更新文档的操作。
+
+Path
+Name
+dataset_id
+Type
+string
+Description
+知识库 ID
+
+Name
+document_id
+Type
+string
+Description
+文档 ID
+
+Request Body
+Name
+name
+Type
+string
+Description
+文档名称（选填）
+
+Name
+file
+Type
+multipart/form-data
+Description
+需要上传的文件
+
+Name
+process_rule
+Type
+object
+Description
+处理规则（选填）
+
+mode (string) 清洗、分段模式 ，automatic 自动 / custom 自定义
+rules (object) 自定义规则（自动模式下，该字段为空）
+pre_processing_rules (array[object]) 预处理规则
+id (string) 预处理规则的唯一标识符
+枚举：
+remove_extra_spaces 替换连续空格、换行符、制表符
+remove_urls_emails 删除 URL、电子邮件地址
+enabled (bool) 是否选中该规则，不传入文档 ID 时代表默认值
+segmentation (object) 分段规则
+separator 自定义分段标识符，目前仅允许设置一个分隔符。默认为 \n
+max_tokens 最大长度（token）默认为 1000
+parent_mode 父分段的召回模式 full-doc 全文召回 / paragraph 段落召回
+subchunk_segmentation (object) 子分段规则
+separator 分段标识符，目前仅允许设置一个分隔符。默认为 ***
+max_tokens 最大长度 (token) 需要校验小于父级的长度
+chunk_overlap 分段重叠指的是在对数据进行分段时，段与段之间存在一定的重叠部分（选填）
+Request
+POST
+/datasets/{dataset_id}/documents/{document_id}/update-by-file
+curl --location --request POST 'https://api.dev.gain.awscn.novartis.net/v1/datasets/{dataset_id}/documents/{document_id}/update-by-file' \
+--header 'Authorization: Bearer {api_key}' \
+--form 'data="{"name":"GAIN","indexing_technique":"high_quality","process_rule":{"rules":{"pre_processing_rules":[{"id":"remove_extra_spaces","enabled":true},{"id":"remove_urls_emails","enabled":true}],"segmentation":{"separator":"###","max_tokens":500}},"mode":"custom"}}";type=text/plain' \
+--form 'file=@"/path/to/file"'
+
+Copy
+Copied!
+Response
+{
+  "document": {
+    "id": "",
+    "position": 1,
+    "data_source_type": "upload_file",
+    "data_source_info": {
+      "upload_file_id": ""
+    },
+    "dataset_process_rule_id": "",
+    "name": "GAIN.txt",
+    "created_from": "api",
+    "created_by": "",
+    "created_at": 1695308667,
+    "tokens": 0,
+    "indexing_status": "waiting",
+    "error": null,
+    "enabled": true,
+    "disabled_at": null,
+    "disabled_by": null,
+    "archived": false,
+    "display_status": "queuing",
+    "word_count": 0,
+    "hit_count": 0,
+    "doc_form": "text_model"
+  },
+  "batch": "20230921150427533684"
+}
+
+Copy
+Copied!
+GET
+/datasets/{dataset_id}/documents/{batch}/indexing-status
+获取文档嵌入状态（进度）
+Path
+Name
+dataset_id
+Type
+string
+Description
+知识库 ID
+
+Name
+batch
+Type
+string
+Description
+上传文档的批次号
+
+Request
+GET
+/datasets/{dataset_id}/documents/{batch}/indexing-status
+curl --location --request GET 'https://api.dev.gain.awscn.novartis.net/v1/datasets/{dataset_id}/documents/{batch}/indexing-status' \
+--header 'Authorization: Bearer {api_key}'
+
+Copy
+Copied!
+Response
+{
+  "data":[{
+    "id": "",
+    "indexing_status": "indexing",
+    "processing_started_at": 1681623462.0,
+    "parsing_completed_at": 1681623462.0,
+    "cleaning_completed_at": 1681623462.0,
+    "splitting_completed_at": 1681623462.0,
+    "completed_at": null,
+    "paused_at": null,
+    "error": null,
+    "stopped_at": null,
+    "completed_segments": 24,
+    "total_segments": 100
+  }]
+}
+
+Copy
+Copied!
+DELETE
+/datasets/{dataset_id}/documents/{document_id}
+删除文档
+Path
+Name
+dataset_id
+Type
+string
+Description
+知识库 ID
+
+Name
+document_id
+Type
+string
+Description
+文档 ID
+
+Request
+DELETE
+/datasets/{dataset_id}/documents/{document_id}
+curl --location --request DELETE 'https://api.dev.gain.awscn.novartis.net/v1/datasets/{dataset_id}/documents/{document_id}' \
+--header 'Authorization: Bearer {api_key}'
+
+Copy
+Copied!
+Response
+{
+  "result": "success"
+}
+
+Copy
+Copied!
+GET
+/datasets/{dataset_id}/documents
+知识库文档列表
+Path
+Name
+dataset_id
+Type
+string
+Description
+知识库 ID
+
+Query
+Name
+keyword
+Type
+string
+Description
+搜索关键词，可选，目前仅搜索文档名称
+
+Name
+page
+Type
+string
+Description
+页码，可选
+
+Name
+limit
+Type
+string
+Description
+返回条数，可选，默认 20，范围 1-100
+
+Request
+GET
+/datasets/{dataset_id}/documents
+curl --location --request GET 'https://api.dev.gain.awscn.novartis.net/v1/datasets/{dataset_id}/documents' \
+--header 'Authorization: Bearer {api_key}'
+
+Copy
+Copied!
+Response
+{
+  "data": [
+    {
+      "id": "",
+      "position": 1,
+      "data_source_type": "file_upload",
+      "data_source_info": null,
+      "dataset_process_rule_id": null,
+      "name": "GAIN",
+      "created_from": "",
+      "created_by": "",
+      "created_at": 1681623639,
+      "tokens": 0,
+      "indexing_status": "waiting",
+      "error": null,
+      "enabled": true,
+      "disabled_at": null,
+      "disabled_by": null,
+      "archived": false
+    },
+  ],
+  "has_more": false,
+  "limit": 20,
+  "total": 9,
+  "page": 1
+}
+
+Copy
+Copied!
+POST
+/datasets/{dataset_id}/documents/{document_id}/segments
+新增分段
+Path
+Name
+dataset_id
+Type
+string
+Description
+知识库 ID
+
+Name
+document_id
+Type
+string
+Description
+文档 ID
+
+Request Body
+Name
+segments
+Type
+object list
+Description
+content (text) 文本内容/问题内容，必填
+answer (text) 答案内容，非必填，如果知识库的模式为 Q&A 模式则传值
+keywords (list) 关键字，非必填
+Request
+POST
+/datasets/{dataset_id}/documents/{document_id}/segments
+curl --location --request POST 'https://api.dev.gain.awscn.novartis.net/v1/datasets/{dataset_id}/documents/{document_id}/segments' \
+--header 'Authorization: Bearer {api_key}' \
+--header 'Content-Type: application/json' \
+--data-raw '{"segments": [{"content": "1","answer": "1","keywords": ["a"]}]}'
+
+Copy
+Copied!
+Response
+{
+  "data": [{
+    "id": "",
+    "position": 1,
+    "document_id": "",
+    "content": "1",
+    "answer": "1",
+    "word_count": 25,
+    "tokens": 0,
+    "keywords": [
+        "a"
+    ],
+    "index_node_id": "",
+    "index_node_hash": "",
+    "hit_count": 0,
+    "enabled": true,
+    "disabled_at": null,
+    "disabled_by": null,
+    "status": "completed",
+    "created_by": "",
+    "created_at": 1695312007,
+    "indexing_at": 1695312007,
+    "completed_at": 1695312007,
+    "error": null,
+    "stopped_at": null
+  }],
+  "doc_form": "text_model"
+}
+
+Copy
+Copied!
+GET
+/datasets/{dataset_id}/documents/{document_id}/segments
+查询文档分段
+Path
+Name
+dataset_id
+Type
+string
+Description
+知识库 ID
+
+Name
+document_id
+Type
+string
+Description
+文档 ID
+
+Query
+Name
+keyword
+Type
+string
+Description
+搜索关键词，可选
+
+Name
+status
+Type
+string
+Description
+搜索状态，completed
+
+Request
+GET
+/datasets/{dataset_id}/documents/{document_id}/segments
+curl --location --request GET 'https://api.dev.gain.awscn.novartis.net/v1/datasets/{dataset_id}/documents/{document_id}/segments' \
+--header 'Authorization: Bearer {api_key}' \
+--header 'Content-Type: application/json'
+
+Copy
+Copied!
+Response
+{
+  "data": [{
+    "id": "",
+    "position": 1,
+    "document_id": "",
+    "content": "1",
+    "answer": "1",
+    "word_count": 25,
+    "tokens": 0,
+    "keywords": [
+        "a"
+    ],
+    "index_node_id": "",
+    "index_node_hash": "",
+    "hit_count": 0,
+    "enabled": true,
+    "disabled_at": null,
+    "disabled_by": null,
+    "status": "completed",
+    "created_by": "",
+    "created_at": 1695312007,
+    "indexing_at": 1695312007,
+    "completed_at": 1695312007,
+    "error": null,
+    "stopped_at": null
+  }],
+  "doc_form": "text_model"
+}
+
+Copy
+Copied!
+DELETE
+/datasets/{dataset_id}/documents/{document_id}/segments/{segment_id}
+删除文档分段
+Path
+Name
+dataset_id
+Type
+string
+Description
+知识库 ID
+
+Name
+document_id
+Type
+string
+Description
+文档 ID
+
+Name
+segment_id
+Type
+string
+Description
+文档分段ID
+
+Request
+DELETE
+/datasets/{dataset_id}/documents/{document_id}/segments/{segment_id}
+curl --location --request DELETE 'https://api.dev.gain.awscn.novartis.net/v1/datasets/{dataset_id}/documents/{document_id}/segments/{segment_id}' \
+--header 'Authorization: Bearer {api_key}' \
+--header 'Content-Type: application/json'
+
+Copy
+Copied!
+Response
+{
+  "result": "success"
+}
+
+Copy
+Copied!
+POST
+/datasets/{dataset_id}/documents/{document_id}/segments/{segment_id}
+更新文档分段
+POST
+Name
+dataset_id
+Type
+string
+Description
+知识库 ID
+
+Name
+document_id
+Type
+string
+Description
+文档 ID
+
+Name
+segment_id
+Type
+string
+Description
+文档分段ID
+
+Request Body
+Name
+segment
+Type
+object
+Description
+content (text) 文本内容/问题内容，必填
+answer (text) 答案内容，非必填，如果知识库的模式为 Q&A 模式则传值
+keywords (list) 关键字，非必填
+enabled (bool) false/true，非必填
+regenerate_child_chunks (bool) 是否重新生成子分段，非必填
+Request
+POST
+/datasets/{dataset_id}/documents/{document_id}/segments/{segment_id}
+curl --location --request POST 'https://api.dev.gain.awscn.novartis.net/v1/datasets/{dataset_id}/documents/{document_id}/segments/{segment_id}' \
+--header 'Authorization: Bearer {api_key}' \
+--header 'Content-Type: application/json'\
+--data-raw '{"segment": {"content": "1","answer": "1", "keywords": ["a"], "enabled": false}}'
+
+Copy
+Copied!
+Response
+{
+  "data": [{
+    "id": "",
+    "position": 1,
+    "document_id": "",
+    "content": "1",
+    "answer": "1",
+    "word_count": 25,
+    "tokens": 0,
+    "keywords": [
+        "a"
+    ],
+    "index_node_id": "",
+    "index_node_hash": "",
+    "hit_count": 0,
+    "enabled": true,
+    "disabled_at": null,
+    "disabled_by": null,
+    "status": "completed",
+    "created_by": "",
+    "created_at": 1695312007,
+    "indexing_at": 1695312007,
+    "completed_at": 1695312007,
+    "error": null,
+    "stopped_at": null
+  }],
+  "doc_form": "text_model"
+}
+
+Copy
+Copied!
+POST
+/datasets/{dataset_id}/retrieve
+检索知识库
+Path
+Name
+dataset_id
+Type
+string
+Description
+知识库 ID
+
+Request Body
+Name
+query
+Type
+string
+Description
+检索关键词
+
+Name
+retrieval_model
+Type
+object
+Description
+检索参数（选填，如不填，按照默认方式召回）
+
+search_method (text) 检索方法：以下三个关键字之一，必填
+keyword_search 关键字检索
+semantic_search 语义检索
+full_text_search 全文检索
+hybrid_search 混合检索
+reranking_enable (bool) 是否启用 Reranking，非必填，如果检索模式为 semantic_search 模式或者 hybrid_search 则传值
+reranking_mode (object) Rerank模型配置，非必填，如果启用了 reranking 则传值
+reranking_provider_name (string) Rerank 模型提供商
+reranking_model_name (string) Rerank 模型名称
+weights (double) 混合检索模式下语意检索的权重设置
+top_k (integer) 返回结果数量，非必填
+score_threshold_enabled (bool) 是否开启 score 阈值
+score_threshold (double) Score 阈值
+Name
+external_retrieval_model
+Type
+object
+Description
+未启用字段
+
+Request
+POST
+/datasets/{dataset_id}/retrieve
+curl --location --request POST 'https://api.dev.gain.awscn.novartis.net/v1/datasets/{dataset_id}/retrieve' \
+--header 'Authorization: Bearer {api_key}'\
+--header 'Content-Type: application/json'\
+--data-raw '{
+  "query": "test",
+  "retrieval_model": {
+      "search_method": "keyword_search",
+      "reranking_enable": false,
+      "reranking_mode": null,
+      "reranking_model": {
+          "reranking_provider_name": "",
+          "reranking_model_name": ""
+      },
+      "weights": null,
+      "top_k": 1,
+      "score_threshold_enabled": false,
+      "score_threshold": null
+  }
+}'
+
+Copy
+Copied!
+Response
+{
+  "query": {
+    "content": "test"
+  },
+  "records": [
+    {
+      "segment": {
+        "id": "7fa6f24f-8679-48b3-bc9d-bdf28d73f218",
+        "position": 1,
+        "document_id": "a8c6c36f-9f5d-4d7a-8472-f5d7b75d71d2",
+        "content": "Operation guide",
+        "answer": null,
+        "word_count": 847,
+        "tokens": 280,
+        "keywords": [
+          "install",
+          "java",
+          "base",
+          "scripts",
+          "jdk",
+          "manual",
+          "internal",
+          "opens",
+          "add",
+          "vmoptions"
+        ],
+        "index_node_id": "39dd8443-d960-45a8-bb46-7275ad7fbc8e",
+        "index_node_hash": "0189157697b3c6a418ccf8264a09699f25858975578f3467c76d6bfc94df1d73",
+        "hit_count": 0,
+        "enabled": true,
+        "disabled_at": null,
+        "disabled_by": null,
+        "status": "completed",
+        "created_by": "dbcb1ab5-90c8-41a7-8b78-73b235eb6f6f",
+        "created_at": 1728734540,
+        "indexing_at": 1728734552,
+        "completed_at": 1728734584,
+        "error": null,
+        "stopped_at": null,
+        "document": {
+          "id": "a8c6c36f-9f5d-4d7a-8472-f5d7b75d71d2",
+          "data_source_type": "upload_file",
+          "name": "readme.txt",
+          "doc_type": null
+        }
+      },
+      "score": 3.730463140527718e-05,
+      "tsne_position": null
+    }
+  ]
+}
+
+Copy
+Copied!
+错误信息
+Name
+code
+Type
+string
+Description
+返回的错误代码
+
+Name
+status
+Type
+number
+Description
+返回的错误状态
+
+Name
+message
+Type
+string
+Description
+返回的错误信息
+
+Example
+  {
+    "code": "no_file_uploaded",
+    "message": "Please upload your file.",
+    "status": 400
+  }
+
+Copy
+Copied!
+code	status	message
+no_file_uploaded	400	Please upload your file.
+too_many_files	400	Only one file is allowed.
+file_too_large	413	File size exceeded.
+unsupported_file_type	415	File type not allowed.
+high_quality_dataset_only	400	Current operation only supports 'high-quality' datasets.
+dataset_not_initialized	400	The dataset is still being initialized or indexing. Please wait a moment.
+archived_document_immutable	403	The archived document is not editable.
+dataset_name_duplicate	409	The dataset name already exists. Please modify your dataset name.
+invalid_action	400	Invalid action.
+document_already_finished	400	The document has been processed. Please refresh the page or go to the document details.
+document_indexing	400	The document is being processed and cannot be edited.
+invalid_metadata	400	The metadata content is incorrect. Please check and verify.
+External Knowledge API
+Endpoint
+POST <your-endpoint>/retrieval
+Header
+This API is used to connect to a knowledge base that is independent of the GAIN and maintained by developers. You can use in the HTTP Header to verify permissions. The authentication logic is defined by you in the retrieval API, as shown below:API-KeyAuthorization
+
+Authorization: Bearer {API_KEY}
+Request Body Elements
+The request accepts the following data in JSON format.
+
+Property	Required	Type	Description	Example value
+knowledge_id	TRUE	string	Your knowledge's unique ID	AAA-BBB-CCC
+query	TRUE	string	User's query	What is GAIN?
+retrieval_setting	TRUE	object	Knowledge's retrieval parameters	See below
+The property is an object containing the following keys:retrieval_setting
+
+Property	Required	Type	Description	Example value
+top_k	TRUE	int	Maximum number of retrieved results	5
+score_threshold	TRUE	float	The score limit of relevance of the result to the query, scope: 0~1	0.5
+Request Syntax
+Response Elements
+If the action is successful, the service sends back an HTTP 200 response.
+
+The following data is returned in JSON format by the service.
+
+Property	Required	Type	Description	Example value
+records	TRUE	List[Object]	A list of records from querying the knowledge base.	See below
+The property is a list object containing the following keys:records
+
+Property	Required	Type	Description	Example value
+content	TRUE	string	Contains a chunk of text from a data source in the knowledge base.	GAIN:The Innovation Engine for GenAI Applications
+score	TRUE	float	The score of relevance of the result to the query, scope: 0~1	0.5
+title	TRUE	string	Document title	GAIN Introduction
+metadata	FALSE	json	Contains metadata attributes and their values for the document in the data source.	See example
+Errors
+If the action fails, the service sends back the following error information in JSON format:
+
+Property	Required	Type	Description	Example value
+error_code	TRUE	int	Error code	1001
+error_msg	TRUE	string	The description of API exception	Invalid Authorization header format. Expected 'Bearer ' format.
+The property has the following types:error_code
+
+Code	Description
+1001	Invalid Authorization header format.
+1002	Authorization failed
+2001	The knowledge does not exist
+HTTP Status Codes
+AccessDeniedException The request is denied because of missing access permissions. Check your permissions and retry your request. HTTP Status Code: 403
+
+InternalServerException An internal server error occurred. Retry your request. HTTP Status Code: 500
+
+DDIT. APD. GAIN
+
+
+连接外部知识库
+通过 API 和知识库 ID 连接到外部知识库。目前，仅支持检索功能。我们强烈建议您在使用此功能之前仔细阅读帮助文档。
+
+
+外部知识库名称
+请输入外部知识库名称
+知识库描述
+描述知识库内容（可选）
+外部知识库 API
+novartis-md
+External novartis-md Endpoint
+Please enter novartis-md Endpoint
+External novartis-md Key
+Please enter novartis-md Key
+External novartis-md Knowledge ID
+Please enter novartis-md Knowledge ID
+Query Type
+Hybrid Search
+Embedding 模型 (Select the embedding model used while creating the index)
+model-icon
+text-embedding-ada-002
+Custom Field Mapping
+Please map your index fields to our system data fields i.e. content, title, metadata in the following format { "content" : "text", "title" : "title", "metadata": "text"}
+召回设置
+Top K
+2
+
+
+GAIN
+logo
+GAIN
+/
+
+Z
+ZhaiBeichenSandbox001
+探索
+工作室
+/
+
+Code Converter(copy)
+知识库
+工具
+插件
+
+Z
+Zhai, Beichen
+🤖
+Code Converter(copy)
+工作流
+编排
+访问 API
+日志
+监测
+API 服务器
+https://api.dev.gain.awscn.novartis.net/v1
+状态
+运行中
+
+API 密钥
+目录
+✕
+执行 workflow
+获取workflow执行情况
+停止响应
+上传文件
+获取 workflow 日志
+获取应用基本信息
+获取应用参数
+Workflow 应用 API
+Workflow 应用无会话支持，适合用于翻译/文章写作/总结 AI 等等。
+
+Base URL
+Code
+https://api.dev.gain.awscn.novartis.net/v1
+
+Copy
+Copied!
+Authentication
+GAIN Service API 使用 API-Key 进行鉴权。 强烈建议开发者把 API-Key 放在后端存储，而非分享或者放在客户端存储，以免 API-Key 泄露，导致财产损失。 所有 API 请求都应在 Authorization HTTP Header 中包含您的 API-Key，如下所示：
+
+Code
+  Authorization: Bearer {API_KEY}
+
+
+Copy
+Copied!
+POST
+/workflows/run
+执行 workflow
+执行 workflow，没有已发布的 workflow，不可执行。
+
+Request Body
+inputs (object) Required 允许传入 App 定义的各变量值。 inputs 参数包含了多组键值对（Key/Value pairs），每组的键对应一个特定变量，每组的值则是该变量的具体值。 如果变量是文件类型，请指定一个包含以下 files 中所述键的对象。
+response_mode (string) Required 返回响应模式，支持：
+streaming 流式模式（推荐）。基于 SSE（Server-Sent Events）实现类似打字机输出方式的流式返回。
+blocking 阻塞模式，等待执行完毕后返回结果。（请求若流程较长可能会被中断）。 由于 Cloudflare 限制，请求会在 100 秒超时无返回后中断。
+user (string) Required 用户标识，用于定义终端用户的身份，方便检索、统计。 由开发者定义规则，需保证用户标识在应用内唯一。
+files (array[object]) Optional 文件列表，适用于传入文件结合文本理解并回答问题，仅当模型支持该类型文件解析能力时可用。
+type (string) 支持类型：
+document 具体类型包含：'TXT', 'MD', 'MARKDOWN', 'PDF', 'HTML', 'XLSX', 'XLS', 'DOCX', 'CSV', 'EML', 'MSG', 'PPTX', 'PPT', 'XML', 'EPUB'
+image 具体类型包含：'JPG', 'JPEG', 'PNG', 'GIF', 'WEBP', 'SVG'
+audio 具体类型包含：'MP3', 'M4A', 'WAV', 'WEBM', 'AMR'
+video 具体类型包含：'MP4', 'MOV', 'MPEG', 'MPGA'
+custom 具体类型包含：其他文件类型
+transfer_method (string) 传递方式，remote_url 图片地址 / local_file 上传文件
+url (string) 图片地址（仅当传递方式为 remote_url 时）
+upload_file_id (string) (string) 上传文件 ID（仅当传递方式为 local_file 时）
+Response
+当 response_mode 为 blocking 时，返回 CompletionResponse object。 当 response_mode 为 streaming时，返回 ChunkCompletionResponse object 流式序列。
+
+CompletionResponse
+返回完整的 App 结果，Content-Type 为 application/json 。
+
+workflow_run_id (string) workflow 执行 ID
+task_id (string) 任务 ID，用于请求跟踪和下方的停止响应接口
+data (object) 详细内容
+id (string) workflow 执行 ID
+workflow_id (string) 关联 Workflow ID
+status (string) 执行状态, running / succeeded / failed / stopped
+outputs (json) Optional 输出内容
+error (string) Optional 错误原因
+elapsed_time (float) Optional 耗时(s)
+total_tokens (int) Optional 总使用 tokens
+total_steps (int) 总步数（冗余），默认 0
+created_at (timestamp) 开始时间
+finished_at (timestamp) 结束时间
+ChunkCompletionResponse
+返回 App 输出的流式块，Content-Type 为 text/event-stream。 每个流式块均为 data: 开头，块之间以 \n\n 即两个换行符分隔，如下所示：
+
+data: {"event": "message", "task_id": "900bbd43-dc0b-4383-a372-aa6e6c414227", "id": "663c5084-a254-4040-8ad3-51f2a3c1a77c", "answer": "Hi", "created_at": 1705398420}\n\n
+
+Copy
+Copied!
+流式块中根据 event 不同，结构也不同，包含以下类型：
+
+event: workflow_started workflow 开始执行
+task_id (string) 任务 ID，用于请求跟踪和下方的停止响应接口
+workflow_run_id (string) workflow 执行 ID
+event (string) 固定为 workflow_started
+data (object) 详细内容
+id (string) workflow 执行 ID
+workflow_id (string) 关联 Workflow ID
+sequence_number (int) 自增序号，App 内自增，从 1 开始
+created_at (timestamp) 开始时间
+event: node_started node 开始执行
+task_id (string) 任务 ID，用于请求跟踪和下方的停止响应接口
+workflow_run_id (string) workflow 执行 ID
+event (string) 固定为 node_started
+data (object) 详细内容
+id (string) workflow 执行 ID
+node_id (string) 节点 ID
+node_type (string) 节点类型
+title (string) 节点名称
+index (int) 执行序号，用于展示 Tracing Node 顺序
+predecessor_node_id (string) 前置节点 ID，用于画布展示执行路径
+inputs (object) 节点中所有使用到的前置节点变量内容
+created_at (timestamp) 开始时间
+event: node_finished node 执行结束，成功失败同一事件中不同状态
+task_id (string) 任务 ID，用于请求跟踪和下方的停止响应接口
+workflow_run_id (string) workflow 执行 ID
+event (string) 固定为 node_finished
+data (object) 详细内容
+id (string) node 执行 ID
+node_id (string) 节点 ID
+index (int) 执行序号，用于展示 Tracing Node 顺序
+predecessor_node_id (string) optional 前置节点 ID，用于画布展示执行路径
+inputs (object) 节点中所有使用到的前置节点变量内容
+process_data (json) Optional 节点过程数据
+outputs (json) Optional 输出内容
+status (string) 执行状态 running / succeeded / failed / stopped
+error (string) Optional 错误原因
+elapsed_time (float) Optional 耗时(s)
+execution_metadata (json) 元数据
+total_tokens (int) optional 总使用 tokens
+total_price (decimal) optional 总费用
+currency (string) optional 货币，如 USD / RMB
+created_at (timestamp) 开始时间
+event: workflow_finished workflow 执行结束，成功失败同一事件中不同状态
+task_id (string) 任务 ID，用于请求跟踪和下方的停止响应接口
+workflow_run_id (string) workflow 执行 ID
+event (string) 固定为 workflow_finished
+data (object) 详细内容
+id (string) workflow 执行 ID
+workflow_id (string) 关联 Workflow ID
+status (string) 执行状态 running / succeeded / failed / stopped
+outputs (json) Optional 输出内容
+error (string) Optional 错误原因
+elapsed_time (float) Optional 耗时(s)
+total_tokens (int) Optional 总使用 tokens
+total_steps (int) 总步数（冗余），默认 0
+created_at (timestamp) 开始时间
+finished_at (timestamp) 结束时间
+event: tts_message TTS 音频流事件，即：语音合成输出。内容是Mp3格式的音频块，使用 base64 编码后的字符串，播放的时候直接解码即可。(开启自动播放才有此消息)
+task_id (string) 任务 ID，用于请求跟踪和下方的停止响应接口
+message_id (string) 消息唯一 ID
+audio (string) 语音合成之后的音频块使用 Base64 编码之后的文本内容，播放的时候直接 base64 解码送入播放器即可
+created_at (int) 创建时间戳，如：1705395332
+event: tts_message_end TTS 音频流结束事件，收到这个事件表示音频流返回结束。
+task_id (string) 任务 ID，用于请求跟踪和下方的停止响应接口
+message_id (string) 消息唯一 ID
+audio (string) 结束事件是没有音频的，所以这里是空字符串
+created_at (int) 创建时间戳，如：1705395332
+event: ping 每 10s 一次的 ping 事件，保持连接存活。
+Errors
+400，invalid_param，传入参数异常
+400，app_unavailable，App 配置不可用
+400，provider_not_initialize，无可用模型凭据配置
+400，provider_quota_exceeded，模型调用额度不足
+400，model_currently_not_support，当前模型不可用
+400，workflow_request_error，workflow 执行失败
+500，服务内部异常
+Request
+POST
+/workflows/run
+curl -X POST 'https://api.dev.gain.awscn.novartis.net/v1/workflows/run' \
+--header 'Authorization: Bearer {api_key}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "inputs": {},
+    "response_mode": "streaming",
+    "user": "abc-123"
+}'
+
+Copy
+Copied!
+File variable example
+{
+  "inputs": {
+    "{variable_name}": {
+      "transfer_method": "local_file",
+      "upload_file_id": "{upload_file_id}",
+      "type": "{document_type}"
+    }
+  }
+}
+
+Copy
+Copied!
+Blocking Mode
+Response
+{
+    "workflow_run_id": "djflajgkldjgd",
+    "task_id": "9da23599-e713-473b-982c-4328d4f5c78a",
+    "data": {
+        "id": "fdlsjfjejkghjda",
+        "workflow_id": "fldjaslkfjlsda",
+        "status": "succeeded",
+        "outputs": {
+          "text": "Nice to meet you."
+        },
+        "error": null,
+        "elapsed_time": 0.875,
+        "total_tokens": 3562,
+        "total_steps": 8,
+        "created_at": 1705407629,
+        "finished_at": 1727807631
+    }
+}
+
+Copy
+Copied!
+Streaming Mode
+Response
+  data: {"event": "workflow_started", "task_id": "5ad4cb98-f0c7-4085-b384-88c403be6290", "workflow_run_id": "5ad498-f0c7-4085-b384-88cbe6290", "data": {"id": "5ad498-f0c7-4085-b384-88cbe6290", "workflow_id": "dfjasklfjdslag", "sequence_number": 1, "created_at": 1679586595}}
+  data: {"event": "node_started", "task_id": "5ad4cb98-f0c7-4085-b384-88c403be6290", "workflow_run_id": "5ad498-f0c7-4085-b384-88cbe6290", "data": {"id": "5ad498-f0c7-4085-b384-88cbe6290", "node_id": "dfjasklfjdslag", "node_type": "start", "title": "Start", "index": 0, "predecessor_node_id": "fdljewklfklgejlglsd", "inputs": {}, "created_at": 1679586595}}
+  data: {"event": "node_finished", "task_id": "5ad4cb98-f0c7-4085-b384-88c403be6290", "workflow_run_id": "5ad498-f0c7-4085-b384-88cbe6290", "data": {"id": "5ad498-f0c7-4085-b384-88cbe6290", "node_id": "dfjasklfjdslag", "node_type": "start", "title": "Start", "index": 0, "predecessor_node_id": "fdljewklfklgejlglsd", "inputs": {}, "outputs": {}, "status": "succeeded", "elapsed_time": 0.324, "execution_metadata": {"total_tokens": 63127864, "total_price": 2.378, "currency": "USD"},  "created_at": 1679586595}}
+  data: {"event": "workflow_finished", "task_id": "5ad4cb98-f0c7-4085-b384-88c403be6290", "workflow_run_id": "5ad498-f0c7-4085-b384-88cbe6290", "data": {"id": "5ad498-f0c7-4085-b384-88cbe6290", "workflow_id": "dfjasklfjdslag", "outputs": {}, "status": "succeeded", "elapsed_time": 0.324, "total_tokens": 63127864, "total_steps": "1", "created_at": 1679586595, "finished_at": 1679976595}}
+  data: {"event": "tts_message", "conversation_id": "23dd85f3-1a41-4ea0-b7a9-062734ccfaf9", "message_id": "a8bdc41c-13b2-4c18-bfd9-054b9803038c", "created_at": 1721205487, "task_id": "3bf8a0bb-e73b-4690-9e66-4e429bad8ee7", "audio": "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"}
+  data: {"event": "tts_message_end", "conversation_id": "23dd85f3-1a41-4ea0-b7a9-062734ccfaf9", "message_id": "a8bdc41c-13b2-4c18-bfd9-054b9803038c", "created_at": 1721205487, "task_id": "3bf8a0bb-e73b-4690-9e66-4e429bad8ee7", "audio": ""}
+
+Copy
+Copied!
+File upload sample code
+import requests
+import json
+
+def upload_file(file_path, user):
+    upload_url = "https://api.GAIN.ai/v1/files/upload"
+    headers = {
+        "Authorization": "Bearer app-xxxxxxxx",
+    }
+    
+    try:
+        print("上传文件中...")
+        with open(file_path, 'rb') as file:
+            files = {
+                'file': (file_path, file, 'text/plain')  # 确保文件以适当的MIME类型上传
+            }
+            data = {
+                "user": user,
+                "type": "TXT"  # 设置文件类型为TXT
+            }
+            
+            response = requests.post(upload_url, headers=headers, files=files, data=data)
+            if response.status_code == 201:  # 201 表示创建成功
+                print("文件上传成功")
+                return response.json().get("id")  # 获取上传的文件 ID
+            else:
+                print(f"文件上传失败，状态码: {response.status_code}")
+                return None
+    except Exception as e:
+        print(f"发生错误: {str(e)}")
+        return None
+
+def run_workflow(file_id, user, response_mode="blocking"):
+    workflow_url = "https://api.GAIN.ai/v1/workflows/run"
+    headers = {
+        "Authorization": "Bearer app-xxxxxxxxx",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "inputs": {
+            "orig_mail": {
+                "transfer_method": "local_file",
+                "upload_file_id": file_id,
+                "type": "document"
+            }
+        },
+        "response_mode": response_mode,
+        "user": user
+    }
+
+    try:
+        print("运行工作流...")
+        response = requests.post(workflow_url, headers=headers, json=data)
+        if response.status_code == 200:
+            print("工作流执行成功")
+            return response.json()
+        else:
+            print(f"工作流执行失败，状态码: {response.status_code}")
+            return {"status": "error", "message": f"Failed to execute workflow, status code: {response.status_code}"}
+    except Exception as e:
+        print(f"发生错误: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+# 使用示例
+file_path = "{your_file_path}"
+user = "GAINuser"
+
+# 上传文件
+file_id = upload_file(file_path, user)
+if file_id:
+    # 文件上传成功，继续运行工作流
+    result = run_workflow(file_id, user)
+    print(result)
+else:
+    print("文件上传失败，无法执行工作流")
+
+Copy
+Copied!
+GET
+/workflows/run/:workflow_id
+获取workflow执行情况
+根据 workflow 执行 ID 获取 workflow 任务当前执行结果
+
+Path
+workflow_id (string) workflow 执行 ID，可在流式返回 Chunk 中获取
+Response
+id (string) workflow 执行 ID
+workflow_id (string) 关联的 Workflow ID
+status (string) 执行状态 running / succeeded / failed / stopped
+inputs (json) 任务输入内容
+outputs (json) 任务输出内容
+error (string) 错误原因
+total_steps (int) 任务执行总步数
+total_tokens (int) 任务执行总 tokens
+created_at (timestamp) 任务开始时间
+finished_at (timestamp) 任务结束时间
+elapsed_time (float) 耗时(s)
+Request Example
+Request
+GET
+/workflows/run/:workflow_id
+curl -X GET 'https://api.dev.gain.awscn.novartis.net/v1/workflows/run/:workflow_id' \
+-H 'Authorization: Bearer {api_key}' \
+-H 'Content-Type: application/json'
+
+Copy
+Copied!
+Response Example
+Response
+{
+    "id": "b1ad3277-089e-42c6-9dff-6820d94fbc76",
+    "workflow_id": "19eff89f-ec03-4f75-b0fc-897e7effea02",
+    "status": "succeeded",
+    "inputs": "{\"sys.files\": [], \"sys.user_id\": \"abc-123\"}",
+    "outputs": null,
+    "error": null,
+    "total_steps": 3,
+    "total_tokens": 0,
+    "created_at": "Thu, 18 Jul 2024 03:17:40 -0000",
+    "finished_at": "Thu, 18 Jul 2024 03:18:10 -0000",
+    "elapsed_time": 30.098514399956912
+}
+
+Copy
+Copied!
+POST
+/workflows/tasks/:task_id/stop
+停止响应
+仅支持流式模式。
+
+Path
+task_id (string) 任务 ID，可在流式返回 Chunk 中获取
+Request Body
+user (string) Required 用户标识，用于定义终端用户的身份，必须和发送消息接口传入 user 保持一致。
+Response
+result (string) 固定返回 "success"
+Request Example
+Request
+POST
+/workflows/tasks/:task_id/stop
+curl -X POST 'https://api.dev.gain.awscn.novartis.net/v1/workflows/tasks/:task_id/stop' \
+-H 'Authorization: Bearer {api_key}' \
+-H 'Content-Type: application/json' \
+--data-raw '{"user": "abc-123"}'
+
+Copy
+Copied!
+Response Example
+Response
+{
+  "result": "success"
+}
+
+Copy
+Copied!
+POST
+/files/upload
+上传文件
+上传文件并在发送消息时使用，可实现图文多模态理解。 支持您的工作流程所支持的任何格式。 上传的文件仅供当前终端用户使用。
+
+Request Body
+该接口需使用 multipart/form-data 进行请求。
+
+Name
+file
+Type
+file
+Description
+要上传的文件。
+
+Name
+user
+Type
+string
+Description
+用户标识，用于定义终端用户的身份，必须和发送消息接口传入 user 保持一致。
+
+Response
+成功上传后，服务器会返回文件的 ID 和相关信息。
+
+id (uuid) ID
+name (string) 文件名
+size (int) 文件大小（byte）
+extension (string) 文件后缀
+mime_type (string) 文件 mime-type
+created_by (uuid) 上传人 ID
+created_at (timestamp) 上传时间
+Errors
+400，no_file_uploaded，必须提供文件
+400，too_many_files，目前只接受一个文件
+400，unsupported_preview，该文件不支持预览
+400，unsupported_estimate，该文件不支持估算
+413，file_too_large，文件太大
+415，unsupported_file_type，不支持的扩展名，当前只接受文档类文件
+503，s3_connection_failed，无法连接到 S3 服务
+503，s3_permission_denied，无权限上传文件到 S3
+503，s3_file_too_large，文件超出 S3 大小限制
+Request
+POST
+/files/upload
+curl -X POST 'https://api.dev.gain.awscn.novartis.net/v1/files/upload' \
+--header 'Authorization: Bearer {api_key}' \
+--form 'file=@localfile;type=image/[png|jpeg|jpg|webp|gif] \
+--form 'user=abc-123'
+
+Copy
+Copied!
+Response
+{
+  "id": "72fa9618-8f89-4a37-9b33-7e1178a24a67",
+  "name": "example.png",
+  "size": 1024,
+  "extension": "png",
+  "mime_type": "image/png",
+  "created_by": 123,
+  "created_at": 1577836800,
+}
+
+Copy
+Copied!
+GET
+/workflows/logs
+获取 workflow 日志
+倒序返回workflow日志
+
+Query
+Name
+keyword
+Type
+string
+Description
+关键字
+
+Name
+status
+Type
+string
+Description
+执行状态 succeeded/failed/stopped
+
+Name
+page
+Type
+int
+Description
+当前页码, 默认1.
+
+Name
+limit
+Type
+int
+Description
+每页条数, 默认20.
+
+Response
+page (int) 当前页码
+limit (int) 每页条数
+total (int) 总条数
+has_more (bool) 是否还有更多数据
+data (array[object]) 当前页码的数据
+id (string) 标识
+workflow_run (object) Workflow 执行日志
+id (string) 标识
+version (string) 版本
+status (string) 执行状态, running / succeeded / failed / stopped
+error (string) (可选) 错误
+elapsed_time (float) 耗时，单位秒
+total_tokens (int) 消耗的token数量
+total_steps (int) 执行步骤长度
+created_at (timestamp) 开始时间
+finished_at (timestamp) 结束时间
+created_from (string) 来源
+created_by_role (string) 角色
+created_by_account (string) (可选) 帐号
+created_by_end_user (object) 用户
+id (string) 标识
+type (string) 类型
+is_anonymous (bool) 是否匿名
+session_id (string) 会话标识
+created_at (timestamp) 创建时间
+Request
+GET
+/workflows/logs
+curl -X GET 'https://api.dev.gain.awscn.novartis.net/v1/workflows/logs'\
+ --header 'Authorization: Bearer {api_key}'
+
+Copy
+Copied!
+Response Example
+Response
+{
+    "page": 1,
+    "limit": 1,
+    "total": 7,
+    "has_more": true,
+    "data": [
+        {
+            "id": "e41b93f1-7ca2-40fd-b3a8-999aeb499cc0",
+            "workflow_run": {
+                "id": "c0640fc8-03ef-4481-a96c-8a13b732a36e",
+                "version": "2024-08-01 12:17:09.771832",
+                "status": "succeeded",
+                "error": null,
+                "elapsed_time": 1.3588523610014818,
+                "total_tokens": 0,
+                "total_steps": 3,
+                "created_at": 1726139643,
+                "finished_at": 1726139644
+            },
+            "created_from": "service-api",
+            "created_by_role": "end_user",
+            "created_by_account": null,
+            "created_by_end_user": {
+                "id": "7f7d9117-dd9d-441d-8970-87e5e7e687a3",
+                "type": "service_api",
+                "is_anonymous": false,
+                "session_id": "abc-123"
+            },
+            "created_at": 1726139644
+        }
+    ]
+}
+
+Copy
+Copied!
+GET
+/info
+获取应用基本信息
+用于获取应用的基本信息
+
+Response
+name (string) 应用名称
+description (string) 应用描述
+tags (array[string]) 应用标签
+Request
+GET
+/info
+curl -X GET 'https://api.dev.gain.awscn.novartis.net/v1/info' \
+-H 'Authorization: Bearer {api_key}'
+
+Copy
+Copied!
+Response
+{
+  "name": "My App",
+  "description": "This is my app.",
+  "tags": [
+    "tag1",
+    "tag2"
+  ]
+}
+
+Copy
+Copied!
+GET
+/parameters
+获取应用参数
+用于进入页面一开始，获取功能开关、输入参数名称、类型及默认值等使用。
+
+Response
+user_input_form (array[object]) 用户输入表单配置
+text-input (object) 文本输入控件
+label (string) 控件展示标签名
+variable (string) 控件 ID
+required (bool) 是否必填
+default (string) 默认值
+paragraph (object) 段落文本输入控件
+label (string) 控件展示标签名
+variable (string) 控件 ID
+required (bool) 是否必填
+default (string) 默认值
+select (object) 下拉控件
+label (string) 控件展示标签名
+variable (string) 控件 ID
+required (bool) 是否必填
+default (string) 默认值
+options (array[string]) 选项值
+file_upload (object) 文件上传配置
+image (object) 图片设置 当前仅支持图片类型：png, jpg, jpeg, webp, gif
+enabled (bool) 是否开启
+number_limits (int) 图片数量限制，默认 3
+transfer_methods (array[string]) 传递方式列表，remote_url , local_file，必选一个
+system_parameters (object) 系统参数
+file_size_limit (int) 文档上传大小限制 (MB)
+image_file_size_limit (int) 图片文件上传大小限制（MB）
+audio_file_size_limit (int) 音频文件上传大小限制 (MB)
+video_file_size_limit (int) 视频文件上传大小限制 (MB)
+Request
+GET
+/parameters
+ curl -X GET 'https://api.dev.gain.awscn.novartis.net/v1/parameters'
+
+Copy
+Copied!
+Response
+{
+  "user_input_form": [
+      {
+          "paragraph": {
+              "label": "Query",
+              "variable": "query",
+              "required": true,
+              "default": ""
+          }
+      }
+  ],
+  "file_upload": {
+      "image": {
+          "enabled": false,
+          "number_limits": 3,
+          "detail": "high",
+          "transfer_methods": [
+              "remote_url",
+              "local_file"
+          ]
+      }
+  },
+  "system_parameters": {
+      "file_size_limit": 15,
+      "image_file_size_limit": 10,
+      "audio_file_size_limit": 50,
+      "video_file_size_limit": 100
+  }
+}
+
+模型
+model-icon
+qwen-vl-max
+CHAT
+参数
+
+温度
+0.3
+
+Top P
+0.8
+
+取样数量
+0
+
+最大标记
+2000
+
+随机种子
+1234
+
+回复格式
+
+请选择
+
+重复惩罚
+1.1
+
+回复格式
+
+请选择
