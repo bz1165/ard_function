@@ -1,4 +1,352 @@
-https://novartiscorp.service-now.com/onenovartisservices?id=nvs_ecp_cat_item&table=sc_cat_item&sys_id=11b94655dbcef058d6316008d496198f&recordUrl=com.glideapp.servicecatalog_cat_item_view.do%3Fv%3D1&sysparm_id=11b94655dbcef058d6316008d496198f/******************************************************************************* 
+我在 Microsoft Edge 中使用 DevTools。我正在使用 Elements 工具检查元素。我将在下面提供我正在检查的元素所在的 DOM 结构。我将提供元素本身及其上级，就像它们在 DOM 中的显示一样。我将省略 DOM 的其余部分，以使其保持简短。我还将提供适用于我在 DOM 结构中提供的元素的 CSS 规则列表。我想询问你有关此内容的问题，以修复我遇到的 HTML/CSS 问题。请充当乐于帮助我调试问题的友好的 CSS 专家。尽可能为我面临的问题提供修补程序。n如果我有关元素的问题与所选元素不同，并且你无法回答，请告诉我。    当我说“此元素”、“该元素”或“当前元素”时，我指的是 DOM 树中最深元素的中间部分。nDOM structure:n`htmln    <body class="windows chrome ng-scope touch_scroll fixed-header" ng-class="[main.style, 'false' == 'true' ? 'has-agent-chat' : '', 'false' == 'true' ? 'dark-theme' : '' ]" ng-controller="spPageCtrl as main" accessibility="false" style=""><div class="flex-row sp-na-root-container"><div class="sp-page-root page flex-column sp-can-animate" id="sp-main-wrapper" ng-class="{'sp-loading': main.firstPage, 'sp-can-animate': main.doAnimate}" style=""><section ng-switch="page.has_custom_main_tag" class="flex-grow page sp-scroll flex-column" role="presentation" tabindex="-1"><main ng-switch-when="false" class="body padding-top flex-grow ng-scope leftnav-expanded" data-page-id="a487d4fc1ba575d0eed9caa16b4bcb9f" data-page-title="Request" role="main" style=""><div ng-switch="container.semantic_tag" ng-repeat="container in containers" ng-style="main.parseJSON(container.background)" ng-class="::[container.class_name, 'c' + container.sys_id]" class="ng-scope c608718b01be575d0eed9caa16b4bcb4b" style="background-size: initial; background-position: center center;"><div ng-switch-default="" ng-class="::main.getContainerClasses(container)" class="ng-scope container"><sp-page-row ng-repeat="row in ::container.rows track by row.sys_id" columns="::row.columns" row="::row" container="::container" class="ng-scope ng-isolate-scope"><div ng-if="row.semantic_tag !== 'main'" ng-include="'sp_page_row_content.xml'" class="sp-row-content  row"><div ng-repeat="column in columns track by column.sys_id" ng-switch="column.semantic_tag" class=" col-sm-12 col-md-12 col-lg-12 "><span ng-switch-default="" ng-repeat="rectangle in column.widgets track by rectangle.instance_id" class="ng-scope"><div id="x659b3f5a1b548e94eed9caa16b4bcbfb" class="v0cbad0c61b48ce90421d206fab4bcbc5 ng-scope" data="data" options="options" widget="widget" server="server" sn-atf-area="NVS_ECP_HRM_catalog_item"><div><div class="vd4a0a0ca1bc8ce90421d206fab4bcb6b ng-scope" data="data" options="options" widget="widget" server="server" sn-atf-area="NVS_ECP SC Catalog Item"><div id="sc_cat_item" ng-if="::(data.recordFound &amp;&amp; !data.not_for_mobile)" sn-atf-blacklist="IS_SERVICE_CATALOG" class="ng-scope" style=""><div class="row ng-scope" ng-if="::data.sc_cat_item" ng-class="{'native-mobile': options.native_mobile == 'true'}"><div class="col-sm-12 col-md-12" ng-class="{'col-md-9': options.display_cart_on_right === 'true', 'col-md-12': options.display_cart_on_right !== 'true', 'no-padder': options.native_mobile == 'true'}" id="catItemTop"><div class="panel panel-default"><div class="b-b wrapper-md" ng-show="!data.no_fields" aria-label="form" aria-hidden="false"><form id="catalog-form" class="ng-pristine ng-valid ng-valid-maxlength" style=""><div form-model="::data.sc_cat_item" mandatory="c.mandatory" class="ng-isolate-scope"><sp-variable-layout ng-if="!delayView" ng-attr-id="{{::formModel.table}}.do" embedded_in_modal="embeddedInModal" class="ng-scope" id="sc_cat_item.do"><!-- end ngRepeat: container in containers --><div ng-repeat="container in containers" class="sp-form-container ng-scope" ng-class="{'sp-form-documentation-container': container.id === documentationSectionId}" ng-show="paintForm(container)" ng-attr-role="{{(container.caption || container.captionDisplay) ? 'group' : undefined}}" ng-attr-aria-labelledby="{{(container.caption || container.captionDisplay) ? 'container_' + container.id : undefined}}" aria-hidden="false"></div><!-- end ngRepeat: container in containers --></sp-variable-layout></div></form></div></div></div></div></div></div></div></div></span></div></div></sp-page-row></div></div></main></section></div></div></body>`nCSS rules:n`cssn    /** For the <div ng-repeat="container in containers" class="sp-form-container ng-scope" ng-class="{'sp-form-documentation-container': container.id === documentationSectionId}" ng-show="paintForm(container)" ng-attr-role="{{(container.caption || container.captionDisplay) ? 'group' : undefined}}" ng-attr-aria-labelledby="{{(container.caption || container.captionDisplay) ? 'container_' + container.id : undefined}}" aria-hidden="false"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+/** For the <sp-variable-layout ng-if="!delayView" ng-attr-id="{{::formModel.table}}.do" embedded_in_modal="embeddedInModal" class="ng-scope" id="sc_cat_item.do"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+/** For the <div form-model="::data.sc_cat_item" mandatory="c.mandatory" class="ng-isolate-scope"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+/** For the <form id="catalog-form" class="ng-pristine ng-valid ng-valid-maxlength" style=""> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+/** For the <div class="b-b wrapper-md" ng-show="!data.no_fields" aria-label="form" aria-hidden="false"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+.b-b {
+border-bottom: 1px solid #DADDE2;
+}
+.wrapper-md {
+padding: 20px !important;
+}
+.b-b.wrapper-md {
+margin-bottom: 1.5rem;
+}
+/** For the <div class="panel panel-default"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+.panel {
+margin-bottom: 22px;
+background-color: #ffffff;
+border: 1px solid transparent;
+border-radius: 8px;
+-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+}
+.panel-default {
+border-color: #DADDE2;
+}
+.panel-default, .panel, .widget {
+border: 1px solid #DADADA !important;
+}
+/** For the <div class="col-sm-12 col-md-12" ng-class="{'col-md-9': options.display_cart_on_right === 'true', 'col-md-12': options.display_cart_on_right !== 'true', 'no-padder': options.native_mobile == 'true'}" id="catItemTop"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+.col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
+position: relative;
+min-height: 1px;
+padding-left: 16px;
+padding-right: 16px;
+}
+/** For the <div class="row ng-scope" ng-if="::data.sc_cat_item" ng-class="{'native-mobile': options.native_mobile == 'true'}"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+.row {
+margin-left: -16px;
+margin-right: -16px;
+}
+/** For the <div id="sc_cat_item" ng-if="::(data.recordFound &amp;&amp; !data.not_for_mobile)" sn-atf-blacklist="IS_SERVICE_CATALOG" class="ng-scope" style=""> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+/** For the <div class="vd4a0a0ca1bc8ce90421d206fab4bcb6b ng-scope" data="data" options="options" widget="widget" server="server" sn-atf-area="NVS_ECP SC Catalog Item"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+/** For the <div> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+/** For the <div id="x659b3f5a1b548e94eed9caa16b4bcbfb" class="v0cbad0c61b48ce90421d206fab4bcbc5 ng-scope" data="data" options="options" widget="widget" server="server" sn-atf-area="NVS_ECP_HRM_catalog_item"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+/** For the <span ng-switch-default="" ng-repeat="rectangle in column.widgets track by rectangle.instance_id" class="ng-scope"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+/** For the <div ng-repeat="column in columns track by column.sys_id" ng-switch="column.semantic_tag" class=" col-sm-12 col-md-12 col-lg-12 "> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+.col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
+position: relative;
+min-height: 1px;
+padding-left: 16px;
+padding-right: 16px;
+}
+/** For the <div ng-if="row.semantic_tag !== 'main'" ng-include="'sp_page_row_content.xml'" class="sp-row-content  row"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+.row {
+margin-left: -16px;
+margin-right: -16px;
+}
+/** For the <sp-page-row ng-repeat="row in ::container.rows track by row.sys_id" columns="::row.columns" row="::row" container="::container" class="ng-scope ng-isolate-scope"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+/** For the <div ng-switch-default="" ng-class="::main.getContainerClasses(container)" class="ng-scope container"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+.container {
+margin-right: auto;
+margin-left: auto;
+padding-left: 16px;
+padding-right: 16px;
+}
+.container {
+max-width: 100%;
+}
+/** For the <div ng-switch="container.semantic_tag" ng-repeat="container in containers" ng-style="main.parseJSON(container.background)" ng-class="::[container.class_name, 'c' + container.sys_id]" class="ng-scope c608718b01be575d0eed9caa16b4bcb4b" style="background-size: initial; background-position: center center;"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+/** For the <main ng-switch-when="false" class="body padding-top flex-grow ng-scope leftnav-expanded" data-page-id="a487d4fc1ba575d0eed9caa16b4bcb9f" data-page-title="Request" role="main" style=""> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+article, aside, details, figcaption, figure, footer, header, hgroup, main, menu, nav, section, summary {
+display: block;
+}
+.flex-grow {
+-ms-flex-positive: 1;
+-moz-flex-grow: 1;
+-webkit-box-flex: 1;
+-webkit-flex-grow: 1;
+flex-grow: 1;
+}
+body .padding-top {
+padding-top: 1rem;
+}
+main.body {
+padding-bottom: 16px;
+}
+section.page > main.body, section.page > section.body {
+flex-grow: 1;
+flex-shrink: 0;
+-ms-flex-positive: 1;
+}
+/** For the <section ng-switch="page.has_custom_main_tag" class="flex-grow page sp-scroll flex-column" role="presentation" tabindex="-1"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+article, aside, details, figcaption, figure, footer, header, hgroup, main, menu, nav, section, summary {
+display: block;
+}
+.flex-column {
+display: -ms-flexbox;
+display: -moz-flex;
+display: -webkit-box;
+display: -webkit-flex;
+display: flex;
+-ms-flex-flow: column nowrap;
+-moz-flex-flow: column nowrap;
+-webkit-flex-flow: column nowrap;
+flex-flow: column nowrap;
+}
+.flex-grow {
+-ms-flex-positive: 1;
+-moz-flex-grow: 1;
+-webkit-box-flex: 1;
+-webkit-flex-grow: 1;
+flex-grow: 1;
+}
+div.page, section.page {
+height: 100%;
+width: 100%;
+overflow: hidden;
+}
+section.page {
+position: relative;
+overflow: auto;
+border: none !important;
+box-shadow: none !important;
+}
+section.page {
+display: flex;
+flex-direction: column;
+display: -ms-flexbox;
+-ms-flex-direction: column;
+}
+.sp-na-root-container .sp-page-root  > section {
+overflow: visible;
+}
+/** For the <div class="sp-page-root page flex-column sp-can-animate" id="sp-main-wrapper" ng-class="{'sp-loading': main.firstPage, 'sp-can-animate': main.doAnimate}" style=""> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+.flex-column {
+display: -ms-flexbox;
+display: -moz-flex;
+display: -webkit-box;
+display: -webkit-flex;
+display: flex;
+-ms-flex-flow: column nowrap;
+-moz-flex-flow: column nowrap;
+-webkit-flex-flow: column nowrap;
+flex-flow: column nowrap;
+}
+.sp-page-root {
+container-type: size;
+background-color: #FFF !important;
+}
+.sp-page-root {
+color: RGB(var(--now-color_text--primary, 22, 27, 28));
+}
+div.page, section.page {
+height: 100%;
+width: 100%;
+overflow: hidden;
+}
+.sp-page-root.page {
+height: auto;
+min-height: 100%;
+}
+.sp-na-root-container .sp-page-root {
+overflow: auto;
+}
+.sp-page-root.page {
+height: 100%;
+}
+/** For the <div class="flex-row sp-na-root-container"> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+.flex-row {
+display: -ms-flexbox;
+display: -moz-flex;
+display: -webkit-box;
+display: -webkit-flex;
+display: flex;
+-ms-flex-flow: row nowrap;
+-moz-flex-flow: row nowrap;
+-webkit-flex-flow: row nowrap;
+flex-flow: row nowrap;
+}
+.sp-na-root-container {
+height: 100%;
+}
+/** For the <body class="windows chrome ng-scope touch_scroll fixed-header" ng-class="[main.style, 'false' == 'true' ? 'has-agent-chat' : '', 'false' == 'true' ? 'dark-theme' : '' ]" ng-controller="spPageCtrl as main" accessibility="false" style=""> element **/
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+body {
+margin: 0;
+}
+body {
+font-family: "Arial", sans-serif;
+font-size: 16px;
+line-height: 1.4;
+color: #002068;
+background-color: #FFF;
+}
+body {
+margin: 0;
+position: relative;
+min-height: 100%;
+}
+html, body {
+min-width: 320px;
+height: 100%;
+}
+html, body {
+min-width: 310px;
+}
+body {
+line-height: 1.42857143;
+}
+html, body {
+color: #002068;
+font-family: "Arial", sans-serif;
+}
+body {
+color: #002068;
+font-family: "Arial", sans-serif;
+font-size: 1.6rem;
+}
+html, body {
+background-color: RGB(var(--now-color_background--primary, 255, 255, 255));
+color: RGB(var(--now-color_text--primary, 22, 27, 28));
+}
+body, html {
+background-color: RGB(var(--now-color_background--primary,var(--now-color_background--primary,255,255,255)))!important;
+color: RGB(var(--now-color_text--primary,var(--now-color_text--primary,22,27,28)))!important;
+}
+.touch_scroll {
+overflow: auto;
+-webkit-overflow-scrolling: touch;
+}
+.touch_scroll {
+overflow: auto !important;
+}
+`  
 *            FILENAME : adfacmi.sas
 *   PROGRAM DEVELOPER : Yijie Huang (huangy2e)                          
 *                DATE : 2023-08-02                                                                                 
