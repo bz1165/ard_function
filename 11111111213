@@ -1,0 +1,116 @@
+library(dplyr)
+library(rtables)
+
+a_npct_subj <- function(x, labelstr, .N_col) {
+  n <- length(unique(x[!is.na(x)]))
+
+  cell <- if (n == 0L) {
+    rcell(0, format = "xx")
+  } else {
+    rcell(c(n, n / .N_col * 100), format = "xx (xx.x)")
+  }
+
+  in_rows(" " = cell, .labels = labelstr)
+}
+
+a_any_teae <- function(x, .N_col) {
+  n <- length(unique(x[!is.na(x)]))
+
+  cell <- if (n == 0L) {
+    rcell(0, format = "xx")
+  } else {
+    rcell(c(n, n / .N_col * 100), format = "xx (xx.x)")
+  }
+
+  in_rows("Number of subjects with at least one event" = cell)
+}
+
+adsl_raw <- read_df(analysis.adsl)
+adae_raw <- read_df(analysis.adae)
+
+adsl_olb <- adsl_raw %>%
+  transmute(
+    USUBJID = as.character(usubjid),
+    OLBFL   = toupper(trimws(as.character(olbfl))),
+    ARM_RAW = gsub("\\s*-\\s*", "-", trimws(as.character(trtseqa)))
+  ) %>%
+  filter(OLBFL == "Y") %>%
+  mutate(
+    ARM = case_when(
+      ARM_RAW == "Inclisiran-Inclisiran" ~ "Inclisiran-Inclisiran",
+      ARM_RAW == "Placebo-Inclisiran" ~ "Placebo-Inclisiran",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  filter(!is.na(ARM)) %>%
+  transmute(
+    USUBJID,
+    ARM = factor(
+      ARM,
+      levels = c("Inclisiran-Inclisiran", "Placebo-Inclisiran")
+    )
+  ) %>%
+  distinct()
+
+adae_teae <- adae_raw %>%
+  transmute(
+    USUBJID = as.character(usubjid),
+    TRTEMFL = toupper(trimws(as.character(trtemfl))),
+    APERIOD = suppressWarnings(as.integer(aperiod)),
+    AEDECOD = trimws(as.character(aedecod))
+  ) %>%
+  filter(TRTEMFL == "Y", APERIOD == 2) %>%
+  left_join(adsl_olb, by = "USUBJID") %>%
+  filter(!is.na(ARM), !is.na(AEDECOD), AEDECOD != "") %>%
+  distinct(USUBJID, ARM, AEDECOD)
+
+pt_order_ii <- adae_teae %>%
+  filter(ARM == "Inclisiran-Inclisiran") %>%
+  count(AEDECOD, sort = TRUE) %>%
+  pull(AEDECOD)
+
+pt_all <- sort(unique(adae_teae$AEDECOD))
+pt_levels <- c(pt_order_ii, setdiff(pt_all, pt_order_ii))
+
+pt_long <- adae_teae %>%
+  transmute(
+    USUBJID,
+    ARM,
+    PT = factor(AEDECOD, levels = pt_levels)
+  ) %>%
+  distinct()
+
+split_fun <- drop_split_levels
+# Setup RA Environment ---------------------------------------------------------
+wd <- ifelse(
+  interactive(),
+  rstudioapi::getSourceEditorContext()$path,
+  system("echo $PWD", intern = TRUE)
+)
+source(paste0(gsub(r"((^.*/vob(/\\w+){3}).*$)", r"(\\1)", wd), "/util/_setup.R"))
+
+library(dplyr)
+library(stringr)
+library(rtables)
+
+
+lyt <- basic_table(
+  show_colcounts = TRUE,
+  colcount_format = "N=xx"
+) %>%
+  split_cols_by("ARM", split_fun = split_fun) %>%
+  analyze("USUBJID", afun = a_any_teae, show_labels = "hidden", section_div = " ") %>%
+  split_rows_by("PT", split_fun = split_fun, label_pos = "hidden", nested = FALSE) %>%
+  summarize_row_groups("USUBJID", cfun = a_npct_subj) %>%
+  append_topleft("Preferred term")
+
+tbl <- build_table(lyt, pt_long, alt_counts_df = adsl_olb)
+
+
+tbl 参考结果里少了n (%)这行 和preferred term是在同一行 consider 提供最小修改 
+
+                           Inclisiran-Inclisiran     Placebo-Inclisiran
+                                  N=100                      N=101
+ Preferred term                   n (% )                     n (% )
+--------------------------------------------------------------------------------
+...
