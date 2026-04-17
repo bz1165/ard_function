@@ -1,3 +1,16 @@
+# Setup RA Environment ---------------------------------------------------------
+wd <- ifelse(
+  interactive(),
+  rstudioapi::getSourceEditorContext()$path,
+  system("echo $PWD", intern = TRUE)
+)
+source(paste0(gsub(r"((^.*/vob(/\\w+){3}).*$)", r"(\\1)", wd), "/util/_setup.R"))
+
+library(dplyr)
+library(stringr)
+library(rtables)
+
+
 library(dplyr)
 library(rtables)
 
@@ -72,45 +85,59 @@ pt_order_ii <- adae_teae %>%
 pt_all <- sort(unique(adae_teae$AEDECOD))
 pt_levels <- c(pt_order_ii, setdiff(pt_all, pt_order_ii))
 
+adsl_olb <- adsl_olb %>%
+ mutate(STAT = factor("n (%)", levels = "n (%)"))
+
 pt_long <- adae_teae %>%
-  transmute(
-    USUBJID,
-    ARM,
-    PT = factor(AEDECOD, levels = pt_levels)
-  ) %>%
-  distinct()
+ transmute(
+   USUBJID,
+   ARM,
+   STAT = factor("n (%)", levels = "n (%)"),
+   PT = factor(AEDECOD, levels = pt_levels)
+ ) %>%
+ distinct()
 
 split_fun <- drop_split_levels
-# Setup RA Environment ---------------------------------------------------------
-wd <- ifelse(
-  interactive(),
-  rstudioapi::getSourceEditorContext()$path,
-  system("echo $PWD", intern = TRUE)
-)
-source(paste0(gsub(r"((^.*/vob(/\\w+){3}).*$)", r"(\\1)", wd), "/util/_setup.R"))
 
-library(dplyr)
-library(stringr)
-library(rtables)
+adsl_olb <- adsl_olb %>%
 
+  mutate(STAT = factor("n (%)", levels = "n (%)"))
 
-lyt <- basic_table(
-  show_colcounts = TRUE,
-  colcount_format = "N=xx"
-) %>%
+pt_long <- adae_teae %>%
+
+  transmute(
+
+    USUBJID,
+
+    ARM,
+
+    STAT = factor("n (%)", levels = "n (%)"),
+
+    PT = factor(AEDECOD, levels = pt_levels)
+
+  ) %>%
+
+  distinct()
+ 
+lyt <- basic_table() %>%
+
   split_cols_by("ARM", split_fun = split_fun) %>%
+
+  add_colcounts(format = "N=xx") %>%
+
+  split_cols_by("STAT", split_fun = rtables::keep_split_levels) %>%
+
   analyze("USUBJID", afun = a_any_teae, show_labels = "hidden", section_div = " ") %>%
+
   split_rows_by("PT", split_fun = split_fun, label_pos = "hidden", nested = FALSE) %>%
+
   summarize_row_groups("USUBJID", cfun = a_npct_subj) %>%
-  append_topleft("Preferred term")
+
+  append_topleft(c("", "", "Preferred term"))
 
 tbl <- build_table(lyt, pt_long, alt_counts_df = adsl_olb)
 
 
-tbl 参考结果里少了n (%)这行 和preferred term是在同一行 consider 提供最小修改 
-
-                           Inclisiran-Inclisiran     Placebo-Inclisiran
-                                  N=100                      N=101
- Preferred term                   n (% )                     n (% )
---------------------------------------------------------------------------------
-...
+Code execution failed: Line 137: Error applying custom split function: unused arguments (vals, labels, trim = trim)
+	split: VarLevelSplit (STAT)
+	occured at path: ARM[Inclisiran-Inclisiran]
