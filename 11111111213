@@ -1,143 +1,62 @@
-# Setup RA Environment ---------------------------------------------------------
-wd <- ifelse(
-  interactive(),
-  rstudioapi::getSourceEditorContext()$path,
-  system("echo $PWD", intern = TRUE)
-)
-source(paste0(gsub(r"((^.*/vob(/\\w+){3}).*$)", r"(\\1)", wd), "/util/_setup.R"))
+可以的——**公司/团队完全可以“申请/开通” Microsoft Graph API 的使用**，但它本质上不是去“单独申请一个 API 资格”，而是\*\*在公司租户的 Microsoft Entra ID 里做“应用注册（App Registration）+ 权限审批（Admin Consent）+ 安全评估/治理”\*\*这套流程。 [\[IAM Standards \| HTML\]](https://share.novartis.net/sites/iamservices/SitePages/Tile-5-IAM-Standards.aspx?web=1), [\[learn.microsoft.com\]](https://learn.microsoft.com/zh-cn/entra/identity-platform/quickstart-register-app), [\[learn.microsoft.com\]](https://learn.microsoft.com/zh-cn/graph/auth-register-app-v2)
 
-library(dplyr)
-library(stringr)
-library(rtables)
+我刚在公司内容里检索到的总体结果数显示为 **totalResults = “Several emails”**，其中最直接相关的是内部标准和一份 SharePoint 连接指引文档。 [\[About your...MS studio \| Meeting\]](https://teams.microsoft.com/l/meeting/details?eventId=AAMkAGExMmNmODQyLTM4YWEtNGUzZC1iM2JhLTQ2N2MyNTBkMmUwMwBGAAAAAAAc0bvqze5VRqeMC7o-UZQbBwBQZJliUSQPRK_H-JOgisWnAAAAAAENAABQZJliUSQPRK_H-JOgisWnAACuOG0fAAA%3d), [\[IAM Standards \| HTML\]](https://share.novartis.net/sites/iamservices/SitePages/Tile-5-IAM-Standards.aspx?web=1), [\[Connecting...pp-ID-v4.0 \| Word\]](https://share.novartis.net/sites/EWSSLCM/_layouts/15/Doc.aspx?sourcedoc=%7B5B055C51-99BD-4FF6-9973-1A770A9E2BD6%7D&file=Connecting-to-a-SharePoint-site-using-an-Azure-app-ID-v4.0.docx&action=default&mobileredirect=true&DefaultItemOpen=1)
 
+***
 
-library(dplyr)
-library(rtables)
+## 1) 在我们公司里，“能不能用 Graph”主要卡在**权限与风险**
 
-a_npct_subj <- function(x, labelstr, .N_col) {
-  n <- length(unique(x[!is.na(x)]))
+内部的 IAM Standards 明确提到：
 
-  cell <- if (n == 0L) {
-    rcell(0, format = "xx")
-  } else {
-    rcell(c(n, n / .N_col * 100), format = "xx (xx.x)")
-  }
+*   如果应用只需要 **三类“常见权限”**：`Application.Read.All`、`User.Read.All`、`GroupMember.Read.All`，那么**相关风险会在“应用安全评估或应用注册请求”中被评估**。 [\[IAM Standards \| HTML\]](https://share.novartis.net/sites/iamservices/SitePages/Tile-5-IAM-Standards.aspx?web=1)
+*   如果需要**超出上述常见集合的 Graph 权限**，内部标准把它归为“更高风险/扩大攻击面”，并提到安全团队已经给出了**应避免的高风险 Graph 权限清单**（标准文档末尾有 quick links 的描述）。 [\[IAM Standards \| HTML\]](https://share.novartis.net/sites/iamservices/SitePages/Tile-5-IAM-Standards.aspx?web=1)
 
-  in_rows(" " = cell, .labels = labelstr)
-}
+> 直白点：**不是不能用**，而是**权限越大越需要更严格的审批/评估**，有些“高危权限”会被建议避免或要求更强的治理证据。 [\[IAM Standards \| HTML\]](https://share.novartis.net/sites/iamservices/SitePages/Tile-5-IAM-Standards.aspx?web=1)
 
-a_any_teae <- function(x, .N_col) {
-  n <- length(unique(x[!is.na(x)]))
+***
 
-  cell <- if (n == 0L) {
-    rcell(0, format = "xx")
-  } else {
-    rcell(c(n, n / .N_col * 100), format = "xx (xx.x)")
-  }
+## 2) 一般需要做哪些“官方动作”（通用做法）
 
-  in_rows("Number of subjects with at least one event" = cell)
-}
+从 Microsoft 官方文档角度，调用 Graph 的基本链路就是：
 
-adsl_raw <- read_df(analysis.adsl)
-adae_raw <- read_df(analysis.adae)
+1.  **在 Microsoft Entra ID 中注册应用**（建立应用与身份平台的信任关系）； [\[learn.microsoft.com\]](https://learn.microsoft.com/zh-cn/entra/identity-platform/quickstart-register-app), [\[learn.microsoft.com\]](https://learn.microsoft.com/zh-cn/graph/auth-register-app-v2)
+2.  在应用里配置 **API 权限**（Graph 的 Delegated / Application permissions）； [\[docs.azure.cn\]](https://docs.azure.cn/zh-cn/entra/identity-platform/quickstart-configure-app-access-web-apis), [\[learn.microsoft.com\]](https://learn.microsoft.com/zh-cn/graph/permissions-overview)
+3.  触发/获取 **管理员同意（Admin consent）**（尤其是应用程序权限经常需要管理员同意）； [\[docs.azure.cn\]](https://docs.azure.cn/zh-cn/entra/identity-platform/quickstart-configure-app-access-web-apis), [\[learn.microsoft.com\]](https://learn.microsoft.com/zh-cn/graph/security-authorization)
+4.  配置凭据（证书/客户端密钥等）并获取 token 后访问 Graph。 [\[learn.microsoft.com\]](https://learn.microsoft.com/zh-cn/graph/auth-register-app-v2), [\[docs.azure.cn\]](https://docs.azure.cn/zh-cn/entra/identity-platform/quickstart-configure-app-access-web-apis)
 
-adsl_olb <- adsl_raw %>%
-  transmute(
-    USUBJID = as.character(usubjid),
-    OLBFL   = toupper(trimws(as.character(olbfl))),
-    ARM_RAW = gsub("\\s*-\\s*", "-", trimws(as.character(trtseqa)))
-  ) %>%
-  filter(OLBFL == "Y") %>%
-  mutate(
-    ARM = case_when(
-      ARM_RAW == "Inclisiran-Inclisiran" ~ "Inclisiran-Inclisiran",
-      ARM_RAW == "Placebo-Inclisiran" ~ "Placebo-Inclisiran",
-      TRUE ~ NA_character_
-    )
-  ) %>%
-  filter(!is.na(ARM)) %>%
-  transmute(
-    USUBJID,
-    ARM = factor(
-      ARM,
-      levels = c("Inclisiran-Inclisiran", "Placebo-Inclisiran")
-    )
-  ) %>%
-  distinct()
+***
 
-adae_teae <- adae_raw %>%
-  transmute(
-    USUBJID = as.character(usubjid),
-    TRTEMFL = toupper(trimws(as.character(trtemfl))),
-    APERIOD = suppressWarnings(as.integer(aperiod)),
-    AEDECOD = trimws(as.character(aedecod))
-  ) %>%
-  filter(TRTEMFL == "Y", APERIOD == 2) %>%
-  left_join(adsl_olb, by = "USUBJID") %>%
-  filter(!is.na(ARM), !is.na(AEDECOD), AEDECOD != "") %>%
-  distinct(USUBJID, ARM, AEDECOD)
+## 3) 如果你的目标是 SharePoint：公司里已有“怎么选权限”的样例
 
-pt_order_ii <- adae_teae %>%
-  filter(ARM == "Inclisiran-Inclisiran") %>%
-  count(AEDECOD, sort = TRUE) %>%
-  pull(AEDECOD)
+内部 Connecting-to-a-SharePoint-site-using-an-Azure-app-ID-v4.0 给了一个非常具体的选择示例：
 
-pt_all <- sort(unique(adae_teae$AEDECOD))
-pt_levels <- c(pt_order_ii, setdiff(pt_all, pt_order_ii))
+*   如果走 **Microsoft Graph permissions**，可选 **Microsoft Graph API Permission – Application Specific Permission – `Sites.Selected`**，并标注 **Admin Consent Required – Yes**；同时文档里也提到了 **Need to enable MFA – Yes** 等选项。 [\[Connecting...pp-ID-v4.0 \| Word\]](https://share.novartis.net/sites/EWSSLCM/_layouts/15/Doc.aspx?sourcedoc=%7B5B055C51-99BD-4FF6-9973-1A770A9E2BD6%7D&file=Connecting-to-a-SharePoint-site-using-an-Azure-app-ID-v4.0.docx&action=default&mobileredirect=true&DefaultItemOpen=1)
 
-adsl_olb <- adsl_olb %>%
- mutate(STAT = factor("n (%)", levels = "n (%)"))
+这份文档的价值在于：它反映了公司里常见的合规倾向——**用更“最小权限”的 `Sites.Selected`** 去限定站点范围，而不是上来就给全站点/全租户读写。 [\[Connecting...pp-ID-v4.0 \| Word\]](https://share.novartis.net/sites/EWSSLCM/_layouts/15/Doc.aspx?sourcedoc=%7B5B055C51-99BD-4FF6-9973-1A770A9E2BD6%7D&file=Connecting-to-a-SharePoint-site-using-an-Azure-app-ID-v4.0.docx&action=default&mobileredirect=true&DefaultItemOpen=1), [\[learn.microsoft.com\]](https://learn.microsoft.com/zh-cn/graph/permissions-reference)
 
-pt_long <- adae_teae %>%
- transmute(
-   USUBJID,
-   ARM,
-   STAT = factor("n (%)", levels = "n (%)"),
-   PT = factor(AEDECOD, levels = pt_levels)
- ) %>%
- distinct()
+***
 
-split_fun <- drop_split_levels
+## 4) 你现在最可能需要的“落地判断”（帮你少走弯路）
 
-adsl_olb <- adsl_olb %>%
+你可以用下面两步快速自查（不涉及公司内部流程细节，只是帮你定位审批难度）：
 
-  mutate(STAT = factor("n (%)", levels = "n (%)"))
+*   **A. 你要做的是“后台自动化”还是“用户交互”？**
+    *   后台自动化（daemon/service）通常会用 **Application permissions**，这类权限往往更敏感、更容易触发管理员同意与安全评估。 [\[docs.azure.cn\]](https://docs.azure.cn/zh-cn/entra/identity-platform/quickstart-configure-app-access-web-apis), [\[learn.microsoft.com\]](https://learn.microsoft.com/zh-cn/graph/security-authorization)
+    *   有用户登录、以用户身份访问数据，通常用 **Delegated permissions**，相对更容易做最小化授权。 [\[docs.azure.cn\]](https://docs.azure.cn/zh-cn/entra/identity-platform/quickstart-configure-app-access-web-apis), [\[learn.microsoft.com\]](https://learn.microsoft.com/zh-cn/graph/permissions-overview)
 
-pt_long <- adae_teae %>%
+*   **B. 你需要的权限是否“超出常见集合”？**
+    *   如果你只打算读组织里基本目录信息/用户/群组成员，可能落在 IAM Standards 提到的“常见权限集合”附近，通常走标准评估即可。 [\[IAM Standards \| HTML\]](https://share.novartis.net/sites/iamservices/SitePages/Tile-5-IAM-Standards.aspx?web=1)
+    *   如果你要读邮件、读 OneDrive/SharePoint 全量、发 Teams 消息、做安全审计等，权限往往更敏感，需要更严格的审批证据。 [\[learn.microsoft.com\]](https://learn.microsoft.com/zh-cn/graph/permissions-reference), [\[learn.microsoft.com\]](https://learn.microsoft.com/zh-cn/graph/security-authorization)
 
-  transmute(
+***
 
-    USUBJID,
+## 我可以帮你把“申请材料”写得更容易过审（一步到位）
 
-    ARM,
+你回复我一句就行：**你打算用 Graph 做什么场景？（例如：读 SharePoint 某些站点文件 / 拉 Teams 消息 / 读 Outlook 日历邮件 / 查用户组织架构）**  
+我就能基于公司已有的 IAM Standards 与 SharePoint 示例文档，帮你把：
 
-    STAT = factor("n (%)", levels = "n (%)"),
+*   **最小权限清单**（尽量贴近 `Sites.Selected` 这种思路） [\[Connecting...pp-ID-v4.0 \| Word\]](https://share.novartis.net/sites/EWSSLCM/_layouts/15/Doc.aspx?sourcedoc=%7B5B055C51-99BD-4FF6-9973-1A770A9E2BD6%7D&file=Connecting-to-a-SharePoint-site-using-an-Azure-app-ID-v4.0.docx&action=default&mobileredirect=true&DefaultItemOpen=1), [\[IAM Standards \| HTML\]](https://share.novartis.net/sites/iamservices/SitePages/Tile-5-IAM-Standards.aspx?web=1)
+*   **为什么需要这些权限的业务理由**（方便写进 security assessment / app registration request） [\[IAM Standards \| HTML\]](https://share.novartis.net/sites/iamservices/SitePages/Tile-5-IAM-Standards.aspx?web=1)
+*   **选择 Delegated vs Application** 的理由与风险描述（降低来回沟通） [\[learn.microsoft.com\]](https://learn.microsoft.com/zh-cn/graph/permissions-overview), [\[docs.azure.cn\]](https://docs.azure.cn/zh-cn/entra/identity-platform/quickstart-configure-app-access-web-apis)
 
-    PT = factor(AEDECOD, levels = pt_levels)
-
-  ) %>%
-
-  distinct()
- 
-lyt <- basic_table() %>%
-
-  split_cols_by("ARM", split_fun = split_fun) %>%
-
-  add_colcounts(format = "N=xx") %>%
-
-  split_cols_by("STAT", split_fun = rtables::keep_split_levels) %>%
-
-  analyze("USUBJID", afun = a_any_teae, show_labels = "hidden", section_div = " ") %>%
-
-  split_rows_by("PT", split_fun = split_fun, label_pos = "hidden", nested = FALSE) %>%
-
-  summarize_row_groups("USUBJID", cfun = a_npct_subj) %>%
-
-  append_topleft(c("", "", "Preferred term"))
-
-tbl <- build_table(lyt, pt_long, alt_counts_df = adsl_olb)
-
-
-Code execution failed: Line 137: Error applying custom split function: unused arguments (vals, labels, trim = trim)
-	split: VarLevelSplit (STAT)
-	occured at path: ARM[Inclisiran-Inclisiran]
+只问一个关键问题：你最想访问的 Graph 资源是 **SharePoint/OneDrive**、**Teams**、还是 **Outlook（邮件/日历）**？
